@@ -1,0 +1,167 @@
+# Synthetic planning assumptions for the fictional FBO. See docs/ASSUMPTIONS.md.
+calendar:
+  start_date: '2027-02-09'
+  end_date: '2027-02-15'
+  timezone: America/Los_Angeles
+
+baseline_daily_arrivals:
+  tuesday: 14
+  wednesday: 14
+  thursday: 14
+  friday: 14
+  saturday: 10
+  sunday: 12
+  monday: 14
+
+extra_demand_day_shape:
+  tuesday: 0.2
+  wednesday: 0.4
+  thursday: 0.7
+  friday: 1.0
+  saturday: 1.0
+  sunday: 0.1
+  monday: 0.0
+
+# Indexed from local hour 00 through 23; sums to 1.0.
+arrival_hourly_profile:
+  - 0.005
+  - 0.005
+  - 0.005
+  - 0.005
+  - 0.010
+  - 0.015
+  - 0.025
+  - 0.045
+  - 0.060
+  - 0.065
+  - 0.070
+  - 0.070
+  - 0.075
+  - 0.075
+  - 0.080
+  - 0.080
+  - 0.075
+  - 0.070
+  - 0.060
+  - 0.045
+  - 0.030
+  - 0.015
+  - 0.010
+  - 0.005
+
+ordinary_length_of_stay:
+  same_day: 0.50
+  one_night: 0.40
+  three_plus_days: 0.10
+  one_night_departure_day_offset: 1
+  three_plus_departure_day_offset: 3
+
+event_length_of_stay:
+  tuesday_wednesday:
+    same_day: 0.15
+    departure_wave: 0.60
+    three_plus_days: 0.25
+  thursday_saturday:
+    same_day: 0.10
+    departure_wave: 0.80
+    three_plus_days: 0.10
+  sunday:
+    same_day: 0.30
+    departure_wave: 0.70
+    three_plus_days: 0.00
+  monday:
+    same_day: 0.50
+    departure_wave: 0.00
+    three_plus_days: 0.50
+
+ordinary_same_day_departure_lag_hours: 6
+event_same_day_departure_lag_hours: 4
+
+# Sun 20:00 through Mon 14:00 inclusive; two peaks, sums to 1.0.
+departure_wave:
+  start: '2027-02-14T20:00'
+  hourly_profile:
+    - 0.020
+    - 0.030
+    - 0.110
+    - 0.120
+    - 0.100
+    - 0.080
+    - 0.040
+    - 0.020
+    - 0.010
+    - 0.010
+    - 0.010
+    - 0.010
+    - 0.020
+    - 0.110
+    - 0.120
+    - 0.100
+    - 0.060
+    - 0.020
+    - 0.010
+
+aircraft_classes:
+  light:
+    parking_up: 1.0
+    fuel_gal_at_departure: 150
+  mid:
+    parking_up: 1.5
+    fuel_gal_at_departure: 450
+  large:
+    parking_up: 2.5
+    fuel_gal_at_departure: 1200
+
+ordinary_aircraft_mix:
+  light: 0.45
+  mid: 0.40
+  large: 0.15
+
+event_aircraft_mix_mid_share: 0.40
+event_aircraft_mix_light_plus_large_share: 0.60
+scenarios:
+  low:
+    regional_extra_peak_aircraft_per_day: 300
+    fbo_market_share: 0.015
+    qualifying_teams: '1 local + 1 nearby'
+    large_jet_share: 0.25
+  medium:
+    regional_extra_peak_aircraft_per_day: 550
+    fbo_market_share: 0.016
+    qualifying_teams: '1 local + 1 distant'
+    large_jet_share: 0.35
+  high:
+    regional_extra_peak_aircraft_per_day: 850
+    fbo_market_share: 0.017
+    qualifying_teams: '2 distant'
+    large_jet_share: 0.45
+
+uncertainty:
+  monte_carlo_draws: 1000
+  multiplier_lognormal_sigma: 0.15
+  length_of_stay_variation_points: 0.10
+  aircraft_mix_variation_points: 0.05
+  percentile_low: 10
+  percentile_median: 50
+  percentile_high: 90
+  stub_arrivals_p10_fraction: 0.75
+  stub_arrivals_p90_fraction: 1.25
+  stub_hourly_jitter_sigma: 0.06
+  generator_seed: 42
+
+resources:
+  main_ramp_capacity_up: 40
+  ordinary_overflow_up: 0
+  max_overflow_up: 25
+  ordinary_ramp_agents_per_shift: 6
+  max_ramp_agents_per_shift: 12
+  ordinary_fuel_trucks: 3
+  rentable_fuel_trucks: 2
+  fuel_delivery_gal_per_truck_per_day: 8000
+  movements_per_ramp_agent_per_hour: 3
+
+calibration_targets:
+  low_peak_fraction_of_main_capacity: 0.90
+  medium_peak_occupancy_up_min: 55
+  medium_peak_occupancy_up_max: 60
+  high_peak_occupancy_up_min_exclusive: 65
