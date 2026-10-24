@@ -18,6 +18,7 @@ from readiness.contracts import ContractError, load_bundle, summarize
 from readiness.data import sample_bundle, team_bundle, team_status, native_bundle, native_status
 from readiness.storage import ReviewStore
 from readiness.release_status import alan_reference
+from readiness.what_if import plan as what_if_plan
 
 ROOT=Path(__file__).resolve().parent
 PROFILES={
@@ -123,7 +124,7 @@ class Handler(BaseHTTPRequestHandler):
                     except ContractError as exc: return self.reply(400,{'error':str(exc)})
                     return self.reply(200,json.dumps(data,indent=2).encode(),'application/octet-stream',{'Content-Disposition':'attachment; filename="readiness-plan.json"'})
             return self.reply(404,{'error':'Unknown endpoint.'})
-        allowed={'/':'index.html','/app.js':'app.js','/styles.css':'styles.css'}
+        allowed={'/':'index.html','/app.js':'app.js','/styles.css':'styles.css','/what-if.js':'what-if.js','/what-if.css':'what-if.css'}
         if url.path not in allowed: return self.reply(404,{'error':'Not found.'})
         file=ROOT/'static'/allowed[url.path]
         return self.reply(200,file.read_bytes(),(mimetypes.guess_type(str(file))[0] or 'text/plain')+'; charset=utf-8')
@@ -155,6 +156,16 @@ class Handler(BaseHTTPRequestHandler):
             if path=='/api/logout':
                 self.app.sessions={k:v for k,v in self.app.sessions.items() if v is not session}
                 return self.reply(200,{'ok':True},extra={'Set-Cookie':'readiness_session=; Max-Age=0; HttpOnly; SameSite=Strict; Path=/'})
+            if path=='/api/what-if':
+                freshness=self.app.input_status()
+                if freshness['stale']: return self.reply(409,{'error':freshness['message']})
+                if not self.app.bundle or body.get('version')!=self.app.bundle['version']:
+                    return self.reply(409,{'error':'Source changed. Refresh the forecast before recalculating this experiment.'})
+                try:
+                    if set(body)!={'version','settings'}: raise ContractError('Provide only version and settings.')
+                    return self.reply(200,what_if_plan(self.app.bundle,body['settings']))
+                except (ContractError,ValueError,KeyError,TypeError) as exc:
+                    return self.reply(400,{'error':str(exc)})
             if session['profile']['role']!='manager': return self.reply(403,{'error':'The manager demo role is required for reviews or data changes.'})
             try:
                 if path in ('/api/source','/api/import'):

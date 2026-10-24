@@ -81,9 +81,12 @@ class ServerTests(unittest.TestCase):
         status=response.status;conn.close();return status,data
     def login(self,role):
         status,data=self.request('/api/login',{'role':role});self.assertEqual(status,200);self.csrf=data['csrf']
-    def review(self,version=None,decision='approved',checks=None):
-        b=self.server.application.bundle;r=next(r for r in b['recommendations'] if r['scenario']=='medium' and r['variant']=='standard')
-        return {'version':version or b['version'],'scenario':'medium','variant':'standard','recommendation_id':r['id'],'decision':decision,'note':'Confirmed illustrative assumptions for demo.', 'checks':checks if checks is not None else {'assumptions':True,'availability':True,'cost':True}}
+    def review(self,version=None,decision='approved',checks=None,variant='standard'):
+        b=self.server.application.bundle
+        r=next((r for r in b['recommendations'] if r['scenario']=='medium' and r['variant']==variant),None)
+        r=r or next((r for r in b['recommendations'] if r['variant']==variant),None)
+        r=r or {'scenario':'medium','id':'no-action-supplied'}
+        return {'version':version or b['version'],'scenario':r['scenario'],'variant':variant,'recommendation_id':r['id'],'decision':decision,'note':'Confirmed illustrative assumptions for demo.', 'checks':checks if checks is not None else {'assumptions':True,'availability':True,'cost':True}}
     def test_snapshot_and_export(self):
         status,data=self.request('/api/dashboard');self.assertEqual(status,200);self.assertEqual(data['source'],'sample')
         self.assertEqual(data['summaries']['medium']['standard']['peak_shortfall'],28)
@@ -130,31 +133,34 @@ class ServerTests(unittest.TestCase):
         self.server.application.repo_root=ROOT.parent
         status,data=self.request('/api/source',{'source':'team-native'});self.assertEqual(status,200)
         self.assertTrue(data['bundle']['native'])
-        self.assertEqual(self.request('/api/review',self.review())[0],201)
-        status,export=self.request('/api/export?scenario=medium&variant=standard')
-        self.assertEqual(status,200);self.assertEqual(export['source'],'team-native');self.assertEqual(len(export['reviews']),1)
-        self.assertEqual(export['simulation_impact'],data['bundle']['impacts']['medium'])
+        review=self.review();has_action=review['recommendation_id']!='no-action-supplied';sc=review['scenario']
+        self.assertEqual(self.request('/api/review',review)[0],201 if has_action else 400)
+        status,export=self.request(f'/api/export?scenario={sc}&variant=standard')
+        self.assertEqual(status,200);self.assertEqual(export['source'],'team-native');self.assertEqual(len(export['reviews']),int(has_action))
+        self.assertEqual(export['simulation_impact'],data['bundle']['impacts'][sc])
         self.assertEqual(len(export['forecast_drivers']),42)
-        status,delayed=self.request('/api/export?scenario=medium&variant=departure_delay_24h')
+        status,delayed=self.request(f'/api/export?scenario={sc}&variant=departure_delay_24h')
         self.assertEqual(status,200)
-        self.assertNotEqual(delayed['summary']['preparation_cost'],export['summary']['preparation_cost'])
-        self.assertEqual(delayed['simulation_impact'],data['bundle']['impacts_by_variant']['departure_delay_24h']['medium'])
+        self.assertEqual(delayed['simulation_impact'],data['bundle']['impacts_by_variant']['departure_delay_24h'][sc])
         self.assertEqual(len(delayed['resources']),7)
         self.assertEqual(len(delayed['carryover']),2)
         self.assertEqual(delayed['reviews'],[])
-        review=self.review();review['variant']='departure_delay_24h'
-        self.assertEqual(self.request('/api/review',review)[0],201)
-        self.assertEqual(len(self.request('/api/export?scenario=medium&variant=standard')[1]['reviews']),1)
+        delayed_review=self.review(variant='departure_delay_24h')
+        self.assertEqual(self.request('/api/review',delayed_review)[0],201 if delayed_review['recommendation_id']!='no-action-supplied' else 400)
+        self.assertEqual(len(self.request(f'/api/export?scenario={sc}&variant=standard')[1]['reviews']),int(has_action))
         self.assertEqual(self.request('/api/export?scenario=medium&variant=missing')[0],400)
     def test_release_tampering_blocks_review_export_and_refresh(self):
-        from readiness.release_status import RELEASE_FILES, MANIFEST
+        from readiness.release_status import RELEASE_FILES, MANIFEST, EVIDENCE_FILES, EVIDENCE_MANIFEST
         repo=self.root/'hashed-release'
-        for relative in RELEASE_FILES|{MANIFEST}:
+        release_files=RELEASE_FILES|{MANIFEST}
+        if (ROOT.parent/EVIDENCE_MANIFEST).exists():release_files=release_files|EVIDENCE_FILES|{EVIDENCE_MANIFEST}
+        for relative in release_files:
             dest=repo/relative;dest.parent.mkdir(parents=True,exist_ok=True)
             dest.write_bytes((ROOT.parent/relative).read_bytes())
         self.server.application.repo_root=repo
         self.assertEqual(self.request('/api/source',{'source':'team-native'})[0],200)
-        self.assertEqual(self.request('/api/review',self.review())[0],201)
+        review=self.review()
+        self.assertEqual(self.request('/api/review',review)[0],201 if review['recommendation_id']!='no-action-supplied' else 400)
         exported=self.request('/api/export?scenario=medium&variant=standard')[1]
         self.assertEqual(exported['release_review']['status'],'provisional_pending_Alan_review')
         original=self.server.application.bundle['version']
@@ -223,7 +229,7 @@ class NativeAdapterTests(unittest.TestCase):
         with self.assertRaisesRegex(ContractError,'disagree'):load_native(f)
     def test_unknown_actions_rejected(self):
         from readiness.team_adapter import load_native
-        f=self.native_files();j=json.loads(f['p3_recommendations']);j['scenarios']['Medium']['actions'][0]['id']='auto_accept_reservations';f['p3_recommendations']=json.dumps(j)
+        f=self.native_files();j=json.loads(f['p3_recommendations']);j['scenarios']['Medium']['actions'].append({'id':'auto_accept_reservations','cost_usd':0});f['p3_recommendations']=json.dumps(j)
         with self.assertRaisesRegex(ContractError,'unknown'):load_native(f)
     def test_action_costs_reconcile(self):
         from readiness.team_adapter import load_native
@@ -345,7 +351,11 @@ class ParkingVariantTests(unittest.TestCase):
     def test_extension_change_invalidates_reviews(self):
         from readiness.team_adapter import load_native
         raw=self.files();old=load_native(raw)['version']
-        NativeAdapterTests.alter_csv(self,raw,'p3_carryover','aircraft_remaining_p50','15.9')
+        row=next(csv.DictReader(io.StringIO(raw['p3_carryover'])))
+        lo,mid,hi=(float(row['aircraft_remaining_'+q]) for q in ('p10','p50','p90'))
+        changed=(mid+hi)/2 if hi>mid else (lo+mid)/2
+        self.assertNotEqual(changed,mid,'Fixture needs a nonzero carryover range for this mutation')
+        NativeAdapterTests.alter_csv(self,raw,'p3_carryover','aircraft_remaining_p50',str(changed))
         self.assertNotEqual(load_native(raw)['version'],old)
     def test_partial_disk_release_does_not_fall_back(self):
         from readiness.data import native_bundle

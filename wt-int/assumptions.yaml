@@ -1,0 +1,48 @@
+operator: Pacific Executive FBO
+airport: LAX
+fictional: true
+window_start: '2027-02-11'
+window_days: 7
+game_day: '2027-02-14'
+holiday: '2027-02-15'
+timezone: America/Los_Angeles
+main_ramp_units: 40
+protected_reserve_units: 4
+overflow_limit_units: 25
+illustrative_rate_per_unit_day: 85
+weights:
+  light: 1.0
+  midsize: 1.5
+  large: 2.5
+aircraft_mix:
+  light: 0.47
+  midsize: 0.33
+  large: 0.20
+stay_mix:
+  drop_and_go: 0.40
+  overnight: 0.45
+  multi_day: 0.15
+stay_hours:
+  drop_and_go: 4
+  overnight: 24
+  multi_day: 64
+arrival_hours: [8, 10, 12, 14, 16, 18]
+demo:
+  daily_arrivals: [18, 22, 28, 24, 14, 10, 9]
+  ordinary_arrivals: [12, 12, 9, 10, 12, 12, 12]
+  opening_aircraft: 10
+  event_overnight_min_hours: 30
+  estimated_fraction: 0.65
+  scenario_additional_factor:
+    Low: 0.60
+    Medium: 1.0
+    High: 1.50
+marvin_path: marvin/person_2_forecasting/private_only_review/daily_private_only_plan.csv
+marvin_metadata_path: marvin/person_2_forecasting/private_only_review/run_metadata.json
+demo_accounts:
+  - name: Nazar
+    role: Manager
+  - name: Alex
+    role: Reservations coordinator
+  - name: Jordan
+    role: Operations supervisor

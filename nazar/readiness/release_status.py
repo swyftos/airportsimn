@@ -7,6 +7,16 @@ from .contracts import ContractError, DATES, number
 
 P2='marvin/person_2_forecasting/'
 MANIFEST=P2+'release_manifest.json'
+EVIDENCE_MANIFEST=P2+'event_evidence_manifest.json'
+EVIDENCE_FILES={P2+p for p in ('FAA_EVENT_UPDATE.md','build_event_inputs.py',
+    'provisional_inputs/event_evidence.json','test_forecast_model.py',
+    'forecast_output_contract.json','provisional_inputs/monthly_reconciliation.csv')} | {
+    'elia/test_parking_optimizer.py',
+    'alan/elia_output/data/processed/superbowl_lvi_surge.csv',
+    'alan/elia_output/data/processed/superbowl_lvi_daily_profile.csv',
+    'alan/elia_output/data/processed/opsnet_daily_superbowl.csv',
+    'alan/elia_output/scripts/analyze_superbowl_lvi.py',
+    'alan/elia_output/data_sources_lawa_bts.md'}
 RELEASE_FILES={P2+p for p in (
     'demand_predictions.csv','uncertainty_results.csv','evaluation_metrics.csv',
     'daily_totals.csv','run_metadata.json','forecast_model.py',
@@ -15,6 +25,23 @@ RELEASE_FILES={P2+p for p in (
 )}|{'elia/'+p for p in ('resource_requirements.csv','scenario_recommendations.json','assumptions_p3.csv','parking_optimizer.py','ordinary_week_parking.csv','parking_carryover.csv','resource_requirements_departure_delay_24h.csv','scenario_recommendations_departure_delay_24h.json')}|{'alan/elia_output/data/processed/lax_monthly_movements.csv'}
 
 def digest(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+
+def evidence_review(root, run_id):
+    """Validate the optional FAA-event release as one complete, versioned set."""
+    root=Path(root).resolve();path=root/EVIDENCE_MANIFEST
+    enabled=path.exists() or (root/(P2+'build_event_inputs.py')).exists() or (root/(P2+'provisional_inputs/event_evidence.json')).exists()
+    if not enabled:return None
+    if not path.is_file() or path.stat().st_size>100_000:
+        raise ContractError('FAA event evidence manifest is missing or too large.')
+    try:audit=json.loads(path.read_text(encoding='utf-8-sig'))
+    except ValueError as exc:raise ContractError('FAA event evidence manifest contains invalid JSON.') from exc
+    if not isinstance(audit,dict) or audit.get('release_run_id')!=run_id or not isinstance(audit.get('files'),dict) or set(audit['files'])!=EVIDENCE_FILES:
+        raise ContractError('FAA event evidence manifest must match this release and the documented 12 evidence files.')
+    for name,expected in audit['files'].items():
+        target=(root/name).resolve()
+        if not target.is_relative_to(root) or not target.is_file() or target.stat().st_size>5_000_000 or digest(target)!=expected:
+            raise ContractError('FAA event evidence mismatch: '+name+'. Regenerate the complete release.')
+    return digest(path)
 
 def release_review(repo,bundle):
     root=Path(repo).resolve();path=root/MANIFEST
@@ -35,11 +62,13 @@ def release_review(repo,bundle):
             raise ContractError('Release manifest file unavailable or invalid: '+name)
         if digest(target)!=expected:
             raise ContractError('Release manifest mismatch: '+name+'. Regenerate the complete P2/P3 release before loading it.')
+    evidence_sha=evidence_review(root,m['run_id'])
     status=m.get('status')
     return {'status':'provisional_pending_Alan_review' if status=='provisional_pending_Alan_review' else 'unreviewed',
             'label':'Provisional — pending Alan’s review' if status=='provisional_pending_Alan_review' else 'Producer release — approval not verified',
             'message':'Matched release files do not establish team approval. Alan’s baseline update does not automatically update this forecast’s training window or FBO-share assumptions. Review those choices before presenting these estimates as the agreed team forecast.',
-            'manifest_verified':True,'run_id':m['run_id'],'manifest_sha256':digest(path)}
+            'manifest_verified':True,'run_id':m['run_id'],'manifest_sha256':digest(path),
+            **({'event_evidence_manifest_sha256':evidence_sha} if evidence_sha else {})}
 
 def attach_release_status(repo,bundle):
     status=release_review(repo,bundle)

@@ -21,6 +21,8 @@ REPO = Path(__file__).resolve().parents[2]
 P2 = 'marvin/person_2_forecasting/'
 MANIFEST = P2 + 'release_manifest.json'
 REPORT = 'nazar/team_release_report.json'
+EVIDENCE_MANIFEST = P2 + 'event_evidence_manifest.json'
+EVIDENCE_OUTPUTS = (P2+'provisional_inputs/event_evidence.json', EVIDENCE_MANIFEST)
 OUTPUTS = (
     'alan/data/processed/historical_traffic_interim.csv',
     'alan/data/processed/historical_traffic_interim.validation.json',
@@ -36,6 +38,9 @@ OUTPUTS = (
 
 class ReleaseError(Exception):
     pass
+
+def output_names(root):
+    return OUTPUTS + (EVIDENCE_OUTPUTS if (root/(P2+'build_event_inputs.py')).is_file() else ())
 
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -72,14 +77,17 @@ def opening_check(root):
 
 def stamp_manifest(root):
     sys.path.insert(0, str(REPO/'nazar'))
-    from readiness.release_status import RELEASE_FILES
+    from readiness.release_status import RELEASE_FILES, EVIDENCE_FILES
     files = {p:digest(root/p) for p in sorted(RELEASE_FILES)}
     manifest = {'generated_at':datetime.now(timezone.utc).isoformat(),
                 'status':'provisional_pending_Alan_review', 'historical_data_class':'estimated',
-                'reservation_class':'synthetic', 'event_multipliers':'assumed_not_empirically_validated',
+                'reservation_class':'synthetic', 'event_multipliers':'FAA_ATADS_OPSNET_anchored_FBO_transfer_assumption' if (root/(P2+'build_event_inputs.py')).is_file() else 'assumed_not_empirically_validated',
                 'files':files,
                 'run_id':hashlib.sha256(json.dumps(files,sort_keys=True).encode()).hexdigest()}
     (root/MANIFEST).write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8')
+    if (root/(P2+'build_event_inputs.py')).is_file():
+        evidence={'release_run_id':manifest['run_id'],'files':{p:digest(root/p) for p in sorted(EVIDENCE_FILES)}}
+        (root/EVIDENCE_MANIFEST).write_text(json.dumps(evidence,indent=2)+'\n',encoding='utf-8')
     return manifest
 
 def build(root, allow_mismatch=False):
@@ -106,7 +114,7 @@ def build(root, allow_mismatch=False):
     report = {'status':'provisional_pending_Alan_review','generated_at':manifest['generated_at'],
               'release_run_id':manifest['run_id'],'assumption_mismatches':issues,
               'provisional_mismatch_override':allow_mismatch,
-              'output_sha256':{p:digest(root/p) for p in (*OUTPUTS,MANIFEST)},
+              'output_sha256':{p:digest(root/p) for p in (*output_names(root),MANIFEST)},
               'meaning':'Outputs reproduce together; assumptions, forecast accuracy and safe capacity are not approved.'}
     (root/REPORT).write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
 
@@ -121,7 +129,7 @@ def snapshot(repo, stage):
         fingerprints[rel] = hashlib.sha256(content).hexdigest()
         dest = stage/rel;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(content)
     # Optional new reports are still protected against concurrent edits.
-    for rel in (*OUTPUTS, MANIFEST, REPORT):
+    for rel in (*OUTPUTS, *EVIDENCE_OUTPUTS, MANIFEST, REPORT):
         fingerprints.setdefault(rel, digest(repo/rel) if (repo/rel).is_file() else None)
     return fingerprints
 
@@ -144,7 +152,7 @@ def install(repo, stage, fingerprints):
     unchanged(repo, fingerprints)
     # Validate the whole list before any write. Manifest last: interrupted updates
     # are rejected by the dashboard rather than accepted as a mixed release.
-    names = (*OUTPUTS, REPORT, MANIFEST)
+    names = (*output_names(stage), REPORT, MANIFEST)
     incoming = {n:(stage/n).read_bytes() for n in names}
     previous = {n:(repo/n).read_bytes() if (repo/n).exists() else None for n in names}
     written = []
