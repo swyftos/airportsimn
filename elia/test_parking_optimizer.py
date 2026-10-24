@@ -34,3 +34,32 @@ def test_prepared_plan_never_worse_on_aircraft_accommodated():
     for r in recs.values():
         i = r["impact"]
         assert i["ai_preparation"]["unaccommodated_aircraft"]["mean"] <= i["no_preparation"]["unaccommodated_aircraft"]["mean"]
+
+
+def test_departure_delay_conserves_aircraft():
+    rng = np.random.default_rng(1)
+    dep = rng.uniform(0, 20, (50, 7, 3))
+    shifted, pushed = po.shift_departures(dep, A)
+    first = int(A["delay_24h_first_day"])
+    assert np.allclose(shifted.sum((1, 2)) + pushed.sum(1), dep.sum((1, 2)))
+    assert np.allclose(shifted[:, :first], dep[:, :first])
+    assert np.allclose(shifted[:, first], dep[:, first] * (1 - A["delay_24h_share"]))
+
+
+def test_delay_variant_keeps_standard_schema_and_more_aircraft_remain():
+    carry_std, carry_delay = {}, {}
+    table, _ = po.run(po.load_demand(), A, carryover=carry_std)
+    d_table, d_recs = po.run(po.load_demand(), A, "departure_delay_24h", carry_delay)
+    assert list(table.columns) == list(d_table.columns) and len(table) == len(d_table)
+    assert all(x["requires_human_approval"] for r in d_recs.values() for x in r["actions"])
+    for s in carry_std:
+        assert carry_delay[s]["aircraft_remaining_p50"] > carry_std[s]["aircraft_remaining_p50"]
+        assert carry_delay[s]["departures_pushed_past_window_p50"] > 0
+
+
+def test_ordinary_week_uses_p2_baseline():
+    ordinary = po.load_ordinary_demand()
+    table, carry = po.run_ordinary(ordinary, A)
+    assert len(table) == 7 and (table["data_status"] == "provisional").all()
+    assert (table["parking_demand_su_p10"] <= table["parking_demand_su_p90"]).all()
+    assert carry["opening_aircraft"] == A["initial_transient_aircraft"]
