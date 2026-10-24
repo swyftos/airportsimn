@@ -54,7 +54,7 @@ For each event day i:
     Low_multiplier_i = 1
     High_multiplier_i = 1 + 2 * (Medium_multiplier_i - 1)
 
-Both directions receive the same multiplier because no observed directional split exists. This does not model a measured arrival-then-departure wave. Tuesday/Wednesday remain at baseline; this is a boundary assumption, not evidence of no event effect.
+No observed directional split exists. Direction follows aircraft conservation instead: every event aircraft lands once before the game and leaves once after it, so the five-day excess operations split into equal extra arrivals and extra departures. Thursday to Saturday and half of game day carry the extra arrivals; the other half of game day and Monday carry the extra departures, each spread by the FAA daily shape. The five-day operations excess stays exactly the FAA value. The arrival-before, departure-after timing is an assumption, not a measured split. Tuesday/Wednesday remain at baseline; this is a boundary assumption, not evidence of no event effect.
 
 Low is a no-excess sensitivity case; High doubles the central excess. They are assumptions, not confidence bounds, observed extremes or event probabilities. The 8.5% regional excess is context, not substituted for the 15.5% LAX anchor. The 33% raw regional Monday result informs the shape, not a forced 1.33 departure multiplier.
 

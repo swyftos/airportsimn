@@ -28,6 +28,18 @@ def build(history_path):
         raise ValueError('FAA profile has no positive event shape')
     scale = excess*sum(baseline[i] for i in range(5))/denominator
     multipliers = {i: 1 + shape[i]*scale if i < 5 else 1.0 for i in range(7)}
+    # FAA counts takeoffs plus landings. Each event aircraft lands once before the game and leaves once
+    # after it, so the five-day excess splits into equal extra arrivals and departures (aircraft are
+    # conserved and accumulate on the ramp). Pre-game days and half of game day carry arrivals; the other
+    # half of game day and Monday carry departures, each spread by the FAA daily shape.
+    extra = {i: baseline[i]*shape[i]*scale for i in range(5)}
+    timing = {'arrivals': {0: extra[0], 1: extra[1], 2: extra[2], 3: extra[3]/2},
+              'departures': {3: extra[3]/2, 4: extra[4]}}
+    half = sum(extra.values())/2
+    base = {t: {i: sum(fitted[c,t][0].predict(d) for c in categories) for i,d in enumerate(days)}
+            for t in timing}
+    directional = {t: {i: 1 + half*timing[t].get(i, 0)/sum(timing[t].values())/base[t][i] for i in range(7)}
+                   for t in timing}
     plan=[]
     for i,d in enumerate(days):
         for c in categories:
@@ -37,7 +49,7 @@ def build(history_path):
                    assumption_source='FAA ATADS/OPSNET; PROVISIONAL_ASSUMPTIONS.md; regional timing and LAX aggregate transferred to fictional FBO; no bookings supplied')
             for t in ('arrivals','departures'):
                 for s,k in EVENT_EXCESS_SCALES.items():
-                    r[f'{t}_multiplier_{s}']=1+k*(multipliers[i]-1)
+                    r[f'{t}_multiplier_{s}']=1+k*(directional[t][i]-1)
             plan.append(r)
     evidence=dict(source='FAA ATADS/OPSNET',source_url='https://aspm.faa.gov/opsnet/sys/Airport.asp',
                   retrieval_date='2026-10-23',repository_delivery='PR 17 (not the data source)',
@@ -48,11 +60,13 @@ def build(history_path):
                   observed_directional_split=False,observed_aircraft_size_split=False,
                   method='Regional positive daily excess shape normalized to LAX five-day control-adjusted excess, weighted by forecast baseline movements.',
                   scenario_excess_scales=EVENT_EXCESS_SCALES,
-                  direction_assumption='Same multiplier on arrivals and departures; FAA table has no directional split.',
+                  direction_assumption='FAA table has no directional split. Aircraft conservation: extra arrivals = extra departures = half the five-day excess operations; arrivals Thu-Sat plus half of game day, departures half of game day plus Monday.',
                   scope_transfer='Apply air-taxi proxy uplift to GA+air-taxi FBO allocation; unvalidated.',
                   shoulders='Tuesday and Wednesday set to ordinary baseline; conservative boundary assumption.',
                   reservations='Zero synthetic placeholders, show rate zero; no observed bookings or claim of zero actual reservations.',
-                  daily=[dict(date=str(d),medium_multiplier=multipliers[i]) for i,d in enumerate(days)],
+                  daily=[dict(date=str(d),medium_operations_multiplier=multipliers[i],
+                              medium_arrivals_multiplier=directional['arrivals'][i],
+                              medium_departures_multiplier=directional['departures'][i]) for i,d in enumerate(days)],
                   evaluation='Allocation diagnostics only; not independent observed daily FBO accuracy.',
                   status='provisional_pending_Alan_review')
     return plan,evidence

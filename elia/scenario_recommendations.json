@@ -1,6 +1,6 @@
 {
   "meta": {
-    "demand_source": "marvin\\person_2_forecasting",
+    "demand_source": "marvin/person_2_forecasting",
     "demand_provenance": [
       "estimated"
     ],
@@ -77,9 +77,9 @@
     },
     "Medium": {
       "summary": {
-        "peak_day": "2027-02-15",
-        "peak_parking_demand_su_p50": 30.2,
-        "peak_parking_demand_su_p90": 34.2,
+        "peak_day": "2027-02-14",
+        "peak_parking_demand_su_p50": 38.9,
+        "peak_parking_demand_su_p90": 41.7,
         "normal_capacity_su": 75.0,
         "max_prepared_capacity_su": 75.0,
         "risk_days": [],
@@ -142,16 +142,29 @@
     },
     "High": {
       "summary": {
-        "peak_day": "2027-02-15",
-        "peak_parking_demand_su_p50": 33.1,
-        "peak_parking_demand_su_p90": 36.9,
+        "peak_day": "2027-02-14",
+        "peak_parking_demand_su_p50": 51.4,
+        "peak_parking_demand_su_p90": 55.3,
         "normal_capacity_su": 75.0,
         "max_prepared_capacity_su": 75.0,
         "risk_days": [],
         "overall_risk": "Low"
       },
-      "actions": [],
-      "preparation_cost_usd": 0,
+      "actions": [
+        {
+          "id": "extra_line_staff",
+          "category": "staffing",
+          "action": "Schedule 2 additional technician shifts over the week (see daily table)",
+          "dates": [
+            "2027-02-15"
+          ],
+          "rationale": "P50 movements plus 15% buffer exceed the normal crew of 3 per shift",
+          "cost_usd": 1200.0,
+          "requires_human_approval": true,
+          "approver": "FBO general manager"
+        }
+      ],
+      "preparation_cost_usd": 1200.0,
       "impact": {
         "runs": 10000,
         "no_preparation": {
@@ -168,7 +181,7 @@
             "p90": 0.0
           },
           "total_cost_usd": {
-            "mean": 1.6,
+            "mean": 0.9,
             "p10": 0.0,
             "p50": 0.0,
             "p90": 0.0
@@ -189,18 +202,18 @@
             "p90": 0.0
           },
           "total_cost_usd": {
-            "mean": 1.6,
-            "p10": 0.0,
-            "p50": 0.0,
-            "p90": 0.0
+            "mean": 1200.0,
+            "p10": 1200.0,
+            "p50": 1200.0,
+            "p90": 1200.0
           },
           "prob_any_unaccommodated": 0.0
         },
         "net_benefit_usd": {
-          "mean": 0.0,
-          "p10": 0.0,
-          "p50": 0.0,
-          "p90": 0.0
+          "mean": -1199.1,
+          "p10": -1200.0,
+          "p50": -1200.0,
+          "p90": -1200.0
         },
         "prob_preparation_pays_off": 0.0
       }

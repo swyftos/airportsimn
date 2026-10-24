@@ -10,7 +10,7 @@ Based on main snapshot 3f8aa2bbd348fcef7c0e52200352adbcf9bc7263, inspected Octob
 - Regional daily timing is normalized to that LAX aggregate, weighted by forecast baseline movements.
 - Low has no excess; High doubles the Medium excess. Both are sensitivity assumptions.
 - Zero synthetic reservation placeholders disable demo booking floors.
-- Both directions use the same multiplier: source operations include takeoffs and landings.
+- Both directions use the same multiplier: source operations include takeoffs and landings. *(Superseded by the direction update below.)*
 - Opening inventory refreshed to 13.0 aircraft using the existing 1.1-day dwell assumption.
 - All standard, ordinary, delay and carryover P3 outputs regenerated together.
 - Existing producer columns, filenames, metadata keys and exact 20-file dashboard manifest retained.
@@ -64,3 +64,19 @@ The ZIP contains changed files in repository-relative paths plus a feature patch
 Detailed source mapping and assumptions are in marvin/person_2_forecasting/PROVISIONAL_ASSUMPTIONS.md. Reproduce from repository root:
 
     python marvin/person_2_forecasting/run_provisional.py
+
+## Direction update (Elia, follow-up PR)
+
+Applying one multiplier to both directions on the same day means every extra aircraft arrives and leaves the same day, so the event never accumulates on the ramp (Medium parking peak 30.2 su against 27.7 ordinary). The FAA five-day excess is now split by aircraft conservation: extra arrivals = extra departures = half the excess operations, arrivals on Thursday to Saturday plus half of game day, departures on the other half of game day plus Monday. The five-day operations excess is unchanged (15.5 % in Medium).
+
+| Date | Medium arrivals | Medium departures |
+| --- | ---: | ---: |
+| 2027-02-11 | 1.1551 | 1.0000 |
+| 2027-02-12 | 1.4219 | 1.0000 |
+| 2027-02-13 | 1.1082 | 1.0000 |
+| 2027-02-14 | 1.0901 | 1.1088 |
+| 2027-02-15 | 1.0000 | 1.6653 |
+| 2027-02-16 | 1.0000 | 1.0000 |
+| 2027-02-17 | 1.0000 | 1.0000 |
+
+Result: P50 parking peaks at 27.7 / 38.9 / 51.4 su for Low / Medium / High on game day, then falls on Monday as event aircraft leave. The 24-hour-delay variant peaks at 45.0 / 56.4 / 69.0 su. No scenario exceeds the 75 su ramp at P50. The timing is an assumption; the FAA table has no directional split.

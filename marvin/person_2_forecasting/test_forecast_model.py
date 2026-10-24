@@ -111,17 +111,22 @@ class ForecastTests(unittest.TestCase):
         planning, evidence = build(path)
         forecast, _, _ = m.forecast(m.load_history(path), planning)
         event = [r for r in forecast if r['date'] <= '2027-02-15' and r['scenario']=='Medium']
-        for t in m.TARGETS:
-            baseline = sum(r['baseline_'+t] for r in event)
-            predicted = sum(r['expected_'+t] for r in event)
-            self.assertAlmostEqual(predicted/baseline-1, .155, places=4)
+        baseline = sum(r['baseline_'+t] for r in event for t in m.TARGETS)
+        predicted = sum(r['expected_'+t] for r in event for t in m.TARGETS)
+        self.assertAlmostEqual(predicted/baseline-1, .155, places=4)
+        extra = {t: sum(r['expected_'+t]-r['baseline_'+t] for r in event) for t in m.TARGETS}
+        self.assertAlmostEqual(extra['arrivals'], extra['departures'], places=2)  # outputs rounded to 3 decimals
         self.assertTrue(all(r['reserved_arrivals']==0 and r['reserved_departures']==0 for r in planning))
         self.assertTrue(all(r['arrivals_reservation_floor']==0 and r['departures_reservation_floor']==0 for r in forecast))
         self.assertFalse(evidence['observed_directional_split'])
         for r in forecast:
-            self.assertEqual(r['arrivals_multiplier'],r['departures_multiplier'])
             if r['scenario']=='Low' or r['date'] > '2027-02-15':
                 self.assertEqual(r['arrivals_multiplier'],1)
+                self.assertEqual(r['departures_multiplier'],1)
+            if r['date'] == '2027-02-15':
+                self.assertEqual(r['arrivals_multiplier'],1)
+            if r['date'] < '2027-02-14':
+                self.assertEqual(r['departures_multiplier'],1)
 
 if __name__ == '__main__':
     unittest.main()

@@ -21,7 +21,7 @@ This replaces the earlier synthetic 90 su. The value is now an estimate with a d
 
 ## Starting inventory
 
-22.2 transient aircraft are parked on the morning of 2027-02-11, split by the category mix. The value follows Little's law: P2's ordinary arrivals on 2027-02-11 (20.14) times an average dwell of 1.1 days (Alan's ledger, `avg_dwell_days`). It is written in the ledger so the dashboard can check it, and `test_opening_inventory_follows_p2_baseline` fails if P2's baseline changes without the value being recomputed. With this opening value, the ordinary week ends at 22.7 aircraft at P50, close to where it started, so the run is near steady state. The previous synthetic value of 12 made the ordinary week drift upward.
+13.0 transient aircraft are parked on the morning of 2027-02-11, split by the category mix. The value follows Little's law: P2's ordinary arrivals on 2027-02-11 (11.79) times an average dwell of 1.1 days (Alan's ledger, `avg_dwell_days`). It is written in the ledger so the dashboard can check it, `run_provisional.py` refreshes it with each P2 release, and `test_opening_inventory_follows_p2_baseline` fails if the two drift apart. With this opening value, the ordinary week ends at 13.0 aircraft at P50, so the run is at steady state.
 
 The same opening inventory is used for the ordinary week, the standard event week and the delay variant.
 
@@ -30,18 +30,22 @@ The same opening inventory is used for the ordinary week, the standard event wee
 The model does not track individual aircraft or draw a stay length per aircraft. P2 forecasts arrivals and departures as independent daily flows per category, and the ramp is simulated as an inventory:
 
 - **Within a day**, half of the day's departures (`dep_share_before_peak` = 0.5) leave before the arrival peak, the rest after it. Every arrival of the day is on the ramp at the peak. A same-day **turn** therefore always occupies a position at the daily peak, which is conservative for parking.
-- **Overnight and multi-day stays** are whatever aircraft remain after the day's departures. The share of stays of each length is not an input. It follows from how P2's departure flow lags its arrival flow (for the event, the departure wave on Monday 15 and Tuesday 16).
-- **Check against Alan's benchmark.** Alan's ledger uses 40 % turns (0.5 day), 45 % overnight (1 day) and 15 % multi-day (3 days), an average of 1.1 days. The ordinary-week run gives a peak-occupancy-to-arrival ratio of **1.62 days** (average daily-peak aircraft divided by average daily arrivals). Because this uses daily peaks rather than time-average occupancy, it is a diagnostic ratio, not a Little's-law estimate of actual dwell time.
+- **Overnight and multi-day stays** are whatever aircraft remain after the day's departures. The share of stays of each length is not an input. It follows from how P2's departure flow lags its arrival flow. For the event, P2 now puts the extra arrivals on Thursday to Saturday and half of game day, and the same number of extra departures on the other half of game day and Monday, so event aircraft stay one to four nights and accumulate until game day.
+- **Check against Alan's benchmark.** Alan's ledger uses 40 % turns (0.5 day), 45 % overnight (1 day) and 15 % multi-day (3 days), an average of 1.1 days. The ordinary-week run gives a peak-occupancy-to-arrival ratio of **1.60 days** (average daily-peak aircraft divided by average daily arrivals). Because this uses daily peaks rather than time-average occupancy, it is a diagnostic ratio, not a Little's-law estimate of actual dwell time.
 
 ## Ordinary-week baseline (`ordinary_week_parking.csv`)
 
 Same model, units, opening inventory, capacity and staffing rules, run on P2's ordinary forecast for the same dates (`baseline_arrivals`, `baseline_departures`, checked to be identical across P2 scenarios). The range is P2's nominal 90 % baseline interval (baseline ± `baseline_radius`, floored at zero). 10,000 Monte Carlo paths.
 
-Result: daily parking peaks of 47 to 49 su at P50, up to 66 % of the 75 su ramp, at most a 4 % chance of exceeding it, and 3 technicians on the busiest shift.
+Result: a daily parking peak of 27.7 su at P50 on every day (P2's ordinary forecast is flat at 11.8 arrivals a day, because its history allocates monthly totals equally across days), 37 % of the 75 su ramp, no chance of exceeding it, and 2 technicians on the busiest shift.
 
-**This level depends on P2's ordinary forecast of 20 arrivals a day.** P2's input history spans 2016–2019 and 2023–2025, but the frozen model trains on the earliest 60% of dates; later dates evaluate it rather than refit it. Its allocated 2023–2025 history averages about 11.7 arrivals a day. A post-COVID training window could lower the baseline materially. Its effect on event demand and parking must be measured by rerunning the full pipeline, including reservation floors, opening inventory and nonlinear capacity effects; a proportional 40% reduction is not established.
+**This level depends on P2's ordinary forecast.** P2 now trains on 2023–2025 only (11.8 arrivals a day, against 20 when 2016–2019 were included). It has no weekday or holiday effect yet: Presidents' Day falls on Monday 2027-02-15, and observed LAX daily data (FAA OPSNET, PR #22) puts Presidents' Day traffic 17 to 24 % above a normal Monday.
 
 **Open point with Alan.** `alan/baseline.csv` gives `parking_units` of 7 to 12, computed as FBO arrivals × 1.1 days (a count of aircraft, at a 20 % share). To compare it with P3 in the same unit, multiply by 1.47 su per aircraft, and agree first on the capture share (Alan 20 %, P2 25 %) and the training window.
+
+## Event week (`resource_requirements.csv`)
+
+With P2's FAA-anchored scenarios (five-day operations excess of 0 / 15.5 / 31 % for Low / Medium / High), the P50 parking peak is 27.7 / 38.9 / 51.4 su, reached on game day. Event aircraft build up from Thursday and leave on Sunday evening and Monday. No scenario exceeds the 75 su ramp at P50, so the plan recommends no parking measure; High adds technician shifts only. The binding risks are therefore an operational disruption (see the delay variant) and the scenario assumptions themselves, which remain provisional.
 
 ## 24-hour departure-delay variant
 
@@ -49,7 +53,7 @@ Result: daily parking peaks of 47 to 49 su at P50, up to 66 % of the 75 su ramp,
 
 Definition: from game day (Sunday 2027-02-14, `delay_24h_first_day` = 3) onward, 100 % of each day's departures (`delay_24h_share`) leave 24 hours later. This represents a post-game ground stop, weather hold or slot restriction. The variant is a **separate simulation** on the same 10,000 demand paths as the standard run (same seed). Departures, parking, prepared capacity, staffing, fuel, costs, impact and recommendations are all recomputed. Departures scheduled for 2027-02-17 move to 2027-02-18, outside the window, so those aircraft stay parked.
 
-Effect in the Medium scenario: Monday's parking peak goes from 98 to 153 su at P50, and the probability of exceeding the 75 su ramp from 81 % to 99 %. In the Low scenario, the probability of exceeding the ramp on Monday goes from 46 % to 92 %, and preparation becomes worthwhile in 76 % of runs instead of 40 %.
+Effect in the Medium scenario: Monday's parking peak goes from 32 to 56 su at P50, and aircraft keep accumulating until the delayed departures leave. In the Low scenario, the peak goes from 28 to 45 su. No scenario exceeds the 75 su ramp at P50, even with the delay (High peaks at 69 su).
 
 ## Aircraft still parked after 2027-02-17 (`parking_carryover.csv`)
 
@@ -57,9 +61,9 @@ One row per variant and scenario: opening aircraft, aircraft remaining after the
 
 | Variant | Remaining aircraft P50 (Low / Medium / High) |
 |---|---|
-| ordinary | 22.7 |
-| standard | 24.4 / 24.6 / 26.7 |
-| departure_delay_24h | 43.9 / 45.6 / 49.0 |
+| ordinary | 13.0 |
+| standard | 13.0 / 12.5 / 12.3 |
+| departure_delay_24h | 24.8 / 24.4 / 24.2 |
 
 ## Stable outputs and export fields (for Nazar)
 

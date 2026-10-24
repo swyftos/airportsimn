@@ -15,38 +15,52 @@
     "medium": 1.0,
     "high": 2.0
   },
-  "direction_assumption": "Same multiplier on arrivals and departures; FAA table has no directional split.",
+  "direction_assumption": "FAA table has no directional split. Aircraft conservation: extra arrivals = extra departures = half the five-day excess operations; arrivals Thu-Sat plus half of game day, departures half of game day plus Monday.",
   "scope_transfer": "Apply air-taxi proxy uplift to GA+air-taxi FBO allocation; unvalidated.",
   "shoulders": "Tuesday and Wednesday set to ordinary baseline; conservative boundary assumption.",
   "reservations": "Zero synthetic placeholders, show rate zero; no observed bookings or claim of zero actual reservations.",
   "daily": [
     {
       "date": "2027-02-11",
-      "medium_multiplier": 1.0848720669125678
+      "medium_operations_multiplier": 1.0848720669125678,
+      "medium_arrivals_multiplier": 1.1551235679078826,
+      "medium_departures_multiplier": 1.0
     },
     {
       "date": "2027-02-12",
-      "medium_multiplier": 1.230809080777854
+      "medium_operations_multiplier": 1.230809080777854,
+      "medium_arrivals_multiplier": 1.4218576195709163,
+      "medium_departures_multiplier": 1.0
     },
     {
       "date": "2027-02-13",
-      "medium_multiplier": 1.0591998863674497
+      "medium_operations_multiplier": 1.0591998863674497,
+      "medium_arrivals_multiplier": 1.1082016489891817,
+      "medium_departures_multiplier": 1.0
     },
     {
       "date": "2027-02-14",
-      "medium_multiplier": 1.0985589974563386
+      "medium_operations_multiplier": 1.0985589974563386,
+      "medium_arrivals_multiplier": 1.090069818557625,
+      "medium_departures_multiplier": 1.108814922942862
     },
     {
       "date": "2027-02-15",
-      "medium_multiplier": 1.3012826175914989
+      "medium_operations_multiplier": 1.3012826175914989,
+      "medium_arrivals_multiplier": 1.0,
+      "medium_departures_multiplier": 1.665267416742262
     },
     {
       "date": "2027-02-16",
-      "medium_multiplier": 1.0
+      "medium_operations_multiplier": 1.0,
+      "medium_arrivals_multiplier": 1.0,
+      "medium_departures_multiplier": 1.0
     },
     {
       "date": "2027-02-17",
-      "medium_multiplier": 1.0
+      "medium_operations_multiplier": 1.0,
+      "medium_arrivals_multiplier": 1.0,
+      "medium_departures_multiplier": 1.0
     }
   ],
   "evaluation": "Allocation diagnostics only; not independent observed daily FBO accuracy.",
