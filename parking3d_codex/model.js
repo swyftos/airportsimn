@@ -68,68 +68,88 @@ function chooseSize(data, rng) {
 function chooseStay(data, rng) {
   const draw = rng();
   const stays = data.aircraft.stays;
-  return draw < stays.same_day ? 0 : draw < stays.same_day + stays.overnight ? 1 : 3;
+  return draw < stays.same_day ? 0 : draw < stays.same_day + stays.overnight ? 1 : Number(Object.keys(stays).find(key => key.startsWith('multi_day_')).split('_').at(-1));
 }
 
-// The event ledger follows the supplied P50 flow counts and assumed hourly shares.
-// Representative carried aircraft then calibrate the picture to the parking model's
-// daily demand. The picture is illustrative; the daily model remains the answer.
+// Calendar and unit conversions are implementation constants; operational values
+// below are taken from the supplied model. Carry-over IDs belong to a week-long
+// registry, never to a date, so surviving airframes do not reshuffle at midnight.
+export const HOURS = 24;
+export const clockLabel = hour => `${String(Math.floor(hour)).padStart(2, '0')}:${String(Math.floor((hour % 1) * 60)).padStart(2, '0')}`;
+export function restrictionAt(data, situation, date) {
+  const window = data.game_day_restriction;
+  if (situation !== 'security_restriction' || date !== data.meta.game_day || date !== window.date) return null;
+  const hour = value => value.split(':').map(Number).reduce((sum, part, i) => sum + part / (i ? 60 : 1), 0);
+  return { ...window, from: hour(window.start), to: hour(window.end) };
+}
+
 export function buildIllustration(data, situation, scenario) {
   const rng = random(hash(`${situation}/${scenario}/${data.meta.planning_window[0]}`));
-  const snapshots = [];
-  const active = [];
-  const opening = Math.round(data.aircraft.opening_aircraft);
-  let serial = 0;
-  for (let i = 0; i < opening; i++) {
-    active.push({ id: `opening-${i}`, ...chooseSize(data, rng), due: chooseStay(data, rng) * 24 });
-  }
   const meanSu = Object.values(data.aircraft.sizes).reduce((sum, size) => sum + size.su * size.share, 0);
-  const sizes = Object.values(data.aircraft.sizes).map(size => size.su).sort((a, b) => a - b);
-  const resolution = Math.min(...sizes.slice(1).map((size, index) => size - sizes[index]));
+  const sizes = Object.entries(data.aircraft.sizes).sort((a, b) => a[1].su - b[1].su);
+  const smallest = sizes[0][1].su;
+  const resolution = Math.min(smallest, ...sizes.slice(1).map((entry, index) => entry[1].su - sizes[index][1].su));
   const tolerance = resolution / 2;
+  let serial = 0;
+  const make = (size, source, born, due) => ({ id: `FBO-${String(++serial).padStart(3, '0')}`, ...size, source, born, due });
+  const active = Array.from({ length: Math.round(data.aircraft.opening_aircraft) }, () =>
+    make(chooseSize(data, rng), 'opening', -1, chooseStay(data, rng) * HOURS));
+  const snapshots = [];
+  const carryPool = [];
+  let previous = [];
   data.days.forEach((info, dayIndex) => {
     const model = data.parking[situation].days[scenario][info.date];
     const kind = info.day_type === 'weekend' ? 'weekend' : 'weekday';
-    const arrivals = distribute(model.arrivals_p50, data.hourly_profile.shares[`${kind}_arrivals`]);
-    const departures = distribute(model.departures_p50, data.hourly_profile.shares[`${kind}_departures`]);
+    const pause = restrictionAt(data, situation, info.date);
+    // Conserve daily totals while moving placeholder events out of the pause.
+    // Whole intersecting hourly bins are held: no invented minute precision.
+    const weights = direction => data.hourly_profile.shares[`${kind}_${direction}`].map((value, hour) =>
+      pause && hour < pause.to && hour + 1 > pause.from ? 0 : value);
+    const arrivals = distribute(model.arrivals_p50, weights('arrivals'));
+    const departures = distribute(model.departures_p50, weights('departures'));
     let net = 0;
     const hourly = [];
-    for (let hour = 0; hour < 24; hour++) {
-      const tick = dayIndex * 24 + hour;
+    for (let hour = 0; hour < HOURS; hour++) {
+      const tick = dayIndex * HOURS + hour;
+      const departing = [];
       for (let i = 0; i < departures[hour] && active.length; i++) {
         active.sort((a, b) => a.due - b.due || a.id.localeCompare(b.id));
-        active.shift();
+        departing.push(active.shift().id);
       }
       for (let i = 0; i < arrivals[hour]; i++) {
-        const stay = chooseStay(data, rng);
-        active.push({ id: `flight-${serial++}`, ...chooseSize(data, rng), due: tick + stay * 24 });
+        active.push(make(chooseSize(data, rng), 'arrival', tick, tick + chooseStay(data, rng) * HOURS));
       }
       net += arrivals[hour] - departures[hour];
-      hourly.push({ active: active.map(a => ({ ...a })), net, arrivals: arrivals[hour], departures: departures[hour] });
+      hourly.push({ active: [...active], net, arrivals: arrivals[hour], departures: departures[hour], departing });
     }
     const maxNet = Math.max(...hourly.map(item => item.net));
     hourly.forEach((item, hour) => {
-      const illustratedDemand = Math.max(0, model.parking_demand_su_p50 - (maxNet - item.net) * meanSu);
+      const tick = dayIndex * HOURS + hour;
+      const target = Math.max(0, model.parking_demand_su_p50 - (maxNet - item.net) * meanSu);
       const fleet = [];
       let used = 0;
-      for (const aircraft of [...item.active].sort((a, b) => a.id.localeCompare(b.id))) {
-        if (used + aircraft.su <= illustratedDemand + tolerance) { fleet.push(aircraft); used += aircraft.su; }
+      const available = new Map([...item.active, ...carryPool].map(plane => [plane.id, plane]));
+      const newArrivals = item.active.filter(plane => plane.born === tick);
+      // Preserve identities, prioritising real illustrated arrivals and ongoing
+      // flow-led airframes before representative carry-over corrections.
+      const candidates = [...newArrivals, ...previous.filter(p => p.source !== 'carry-over'),
+        ...previous.filter(p => p.source === 'carry-over'), ...item.active, ...carryPool];
+      const seen = new Set();
+      for (const plane of candidates) {
+        if (seen.has(plane.id) || !available.has(plane.id)) continue;
+        seen.add(plane.id);
+        if (used + plane.su <= target + tolerance) { fleet.push(plane); used += plane.su; }
       }
-      // Stable representative IDs make hour-to-hour changes legible. They stand for
-      // the model's untracked carry-in/stays, not extra forecast arrivals.
-      const carryRng = random(hash(`${situation}/${scenario}/${info.date}/carry`));
-      let carry = 0;
-      while (used + resolution < illustratedDemand && fleet.length < 80) {
-        const drawnSize = chooseSize(data, carryRng);
-        const size = used + drawnSize.su <= illustratedDemand + tolerance ? drawnSize : { name: 'light', su: data.aircraft.sizes.light.su };
-        if (used + size.su > illustratedDemand + tolerance) break;
-        fleet.push({ id: `carry-${dayIndex}-${carry++}`, ...size, due: tickFor(dayIndex, hour) + chooseStay(data, carryRng) * 24 });
-        used += size.su;
+      while (used + smallest <= target + tolerance) {
+        const draw = chooseSize(data, rng);
+        const fitting = draw.su <= target - used + tolerance ? draw : { name: sizes[0][0], su: smallest };
+        const carry = make(fitting, 'carry-over', -1, Infinity);
+        carryPool.push(carry); fleet.push(carry); used += carry.su;
       }
-      snapshots.push({ dayIndex, hour, arrivals: item.arrivals, departures: item.departures, fleet, used, target: illustratedDemand });
+      snapshots.push({ dayIndex, hour, tick, arrivals: item.arrivals, departures: item.departures,
+        departing: item.departing, fleet, used, target });
+      previous = fleet;
     });
   });
   return snapshots;
 }
-
-function tickFor(dayIndex, hour) { return dayIndex * 24 + hour; }

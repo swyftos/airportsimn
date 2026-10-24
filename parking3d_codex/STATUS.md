@@ -1,13 +1,10 @@
-# Ramp Control status
-- Built a plain HTML/CSS/JS 3D parking simulator with a fixed isometric Three.js ramp, seven-day time lapse, capacity gauge, and manager-decision waiting area.
-- The 2D answer shows daily P10/P50/P90, overflow probability, first and highest-risk days, ordinary-week comparison, and illustrative pressure hours.
-- Scenario, situation, date, plan view, playback, theme, and per-action named decisions with notes are interactive; decisions persist in localStorage.
-- Hourly aircraft are seeded from the supplied opening count, flows, hourly shares, size mix, and stay mix, then aligned to each day's modeled P50; the UI states this formula and its limits.
-- Run from this folder with `python3 -m http.server` and open `index.html`; no build step. Three.js is pinned to 0.160.0 on jsDelivr.
-- Verified JavaScript syntax, source links, contrast, and all 12 scenario/situation model combinations; browser visual QA was unavailable because local HTTP binding and Safari computer use were denied.
-
-## Review (Claude, headless Chromium with WebGL)
-- Loads with no console errors; WebGL context OK; numbers match parking_data.json (17.4 su, 82% / 81%, $3,500, 2.3 to 0.1).
-- Interactions checked: Low / Medium / High, the 24 h delay situation, day click, prepared-capacity toggle, play/pause.
-- No data values are hard-coded; each day's busiest illustrated hour is anchored to the model P50.
-- Fixed: page was 803 px wide on a 390 px phone (the evidence table forced the grid wider); the table now scrolls inside its own box.
+# Ramp Control — review fixes
+- Full-width 3D hero, responsive HTML outlook/clock/capacity/waiting HUD, fullscreen, camera flights, follow selection and optional idle orbit; every previous 2D planning section remains.
+- Richer primitive world: terminal/hangar glazing, runway exit/taxiway lights, floodlights, clock-driven sky/fog, larger source-scaled jets, beacons and attached tugs.
+- Selectable world skyline shows daily P10–P90/P50, ordinary-week ghosts, probabilities and labeled ramp/prepared planes; selects the busiest illustrated hour.
+- Shared-budget flex positions and minimum-move repacking eliminate false waiting; current geometry is shared by 3D/map/inspector and every reposition has a tow event.
+- Modelled: demand/ranges, probabilities, capacities, flows, plan dates/costs/approvers and outcomes come from unchanged parking_data.json; daily P50 anchoring error is at most 0.70 su.
+- Illustrated: positions, routes, clock shape, carry-over stays and world geometry. Flex envelopes share capacity, and are not a real stand plan or an executed aircraft decision.
+- Date-valid named approvals alone activate packed/remote space and lights; the lease opens the barrier. Full-proposal comparison does not grant approval.
+- Verification: verify.mjs passes all 12 combinations and 12,096 approval/hour frames, zero under-capacity waiting, at most 0.50 su waiting discrepancy; JS syntax and HTML structure checks pass.
+- Browser QA remains unverified: sandbox denies HTTP binding and Chromium Mach-port startup, with no connected browser. Visual/mobile/WebGL rendering and measured frame rate need browser review.

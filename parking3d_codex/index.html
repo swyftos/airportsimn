@@ -4,18 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b1118">
-  <title>Ramp Control — parking risk, 11–17 February 2027</title>
+  <title>Ramp Control — parking risk</title>
   <link rel="stylesheet" href="./styles.css">
   <script type="importmap">
-    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
   </script>
   <script type="module" src="./app.js"></script>
 </head>
 <body>
   <div class="app-shell">
     <header class="masthead">
-      <div class="brand"><span class="brand-mark" aria-hidden="true">✳</span><div><span class="eyebrow">Fictional FBO at LAX / Parking operations</span><h1>RAMP CONTROL<span class="accent-dot">.</span></h1></div></div>
-      <div class="mast-meta"><span>SUPER BOWL LXI WEEK</span><strong>11 — 17 FEB 2027</strong><span>LOCAL TIME · LOS ANGELES</span><button id="theme-toggle" type="button" aria-label="Switch to light theme">◐ <span>THEME</span></button></div>
+      <div class="brand"><span class="brand-mark" aria-hidden="true">✳</span><div><span class="eyebrow" id="fbo-name"></span><h1>RAMP CONTROL<span class="accent-dot">.</span></h1></div></div>
+      <div class="mast-meta"><span>PLANNING WEEK</span><strong id="planning-window"></strong><span id="timezone-label"></span><button id="theme-toggle" type="button" aria-label="Switch to light theme">◐ <span>THEME</span></button></div>
     </header>
 
     <div class="control-bar" aria-label="Forecast controls">
@@ -23,19 +23,37 @@
         <fieldset class="scenario-control"><legend>Forecast range</legend><div class="segmented" id="scenario-options"></div></fieldset>
         <label class="select-control">Situation<select id="situation"></select></label>
         <label class="select-control date-control">Date<select id="date-select"></select></label>
-        <div class="control-hint"><span class="status-dot"></span><span id="view-context">Medium is the forecast</span></div>
+        <div class="control-hint"><span class="status-dot"></span><span id="view-context"></span></div>
       </div>
     </div>
 
     <main id="main">
+        <section class="scene-panel" aria-labelledby="scene-title">
+          <div class="scene-stage" id="scene-stage">
+            <div id="scene"></div>
+            <div id="scene-fallback" class="scene-fallback" hidden>The 3D view is unavailable. Use the synchronized stand map, occupancy timeline and daily forecast below.</div>
+            <div class="scene-heading"><div><p class="section-kicker">PARKING WORLD / ILLUSTRATION</p><h2 id="scene-title">A week on the ramp</h2></div><div class="scene-actions"><button id="auto-orbit" type="button" aria-pressed="false">Auto orbit</button><button id="fullscreen" type="button" aria-pressed="false">Fullscreen</button></div></div>
+            <div class="camera-controls" role="group" aria-label="Camera presets"><button data-camera="overview" aria-pressed="false">Overview</button><button data-camera="ramp" aria-pressed="true">Main ramp</button><button data-camera="remote" aria-pressed="false">Overflow apron</button><button data-camera="waiting" aria-pressed="false">Decision area</button><button data-camera="skyline" aria-pressed="false">Week skyline</button><button data-camera="isometric" aria-pressed="false">Isometric</button><button data-camera="follow" aria-pressed="false" disabled>Follow aircraft</button></div>
+            <div class="scene-corner">ILLUSTRATIVE · DRAG TO ORBIT · PINCH TO ZOOM</div>
+            <div class="scene-hud">
+              <details id="hud-outlook" open><summary><span>SELECTED-DAY OUTLOOK</span><strong id="hud-short"></strong></summary><p id="hud-answer"></p><p id="hud-range"></p></details>
+              <div class="telemetry"><div><span class="telemetry-label">ILLUSTRATED HOUR</span><strong id="clock-face">—</strong><small id="movement">—</small></div><div class="gauge-block"><div class="gauge-caption"><span>USED / APPROVED SPACE</span><strong id="gauge-value">—</strong></div><div class="gauge"><span id="gauge-fill"></span></div><small id="gauge-detail">—</small></div><div class="waiting-readout"><span class="telemetry-label">AWAITING MANAGER</span><strong id="waiting-count">—</strong><small id="waiting-space"></small></div></div>
+            </div>
+            <div class="timeline"><button class="play-button" id="play" type="button" aria-label="Play time lapse" aria-pressed="false">▶</button><label class="scrub-wrap"><span class="sr-only">Day and hour</span><input id="scrub" type="range" step="1"></label><label class="speed-control">Speed<select id="speed"><option value="slow">Slow</option><option value="normal" selected>Normal</option><option value="fast">Fast</option></select></label></div>
+            <p id="scene-control-status" class="sr-only" aria-live="polite"></p>
+          </div>
+          <div class="area-capacities"><span>Main ramp <b id="ramp-label"></b></span><span>Overflow lease <b id="remote-label"></b></span><a href="#question-heading">Read daily forecast ↓</a></div>
+          <div class="timeline-ends"><span id="timeline-start"></span><span id="timeline-end"></span></div><p id="restriction-note" class="restriction-note" hidden></p>
+          <details class="scene-method"><summary>How this illustration relates to the model</summary><p class="scene-note">Seeded aircraft start from the supplied opening count. Illustrated hour demand = daily P50 − (day's peak cumulative net arrivals minus this hour's cumulative net arrivals) × mean aircraft space units from the supplied mix. Representative carry-in aircraft align the picture to that demand. Hourly placement is <strong>not a forecast</strong>; the probability beside it applies to the whole day. Waiting aircraft need a manager decision. The scene uses only recorded approvals on their applicable dates; the daily forecast can separately compare the full proposal. Arrival maneuvers reserve a stand; departing aircraft release their stand at the hour boundary. Carry-over adjustments stay at their illustrated positions and do not count as extra flights.</p></details>
+        </section>
       <section class="intro" aria-labelledby="question-heading">
-        <div><p class="section-kicker">01 / THE DECISION</p><h2 id="question-heading">When does the ramp run out of space?</h2><p class="intro-copy" id="summary-copy">Loading parking model…</p></div>
-        <div class="method-stamp"><span>MODEL OUTPUT</span><strong>10,000</strong><span>simulated weeks per scenario</span></div>
+        <div><p class="section-kicker">THE DECISION</p><h2 id="question-heading">When does the ramp run out of space?</h2><p class="intro-copy" id="summary-copy">Loading parking model…</p></div>
+        <div class="method-stamp"><span>MODEL OUTPUT</span><strong>P50</strong><span>with P10–P90 range</span></div>
       </section>
 
       <section class="workbench" aria-label="Parking forecast and ramp illustration">
         <div class="answer-panel">
-          <div class="panel-heading"><div><p class="section-kicker">PARKING ANSWER / 2D</p><h3>Seven-day exposure</h3></div><span class="tag estimated">ESTIMATED CAPACITY</span></div>
+          <div class="panel-heading"><div><p class="section-kicker">PARKING ANSWER / 2D</p><h3>Daily exposure</h3></div><span class="tag estimated">ESTIMATED CAPACITY</span></div>
           <div class="metrics" id="metrics" aria-live="polite"></div>
           <p class="panel-explain" id="panel-explain"></p>
           <div class="strip-heading"><span>DAILY DEMAND / SPACE UNITS</span><span id="strip-capacity"></span></div>
@@ -46,19 +64,25 @@
           <div class="chart-key"><span><i class="key-range"></i>P10–P90 range</span><span><i class="key-median"></i>P50 demand</span><span><i class="key-ordinary"></i>Ordinary week P50</span><span><i class="key-capacity"></i>Ramp capacity</span><span><i class="key-prepared"></i>Prepared capacity</span></div>
         </div>
 
-        <section class="scene-panel" aria-labelledby="scene-title">
-          <div class="scene-heading"><div><p class="section-kicker">LIVE ILLUSTRATION / 3D</p><h3 id="scene-title">The ramp at a glance</h3></div><span class="live-chip"><span></span>SIMULATED</span></div>
-          <div class="scene-stage"><div id="scene" aria-hidden="true"></div><div id="scene-fallback" class="scene-fallback" hidden>3D view unavailable. The parking forecast and seven-day table remain below.</div><div class="scene-label label-ramp">01 <b>MAIN RAMP</b><small id="ramp-label">15 su</small></div><div class="scene-label label-remote">02 <b>REMOTE APRON</b><small id="remote-label">Plan required</small></div><div class="scene-label label-wait">03 <b>MANAGER DECISION</b><small>Aircraft wait here</small></div><div class="scene-corner">FIXED ISOMETRIC / ILLUSTRATIVE</div></div>
-          <div class="telemetry"><div><span class="telemetry-label">ILLUSTRATED HOUR</span><strong id="clock-face">—</strong><small id="movement">—</small></div><div class="gauge-block"><div class="gauge-caption"><span>SPACE USED</span><strong id="gauge-value">—</strong></div><div class="gauge"><span id="gauge-fill"></span><i></i></div><small id="gauge-detail">—</small></div></div>
-          <div class="timeline"><button class="play-button" id="play" type="button" aria-label="Play time lapse">▶</button><label class="scrub-wrap"><span class="sr-only">Day and hour</span><input id="scrub" type="range" min="0" max="167" step="1" value="0"></label><label class="speed-control">Speed<select id="speed"><option value="slow">Slow</option><option value="normal" selected>Normal</option><option value="fast">Fast</option></select></label></div>
-          <div class="timeline-ends"><span>THU 11 · 00:00</span><span>WED 17 · 23:00</span></div>
-          <p class="scene-note">Seeded aircraft start from the supplied opening count. Illustrated hour demand = daily P50 − (day's peak cumulative net arrivals minus this hour's cumulative net arrivals) × mean aircraft space units from the supplied mix. Representative carry-in aircraft align the picture to that demand. Hourly placement is <strong>not a forecast</strong>; the probability beside it applies to the whole day. Red aircraft wait for a manager decision and are never automatically refused.</p>
-        </section>
+
       </section>
 
-      <section class="plan-section" aria-labelledby="plan-heading"><div class="section-top"><div><p class="section-kicker">02 / MANAGER'S OPTION</p><h2 id="plan-heading">Prepare additional space</h2></div><label class="switch-row"><span>Plan approved <small>Show prepared capacity</small></span><input id="prepared" type="checkbox" role="switch"><i aria-hidden="true"></i></label></div><p class="section-lead">Switch the planning view to the supplied tow-packing and remote-apron proposal. Each action still needs a named decision below.</p><div class="plan-grid"><div class="plan-impact" id="plan-impact"></div><div class="actions" id="actions"></div></div></section>
+      <section class="mechanism-section" aria-labelledby="mechanism-heading">
+        <div class="section-top"><div><p class="section-kicker">HOW IT WORKS / SYNCHRONIZED ILLUSTRATION</p><h2 id="mechanism-heading">Follow the aircraft, see the space</h2></div><span class="tag assumed">ILLUSTRATIVE POSITIONS</span></div>
+        <p class="section-lead">Arrival is a current-hour flow; the other counts are aircraft assigned to illustrated positions, including arrival maneuvers. Every arrow is a proposed route, subject to a manager’s decision.</p>
+        <ol id="mechanism-flow" class="mechanism-flow" aria-label="Parking mechanism with current-hour counts"></ol>
+        <div class="map-inspector-grid">
+          <section class="stand-map-panel" aria-labelledby="map-heading"><div class="map-heading"><h3 id="map-heading">Stand map</h3><label>Area<select id="map-area"></select></label></div><p class="small-note">Same geometry and clock as the scene. Free means unoccupied. Flexible positions share each area’s approved space budget; they are not additional capacity. Hover, tap or use the keyboard to inspect.</p><svg id="stand-map" role="group" aria-label="Interactive top-down stand map"></svg><div class="stand-legend"><span class="free">Free</span><span class="occupied">Occupied</span><span class="packed">Packed</span><span class="overflow">Overflow</span><span class="waiting">Waiting</span></div></section>
+          <aside class="inspector" aria-label="Aircraft and stand inspector"><p class="section-kicker">INSPECTOR</p><div id="inspector-content" aria-live="polite"></div><button id="clear-selection" type="button" hidden>Clear selection</button></aside>
+        </div>
+        <p id="illustration-check" class="small-note"></p>
+        <section class="stand-timeline-panel" aria-labelledby="stand-timeline-heading"><div class="map-heading"><div><h3 id="stand-timeline-heading">Stand occupancy</h3><p id="timeline-day" class="small-note"></p></div><label>Area<select id="timeline-area"></select></label></div><p class="small-note">Each bar is an aircraft’s stay in that stand during the selected day. Carry-over bars include P50 alignment; the playhead follows the clock. Select a bar to move the clock to its start and inspect the airframe.</p><div id="stand-timeline" class="stand-timeline"></div></section>
+        <details class="stand-register"><summary>Accessible stand register for the current hour</summary><div class="table-wrap"><table><caption>Illustrative positions, aircraft and states synchronized to the clock.</caption><thead><tr><th>Stand</th><th>Area</th><th>Size / allowance</th><th>Aircraft</th><th>State</th></tr></thead><tbody id="stand-register"></tbody></table></div></details>
+      </section>
 
-      <section class="evidence-section" aria-labelledby="evidence-heading"><div class="section-top"><div><p class="section-kicker">03 / EVIDENCE & LIMITS</p><h2 id="evidence-heading">Read the range, not a single line</h2></div></div><div class="evidence-grid"><div><h3>All seven days</h3><div class="table-wrap"><table><caption>Daily parking forecast and ordinary-week comparison. Demand and capacity are space units. Hours are illustrative, not forecast probabilities.</caption><thead><tr><th scope="col">Date</th><th scope="col">P10</th><th scope="col">P50</th><th scope="col">P90</th><th scope="col">Capacity</th><th scope="col">Over cap.</th><th scope="col">Ordinary P50</th><th scope="col">Arr / Dep</th><th scope="col">Illustrated hours over</th></tr></thead><tbody id="forecast-table"></tbody></table></div></div><aside class="assumptions"><h3>What the display knows</h3><p><span class="tag estimated">ESTIMATED</span> <span id="capacity-derivation"></span></p><p><span class="tag assumed">ASSUMED</span> Aircraft mix and stay lengths shape the illustration. The hour-of-day shares are a placeholder curve, not observed data.</p><p><span class="tag model">MODELED</span> P10–P90 is the daily demand range; the overflow percentage is the share of simulated weeks over capacity that day.</p><div class="human-note"><span>HUMAN IN COMMAND</span><p id="human-rule"></p></div></aside></div></section>
+      <section class="plan-section" aria-labelledby="plan-heading"><div class="section-top"><div><p class="section-kicker">MANAGER'S OPTION</p><h2 id="plan-heading">Prepare additional space</h2></div><label class="switch-row"><span>Compare full proposal <small>Daily model: prepared capacity</small></span><input id="prepared" type="checkbox" role="switch"><i aria-hidden="true"></i></label></div><p class="section-lead">Compare the daily model with the full proposal. In the illustration, packing and the overflow lease activate only after their individual named approvals, on the action’s dates. Decisions are stored on this device; they do not dispatch aircraft.</p><div class="plan-grid"><div class="plan-impact" id="plan-impact"></div><div class="actions" id="actions"></div></div></section>
+
+      <section class="evidence-section" aria-labelledby="evidence-heading"><div class="section-top"><div><p class="section-kicker">EVIDENCE & LIMITS</p><h2 id="evidence-heading">Read the range, not a single line</h2></div></div><div class="evidence-grid"><div><h3>Daily evidence</h3><div class="table-wrap"><table><caption>Daily parking forecast and ordinary-week comparison. Demand and capacity are space units. Hours are illustrative, not forecast probabilities.</caption><thead><tr><th scope="col">Date</th><th scope="col">P10</th><th scope="col">P50</th><th scope="col">P90</th><th scope="col">Capacity</th><th scope="col">Over cap.</th><th scope="col">Ordinary P50</th><th scope="col">Arr / Dep P50</th><th scope="col">Illustrated hours over</th></tr></thead><tbody id="forecast-table"></tbody></table></div></div><aside class="assumptions"><h3>What the display knows</h3><p><span class="tag estimated">ESTIMATED</span> <span id="capacity-derivation"></span></p><p><span class="tag assumed">ASSUMED</span> <span id="aircraft-assumptions"></span></p><p><span class="tag assumed">PLACEHOLDER</span> <span id="hourly-assumption"></span></p><p><span class="tag model">MODELED</span> <span id="model-description"></span></p><div class="human-note"><span>HUMAN IN COMMAND</span><p id="human-rule"></p></div></aside></div></section>
     </main>
     <footer><span>RAMP CONTROL / PARKING ONLY</span><span id="footer-source">Source: supplied parking model</span></footer>
   </div>
