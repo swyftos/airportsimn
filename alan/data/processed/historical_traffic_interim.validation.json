@@ -1,0 +1,627 @@
+{
+  "rule": "uniform_calendar_days_v1",
+  "input_file": "lax_monthly_movements.csv",
+  "input_sha256": "90365f62d769babbffde5902c6a7d8c8a36218e2ed43449e9c7c491e9e82a9cc",
+  "window_start": "2016-01-01",
+  "window_end": "2025-12-31",
+  "selected_months": 120,
+  "out_of_window_rows_ignored": 20,
+  "daily_rows": 3653,
+  "excluded_covid_rows": 1096,
+  "february_2022_rows_retained": 28,
+  "data_class": "estimated",
+  "arrivals_share": "0.5",
+  "departures_share": "0.5",
+  "decimal_places": 12,
+  "monthly_reconciliation_tolerance": "1E-9",
+  "max_absolute_monthly_reconciliation_error": "3.0E-11",
+  "monthly_controls": [
+    {
+      "month": "2016-01",
+      "days": 31,
+      "source_movements": "5152"
+    },
+    {
+      "month": "2016-02",
+      "days": 29,
+      "source_movements": "5286"
+    },
+    {
+      "month": "2016-03",
+      "days": 31,
+      "source_movements": "5022"
+    },
+    {
+      "month": "2016-04",
+      "days": 30,
+      "source_movements": "4766"
+    },
+    {
+      "month": "2016-05",
+      "days": 31,
+      "source_movements": "5074"
+    },
+    {
+      "month": "2016-06",
+      "days": 30,
+      "source_movements": "5447"
+    },
+    {
+      "month": "2016-07",
+      "days": 31,
+      "source_movements": "7602"
+    },
+    {
+      "month": "2016-08",
+      "days": 31,
+      "source_movements": "13029"
+    },
+    {
+      "month": "2016-09",
+      "days": 30,
+      "source_movements": "5041"
+    },
+    {
+      "month": "2016-10",
+      "days": 31,
+      "source_movements": "5769"
+    },
+    {
+      "month": "2016-11",
+      "days": 30,
+      "source_movements": "5795"
+    },
+    {
+      "month": "2016-12",
+      "days": 31,
+      "source_movements": "5015"
+    },
+    {
+      "month": "2017-01",
+      "days": 31,
+      "source_movements": "5615"
+    },
+    {
+      "month": "2017-02",
+      "days": 28,
+      "source_movements": "4956"
+    },
+    {
+      "month": "2017-03",
+      "days": 31,
+      "source_movements": "5580"
+    },
+    {
+      "month": "2017-04",
+      "days": 30,
+      "source_movements": "5145"
+    },
+    {
+      "month": "2017-05",
+      "days": 31,
+      "source_movements": "4165"
+    },
+    {
+      "month": "2017-06",
+      "days": 30,
+      "source_movements": "4046"
+    },
+    {
+      "month": "2017-07",
+      "days": 31,
+      "source_movements": "3954"
+    },
+    {
+      "month": "2017-08",
+      "days": 31,
+      "source_movements": "4131"
+    },
+    {
+      "month": "2017-09",
+      "days": 30,
+      "source_movements": "3998"
+    },
+    {
+      "month": "2017-10",
+      "days": 31,
+      "source_movements": "4498"
+    },
+    {
+      "month": "2017-11",
+      "days": 30,
+      "source_movements": "4212"
+    },
+    {
+      "month": "2017-12",
+      "days": 31,
+      "source_movements": "4128"
+    },
+    {
+      "month": "2018-01",
+      "days": 31,
+      "source_movements": "4875"
+    },
+    {
+      "month": "2018-02",
+      "days": 28,
+      "source_movements": "4592"
+    },
+    {
+      "month": "2018-03",
+      "days": 31,
+      "source_movements": "4733"
+    },
+    {
+      "month": "2018-04",
+      "days": 30,
+      "source_movements": "4831"
+    },
+    {
+      "month": "2018-05",
+      "days": 31,
+      "source_movements": "4978"
+    },
+    {
+      "month": "2018-06",
+      "days": 30,
+      "source_movements": "4924"
+    },
+    {
+      "month": "2018-07",
+      "days": 31,
+      "source_movements": "4882"
+    },
+    {
+      "month": "2018-08",
+      "days": 31,
+      "source_movements": "5087"
+    },
+    {
+      "month": "2018-09",
+      "days": 30,
+      "source_movements": "4210"
+    },
+    {
+      "month": "2018-10",
+      "days": 31,
+      "source_movements": "4550"
+    },
+    {
+      "month": "2018-11",
+      "days": 30,
+      "source_movements": "5094"
+    },
+    {
+      "month": "2018-12",
+      "days": 31,
+      "source_movements": "4941"
+    },
+    {
+      "month": "2019-01",
+      "days": 31,
+      "source_movements": "5577"
+    },
+    {
+      "month": "2019-02",
+      "days": 28,
+      "source_movements": "4966"
+    },
+    {
+      "month": "2019-03",
+      "days": 31,
+      "source_movements": "4817"
+    },
+    {
+      "month": "2019-04",
+      "days": 30,
+      "source_movements": "4305"
+    },
+    {
+      "month": "2019-05",
+      "days": 31,
+      "source_movements": "4129"
+    },
+    {
+      "month": "2019-06",
+      "days": 30,
+      "source_movements": "4664"
+    },
+    {
+      "month": "2019-07",
+      "days": 31,
+      "source_movements": "4525"
+    },
+    {
+      "month": "2019-08",
+      "days": 31,
+      "source_movements": "4718"
+    },
+    {
+      "month": "2019-09",
+      "days": 30,
+      "source_movements": "4442"
+    },
+    {
+      "month": "2019-10",
+      "days": 31,
+      "source_movements": "4972"
+    },
+    {
+      "month": "2019-11",
+      "days": 30,
+      "source_movements": "4613"
+    },
+    {
+      "month": "2019-12",
+      "days": 31,
+      "source_movements": "4630"
+    },
+    {
+      "month": "2020-01",
+      "days": 31,
+      "source_movements": "4856"
+    },
+    {
+      "month": "2020-02",
+      "days": 29,
+      "source_movements": "4623"
+    },
+    {
+      "month": "2020-03",
+      "days": 31,
+      "source_movements": "3811"
+    },
+    {
+      "month": "2020-04",
+      "days": 30,
+      "source_movements": "1064"
+    },
+    {
+      "month": "2020-05",
+      "days": 31,
+      "source_movements": "1543"
+    },
+    {
+      "month": "2020-06",
+      "days": 30,
+      "source_movements": "1957"
+    },
+    {
+      "month": "2020-07",
+      "days": 31,
+      "source_movements": "2471"
+    },
+    {
+      "month": "2020-08",
+      "days": 31,
+      "source_movements": "2646"
+    },
+    {
+      "month": "2020-09",
+      "days": 30,
+      "source_movements": "2449"
+    },
+    {
+      "month": "2020-10",
+      "days": 31,
+      "source_movements": "2638"
+    },
+    {
+      "month": "2020-11",
+      "days": 30,
+      "source_movements": "2531"
+    },
+    {
+      "month": "2020-12",
+      "days": 31,
+      "source_movements": "2406"
+    },
+    {
+      "month": "2021-01",
+      "days": 31,
+      "source_movements": "2511"
+    },
+    {
+      "month": "2021-02",
+      "days": 28,
+      "source_movements": "2331"
+    },
+    {
+      "month": "2021-03",
+      "days": 31,
+      "source_movements": "2794"
+    },
+    {
+      "month": "2021-04",
+      "days": 30,
+      "source_movements": "2955"
+    },
+    {
+      "month": "2021-05",
+      "days": 31,
+      "source_movements": "3636"
+    },
+    {
+      "month": "2021-06",
+      "days": 30,
+      "source_movements": "3668"
+    },
+    {
+      "month": "2021-07",
+      "days": 31,
+      "source_movements": "3893"
+    },
+    {
+      "month": "2021-08",
+      "days": 31,
+      "source_movements": "4020"
+    },
+    {
+      "month": "2021-09",
+      "days": 30,
+      "source_movements": "3790"
+    },
+    {
+      "month": "2021-10",
+      "days": 31,
+      "source_movements": "4092"
+    },
+    {
+      "month": "2021-11",
+      "days": 30,
+      "source_movements": "4226"
+    },
+    {
+      "month": "2021-12",
+      "days": 31,
+      "source_movements": "3655"
+    },
+    {
+      "month": "2022-01",
+      "days": 31,
+      "source_movements": "3911"
+    },
+    {
+      "month": "2022-02",
+      "days": 28,
+      "source_movements": "3765"
+    },
+    {
+      "month": "2022-03",
+      "days": 31,
+      "source_movements": "3892"
+    },
+    {
+      "month": "2022-04",
+      "days": 30,
+      "source_movements": "3701"
+    },
+    {
+      "month": "2022-05",
+      "days": 31,
+      "source_movements": "3920"
+    },
+    {
+      "month": "2022-06",
+      "days": 30,
+      "source_movements": "3300"
+    },
+    {
+      "month": "2022-07",
+      "days": 31,
+      "source_movements": "3335"
+    },
+    {
+      "month": "2022-08",
+      "days": 31,
+      "source_movements": "3631"
+    },
+    {
+      "month": "2022-09",
+      "days": 30,
+      "source_movements": "3420"
+    },
+    {
+      "month": "2022-10",
+      "days": 31,
+      "source_movements": "3465"
+    },
+    {
+      "month": "2022-11",
+      "days": 30,
+      "source_movements": "3372"
+    },
+    {
+      "month": "2022-12",
+      "days": 31,
+      "source_movements": "3245"
+    },
+    {
+      "month": "2023-01",
+      "days": 31,
+      "source_movements": "3502"
+    },
+    {
+      "month": "2023-02",
+      "days": 28,
+      "source_movements": "2843"
+    },
+    {
+      "month": "2023-03",
+      "days": 31,
+      "source_movements": "3246"
+    },
+    {
+      "month": "2023-04",
+      "days": 30,
+      "source_movements": "3411"
+    },
+    {
+      "month": "2023-05",
+      "days": 31,
+      "source_movements": "3248"
+    },
+    {
+      "month": "2023-06",
+      "days": 30,
+      "source_movements": "2588"
+    },
+    {
+      "month": "2023-07",
+      "days": 31,
+      "source_movements": "2253"
+    },
+    {
+      "month": "2023-08",
+      "days": 31,
+      "source_movements": "2422"
+    },
+    {
+      "month": "2023-09",
+      "days": 30,
+      "source_movements": "2478"
+    },
+    {
+      "month": "2023-10",
+      "days": 31,
+      "source_movements": "2845"
+    },
+    {
+      "month": "2023-11",
+      "days": 30,
+      "source_movements": "2865"
+    },
+    {
+      "month": "2023-12",
+      "days": 31,
+      "source_movements": "2514"
+    },
+    {
+      "month": "2024-01",
+      "days": 31,
+      "source_movements": "2908"
+    },
+    {
+      "month": "2024-02",
+      "days": 29,
+      "source_movements": "2704"
+    },
+    {
+      "month": "2024-03",
+      "days": 31,
+      "source_movements": "2903"
+    },
+    {
+      "month": "2024-04",
+      "days": 30,
+      "source_movements": "2898"
+    },
+    {
+      "month": "2024-05",
+      "days": 31,
+      "source_movements": "2941"
+    },
+    {
+      "month": "2024-06",
+      "days": 30,
+      "source_movements": "2549"
+    },
+    {
+      "month": "2024-07",
+      "days": 31,
+      "source_movements": "2511"
+    },
+    {
+      "month": "2024-08",
+      "days": 31,
+      "source_movements": "2640"
+    },
+    {
+      "month": "2024-09",
+      "days": 30,
+      "source_movements": "2829"
+    },
+    {
+      "month": "2024-10",
+      "days": 31,
+      "source_movements": "3049"
+    },
+    {
+      "month": "2024-11",
+      "days": 30,
+      "source_movements": "2929"
+    },
+    {
+      "month": "2024-12",
+      "days": 31,
+      "source_movements": "2763"
+    },
+    {
+      "month": "2025-01",
+      "days": 31,
+      "source_movements": "3177"
+    },
+    {
+      "month": "2025-02",
+      "days": 28,
+      "source_movements": "2776"
+    },
+    {
+      "month": "2025-03",
+      "days": 31,
+      "source_movements": "3077"
+    },
+    {
+      "month": "2025-04",
+      "days": 30,
+      "source_movements": "2953"
+    },
+    {
+      "month": "2025-05",
+      "days": 31,
+      "source_movements": "3142"
+    },
+    {
+      "month": "2025-06",
+      "days": 30,
+      "source_movements": "2642"
+    },
+    {
+      "month": "2025-07",
+      "days": 31,
+      "source_movements": "2530"
+    },
+    {
+      "month": "2025-08",
+      "days": 31,
+      "source_movements": "2608"
+    },
+    {
+      "month": "2025-09",
+      "days": 30,
+      "source_movements": "2551"
+    },
+    {
+      "month": "2025-10",
+      "days": 31,
+      "source_movements": "3226"
+    },
+    {
+      "month": "2025-11",
+      "days": 30,
+      "source_movements": "2574"
+    },
+    {
+      "month": "2025-12",
+      "days": 31,
+      "source_movements": "3019"
+    }
+  ],
+  "limitations": [
+    "Airport-wide GA/air-taxi flows; FBO share and aircraft categories have not been applied.",
+    "Uniform daily allocation cannot establish weekday patterns or a Super Bowl week surge.",
+    "Equal arrivals/departures are assumed; these rows cannot establish parking occupancy.",
+    "Upstream 2018 monthly/annual mismatch, 2016 outlier and annual-residual provenance remain unchanged. See the handoff documentation."
+  ],
+  "output_sha256": "09b1b4ebe7f75b236aef44bbca281675546ab086de2b8dcfc72b3681eebf76e8"
+}
