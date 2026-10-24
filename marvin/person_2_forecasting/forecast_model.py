@@ -251,11 +251,11 @@ def main():
             totals.append(r)
     write_csv(args.output_dir/'daily_totals.csv',totals)
     metadata = dict(model='month_weekday_shrinkage_mean',prior_days=14,excluded_years=sorted(EXCLUDED),
-        seed=42 if args.demo else None,history_file=str(args.history),planning_file=str(args.planning),
+        seed=42 if args.demo else None,history_file=Path(args.history).as_posix(),planning_file=Path(args.planning).as_posix(),
         historical_data_classes=sorted({r['data_class'] for r in history}),nominal_baseline_coverage=args.coverage,
         uncertainty='Baseline split-conformal intervals scaled by assumed multipliers; event coverage not validated',
         caution='Training/calibration/test use only 2023-2025 observed daily FAA GA + air-taxi counts scaled by an assumed FBO share; metrics come from the train-only model, the forecast refits on all 2023-2025 days with a range from held-out errors. Holiday factors from '+(args.holiday_history.name if args.holiday_history else 'the history')+'. MAE and coverage measure how well the daily airport pattern is predicted, not observed FBO accuracy. Event scenarios: Low from LAX GA, Medium from LAX air taxi as the event-response analog; FBO transfer and direction split are unvalidated. No booking data supplied; reservation floors disabled.')
-    (args.output_dir/'run_metadata.json').write_text(json.dumps(metadata,indent=2),encoding='utf-8')
+    (args.output_dir/'run_metadata.json').write_text(json.dumps(metadata,indent=2),encoding='utf-8',newline='\n')
     print(f'Wrote {len(forecasts)} scenario/category forecasts to {args.output_dir}')
 
 if __name__ == '__main__':

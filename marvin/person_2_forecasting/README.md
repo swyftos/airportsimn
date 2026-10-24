@@ -1,6 +1,14 @@
 # Person 2 — AI Demand Forecasting
 
-This is a runnable forecasting module for Marvin's part of the hackathon. The three required deliverables are forecast_model.py, demand_predictions.csv, and uncertainty_results.csv. The included CSV results are entirely synthetic demonstrations, not predictions supported by real LAX observations. No historical data was supplied with the assignment.
+This is Marvin's runnable forecasting module. The current committed release uses observed daily FAA LAX general-aviation and air-taxi operations from 2023–2025, converted to an **estimated fictional-FBO history** using an assumed 10% share, 50/50 direction split, and 47/33/20 aircraft mix. It is not a forecast validated against FBO bookings. The key outputs are `demand_predictions.csv` and `uncertainty_results.csv`; see [PROVISIONAL_ASSUMPTIONS.md](PROVISIONAL_ASSUMPTIONS.md) for the current inputs and evidence. The `--demo` option below remains a separate synthetic example.
+
+## Review without FBO records
+
+Run `python marvin/person_2_forecasting/sensitivity_review.py` from the repository root. It regenerates [SENSITIVITY_REVIEW.md](SENSITIVITY_REVIEW.md), `sensitivity_forecast_totals.csv`, `analog_scenario_check.csv`, and `event_stress_cases.csv` from the committed release outputs. It compares 5%, 10%, and 15% assumed FBO shares, checks the current Low–High event band against public airport analogs, adds a larger event stress case, and summarizes the rolling backtest. It does not change the shared forecast or parking outputs. The share scaling only applies while the planning inputs have zero reservation floors.
+
+Run `python marvin/person_2_forecasting/frozen_2026_holdout.py` to regenerate [FROZEN_2026_HOLDOUT.md](FROZEN_2026_HOLDOUT.md) and its daily/monthly scores. The model remains frozen at the end of 2025; 273 finalized January–September 2026 FAA LAX days test the airport-level daily pattern. The public extract can be regenerated with `python marvin/person_2_forecasting/calibration_evidence/fetch_2026_holdout.py`. It reconciles every month to a separate FAA monthly query and leaves release inputs unchanged.
+
+Run `python marvin/person_2_forecasting/operational_stress.py` to regenerate [OPERATIONAL_STRESS.md](OPERATIONAL_STRESS.md) and its CSV. It compares ordinary arrival shares of 40%, 50%, and 60%, and a case with event arrivals one day earlier and departures one day later. These cases pass modified planning ranges to Elia's existing parking model without replacing the current release. They are assumption tests, not FBO measurements or calibrated probabilities.
 
 ## Run
 
@@ -47,9 +55,9 @@ historical_traffic.csv: one row per calendar date and aircraft category, includi
 | data_class | observed, estimated, or synthetic |
 | source | Source reference or documented derivation |
 
-Years 2020, 2021, and 2022 are excluded, following Person 1's specific instructions. The brief also mentions 2019–2025; this module follows the more specific 2016–2025 range with exclusions. February 2022 event observations should be analyzed separately to inform event assumptions, not silently reintroduced into ordinary baseline training.
+The current forecast trains on 2023–2025 daily counts. The 2016–2019 airport history helps estimate the scale-free Presidents' Day factor; 2020–2022 are excluded from ordinary training. February 2022 event observations inform event scenarios separately and are not silently reintroduced into the ordinary baseline.
 
-Airport-wide movements are not FBO demand, and total movements cannot identify arrivals and departures without another assumption. Person 1 must convert airport data to daily FBO estimates with explicit traffic-share, direction, and temporal-disaggregation assumptions. Such rows must be labeled estimated, even if the upstream airport counts are observed. Monthly totals must not be passed as daily observations. Missing rows are not zeroes: complete the dataset deliberately before running. The model accepts irregular dates, but missingness can bias the averages and must be reviewed.
+Airport-wide movements are not FBO demand, and total movements cannot identify arrivals and departures without another assumption. The current conversion uses **observed daily** airport counts and labels the share-allocated rows `estimated`; no monthly-to-daily allocation is used. Missing rows are not zeroes: complete the dataset deliberately before running. The model accepts irregular dates, but missingness can bias the averages and must be reviewed.
 
 planning_inputs.csv: exactly one row per planning date and historical aircraft category.
 
@@ -72,7 +80,7 @@ Unique historical dates are split chronologically into the first 60% for trainin
 
 Baseline uncertainty uses absolute calibration residuals and the finite-sample split-conformal rank ceil((n+1) × coverage), with nominal coverage 90% by default. These are prediction intervals for daily counts, not confidence intervals for a mean. Time dependence, changing operating conditions, and the long gap to 2027 can invalidate the exchangeability assumption; nominal coverage is not a guarantee. The calibrated model stays frozen rather than refitting on the test period. Thus later history evaluates the model but does not update its learned averages. For production, establish rolling-origin evaluation and a fresh calibration period before retraining.
 
-Event planning ranges scale the baseline bounds by the scenario multiplier. Their upper bound expands if reservations dominate; reservations do not raise the lower bound because cancellations remain possible. These ranges do not quantify uncertainty in the event multipliers or independently validate reservation show rates. event_coverage_validated is always False. No observed event data was available to estimate or validate event uplift. Do not label these as validated 90% Super Bowl intervals in the dashboard. Do not sum category bounds and call the result a calibrated total interval; correlations are not modeled.
+Event planning ranges scale the baseline bounds by the scenario multiplier. Their upper bound expands if reservations dominate; reservations do not raise the lower bound because cancellations remain possible. These ranges do not quantify uncertainty in the event multipliers or independently validate reservation show rates. `event_coverage_validated` is always False. FAA airport operations around Super Bowl LVI inform the scenario multipliers, and other host-city airport analogs show substantial variation; none validates the transfer to this fictional FBO. Do not label these as validated 90% Super Bowl intervals in the dashboard. Do not sum category bounds and call the result a calibrated total interval; correlations are not modeled.
 
 ## Handoff to Persons 3 and 4
 
@@ -86,4 +94,4 @@ Arrivals and departures are independently forecast flows, not matched individual
 
 ## Honest demo pitch
 
-“We learn ordinary daily aircraft demand by aircraft category, month, and weekday. We apply explicit event scenarios and compare them with simulated reservations. Every forecast shows its assumptions and uncertainty. Our held-out evaluation currently demonstrates the pipeline on synthetic data; Person 1's verified inputs are needed before we can claim real-world accuracy.”
+“We learn ordinary daily patterns from FAA airport operations, then convert them to an estimated fictional-FBO forecast using clearly stated shares and aircraft mix. Public Super Bowl airport activity shapes Low, Medium, and High planning cases. Our backtest evaluates airport-level daily patterns; without FBO bookings, we cannot measure this FBO's forecast accuracy or claim that the event range contains every plausible outcome.”

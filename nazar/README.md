@@ -30,7 +30,7 @@ Do not open `static/index.html` directly: the app needs its local Python server.
 - Persistent SQLite review log tied to dataset version, scenario and variant. Changed inputs make earlier reviews visibly stale.
 - Explicit sample / team / imported data sources. Invalid data never silently becomes sample data.
 - Source and assumption ledger, plus Alan’s separate estimated baseline; JSON plan export including release status.
-- Prominent provisional-review status with SHA-256 verification of the supplied 20-file release manifest. Matching hashes do not approve assumptions or establish forecast accuracy.
+- Prominent provisional-review status with SHA-256 verification of the supplied 21-file release manifest. Matching hashes do not approve assumptions or establish forecast accuracy.
 - Live source checks every 30 seconds while visible, and on every review/export. Changed, missing or mismatched files block review/export until a coherent release is loaded; the old snapshot stays visible with a warning.
 - Three demo employee views with server-enforced role checks for writes. **These are selectable, unverified demo identities, not real authentication.**
 

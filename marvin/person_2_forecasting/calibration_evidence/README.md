@@ -2,6 +2,10 @@
 
 These files test the forecast's weakest assumptions using observed **airport operations**. They do not measure the fictional FBO's bookings, selected Part 91 fleets, or the eligible subset of Part 135. No file here replaces `demand_predictions.csv`, `uncertainty_results.csv`, or a dashboard input. One operation is one takeoff or landing. `general_aviation` and `air_taxi` are FAA tower categories; Part 121 air carrier and military counts are excluded from every extract.
 
+## Frozen 2026 holdout source
+
+`fetch_2026_holdout.py` retrieves LAX FAA OPSNET daily and monthly airport operations for January 1–September 30, 2026. This fixed window was finalized for public access by the October 24, 2026 retrieval. It saves 273 observed airport days in `opsnet_lax_2026_holdout.csv` and nine independent daily-to-monthly reconciliations in `opsnet_lax_2026_monthly_check.csv`. Every category total matched. All 28 February daily GA, air-taxi, and local-GA values match the earlier `opsnet_lax_feb2026.csv` extract. The forecast model does not train on these rows; see [the frozen holdout report](../FROZEN_2026_HOLDOUT.md). FAA source: [OPSNET airport operations](https://www.aspm.faa.gov/opsnet/sys/Airport.asp). These rows are not FBO visits or aircraft bookings.
+
 ## Sources and reproducibility
 
 - `opsnet_super_bowl_analog_daily.csv`: 29 days around the second Sunday of February in 2019, 2023, 2024, and 2025 for airport groups in the [FAA LVII Phoenix release](https://www.faa.gov/newsroom/ready-kickoff-what-ga-pilots-need-know-about-super-bowl-lvii), [FAA LVIII Las Vegas notice](https://www.faa.gov/air_traffic/publications/domesticnotices/dom24001_sp.html), and [FAA LIX New Orleans notice](https://www.faa.gov/air_traffic/publications/domesticnotices/dom24038_sp.html). The 2019 date is a calendar-matched reference; [Super Bowl LIII](https://www.faa.gov/newsroom/atlanta-no-drone-zone-during-super-bowl-liii) itself was on February 3, not February 10. Rows come from [FAA OPSNET/ATADS](https://www.aspm.faa.gov/opsnet/sys/Airport.asp), using the repository's `alan/elia_output/scripts/fetch_opsnet.py` parser. Each row carries its retrieval time and source.

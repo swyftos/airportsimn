@@ -25,7 +25,8 @@ RELEASE_FILES={P2+p for p in (
     'demand_predictions.csv','uncertainty_results.csv','evaluation_metrics.csv',
     'daily_totals.csv','run_metadata.json','forecast_model.py',
     'convert_monthly_to_daily.py','PROVISIONAL_ASSUMPTIONS.md','run_provisional.py',
-    'provisional_inputs/historical_traffic.csv','provisional_inputs/planning_inputs.csv',
+    'provisional_inputs/historical_traffic.csv','provisional_inputs/holiday_history.csv',
+    'provisional_inputs/planning_inputs.csv',
 )}|{'elia/'+p for p in ('resource_requirements.csv','scenario_recommendations.json','assumptions_p3.csv','parking_optimizer.py','ordinary_week_parking.csv','parking_carryover.csv','resource_requirements_departure_delay_24h.csv','scenario_recommendations_departure_delay_24h.json')}|{'alan/elia_output/data/processed/opsnet_lax_daily.csv'}
 
 def digest(path):return hashlib.sha256(path.read_bytes()).hexdigest()

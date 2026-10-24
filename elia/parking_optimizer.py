@@ -57,7 +57,7 @@ def load_demand(p2_dir=None) -> pd.DataFrame:
     unknown = set(df["aircraft_category"]) - set(CATS)
     if unknown:
         raise ValueError(f"unknown aircraft categories from P2: {sorted(unknown)}")
-    df.attrs["source"] = str(p2_dir)
+    df.attrs["source"] = Path(p2_dir).as_posix()
     df.attrs["baseline_first_day_arrivals"] = baseline_first_day_arrivals(p2_dir)
     prov = next((c for c in ("historical_data_class", "input_provenance") if c in df), None)
     df.attrs["provenance"] = sorted(df[prov].unique()) if prov else []
@@ -414,7 +414,7 @@ def load_ordinary_demand(p2_dir=None) -> pd.DataFrame:
         parts.append(p.reset_index().assign(direction=direction))
     df = pd.concat(parts).assign(scenario="ordinary")
     df["aircraft_category"] = df["aircraft_category"].replace(CATEGORY_ALIASES)
-    df.attrs["source"] = str(p2_dir)
+    df.attrs["source"] = Path(p2_dir).as_posix()
     df.attrs["baseline_first_day_arrivals"] = baseline_first_day_arrivals(p2_dir)
     return df
 
@@ -495,29 +495,29 @@ def main():
     demand = load_demand(sys.argv[1] if len(sys.argv) > 1 else None)
     carry = {"standard": {}, "departure_delay_24h": {}}
     table, recs = run(demand, a, carryover=carry["standard"])
-    table.to_csv(HERE / "resource_requirements.csv", index=False)
-    (HERE / "scenario_recommendations.json").write_text(json.dumps(recommendations_json(demand, a, recs, "standard"), indent=2))
+    table.to_csv(HERE / "resource_requirements.csv", index=False, lineterminator="\n")
+    (HERE / "scenario_recommendations.json").write_text(json.dumps(recommendations_json(demand, a, recs, "standard"), indent=2), newline="\n")
 
     d_table, d_recs = run(demand, a, "departure_delay_24h", carry["departure_delay_24h"])
-    d_table.to_csv(HERE / "resource_requirements_departure_delay_24h.csv", index=False)
+    d_table.to_csv(HERE / "resource_requirements_departure_delay_24h.csv", index=False, lineterminator="\n")
     (HERE / "scenario_recommendations_departure_delay_24h.json").write_text(
-        json.dumps(recommendations_json(demand, a, d_recs, "departure_delay_24h"), indent=2))
+        json.dumps(recommendations_json(demand, a, d_recs, "departure_delay_24h"), indent=2), newline="\n")
 
     s_table, s_recs = run(demand, a, "security_restriction")
-    s_table.to_csv(HERE / "resource_requirements_security_restriction.csv", index=False)
+    s_table.to_csv(HERE / "resource_requirements_security_restriction.csv", index=False, lineterminator="\n")
     (HERE / "scenario_recommendations_security_restriction.json").write_text(
-        json.dumps(recommendations_json(demand, a, s_recs, "security_restriction"), indent=2))
+        json.dumps(recommendations_json(demand, a, s_recs, "security_restriction"), indent=2), newline="\n")
 
     h_table, h_recs = run(demand, a, "heavy_rain")
-    h_table.to_csv(HERE / "resource_requirements_heavy_rain.csv", index=False)
+    h_table.to_csv(HERE / "resource_requirements_heavy_rain.csv", index=False, lineterminator="\n")
     (HERE / "scenario_recommendations_heavy_rain.json").write_text(
-        json.dumps(recommendations_json(demand, a, h_recs, "heavy_rain"), indent=2))
+        json.dumps(recommendations_json(demand, a, h_recs, "heavy_rain"), indent=2), newline="\n")
 
     o_table, carry_ordinary = run_ordinary(load_ordinary_demand(sys.argv[1] if len(sys.argv) > 1 else None), a)
-    o_table.to_csv(HERE / "ordinary_week_parking.csv", index=False)
+    o_table.to_csv(HERE / "ordinary_week_parking.csv", index=False, lineterminator="\n")
     rows = [{"variant": "ordinary", "scenario": "ordinary", **carry_ordinary}]
     rows += [{"variant": v, "scenario": s, **c} for v, per in carry.items() for s, c in per.items()]
-    pd.DataFrame(rows).assign(data_status="provisional").to_csv(HERE / "parking_carryover.csv", index=False)
+    pd.DataFrame(rows).assign(data_status="provisional").to_csv(HERE / "parking_carryover.csv", index=False, lineterminator="\n")
     print(f"ordinary week: peak P50 {o_table['parking_demand_su_p50'].max():.1f} su, "
           f"implied average dwell {implied_dwell_days(o_table, a):.2f} days")
     for s, r in d_recs.items():

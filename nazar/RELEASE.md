@@ -8,20 +8,20 @@ python3 nazar/scripts/release_team.py
 
 The command builds an isolated copy of the repository’s tracked working files (including staged changes), then runs:
 
-1. Alan: validate monthly inputs, build estimated daily airport history, then build the baseline and assumptions.
+1. Alan: validate daily airport inputs, build estimated FBO history, then build the baseline and assumptions.
 2. Marvin: convert the current source to estimated FBO inputs; compare its input years/share with Alan’s baseline policy; produce forecasts and uncertainty.
 3. Elia: check opening inventory against the new ordinary forecast, then regenerate standard, ordinary, delayed and carryover parking outputs.
 4. Alan: refresh the consolidated root assumption ledger.
-5. Nazar: reproduce the complete parking pipeline; stamp the 20-file manifest; run forecast, parking and dashboard tests.
+5. Nazar: reproduce the complete parking pipeline; stamp the 21-file manifest, including Marvin's holiday-history input; run forecast, parking and dashboard tests.
 6. Install only the declared generated outputs, the report and the manifest, after every check passes.
 
-No stage downloads data or changes anyone’s model code. The present Marvin converter reads the same monthly source as Alan, not Alan’s weekday-weighted baseline; the coordinator does not silently reconcile that methodological difference. New producer entry points or schemas need a coordinated script update. Stage new scripts/inputs with `git add` first so they are included in the snapshot.
+No stage downloads data or changes anyone’s model code. The present Marvin converter uses observed daily FAA LAX GA and air-taxi counts and applies the team's documented FBO share. The forecast receives the generated long holiday-history input for Presidents' Day. New producer entry points or schemas need a coordinated script update. Stage new scripts/inputs with `git add` first so they are included in the snapshot.
 
-## Current provisional mismatch
+## Current provisional assumptions
 
-Today Alan uses 2023–2025 with a 20% capture share. Marvin’s converted history spans 2016–2019 and 2023–2025 at 25%, with a separate chronological training/calibration/test split. The default command stops before forecasting or replacing outputs when these policies disagree. It does not claim that matching input windows alone validates the model’s fitted training split.
+Alan and Marvin currently use 2023–2025 with a combined assumed 10% FBO share, so the year/share comparison has no mismatch. This does not validate the FBO share, event multiplier, forecast accuracy, or ramp capacity; the release remains provisional pending Alan and team review. The forecast's 2016–2019 airport rows are used only to estimate a scale-free Presidents' Day factor, not as ordinary traffic training observations.
 
-To explicitly reproduce the existing provisional demo while recording those disagreements:
+If a future producer update creates a year/share mismatch, the default command stops before forecasting or replacing outputs. To build an explicitly provisional demonstration while recording that mismatch:
 
 ```sh
 python3 nazar/scripts/release_team.py --allow-provisional-mismatch
