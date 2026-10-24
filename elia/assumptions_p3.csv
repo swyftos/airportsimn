@@ -34,3 +34,5 @@ mc_runs,10000,simulations,estimate,Monte Carlo demand paths per scenario
 mc_seed,42,seed,synthetic,Reproducible random draws
 mc_common_shock_share,0.6,share of log variance,estimate,Part of each day's deviation shared across days categories and directions (the event turns out bigger or smaller overall). P2 does not model cross-category correlation
 planning_quantile,0.90,quantile,estimate,Parking capacity is prepared for this quantile of simulated parking demand
+delay_24h_first_day,3,day index,estimate,Departure-delay variant: first affected planning day (0 = 2027-02-11 so 3 = game day Sun 2027-02-14). Represents a post-game ground stop or weather hold
+delay_24h_share,1.0,share of departures,estimate,Departure-delay variant: share of each affected day's departures that leave 24 h later. Departures pushed past 2027-02-17 stay parked after the window

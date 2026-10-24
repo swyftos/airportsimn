@@ -18,11 +18,12 @@ Answer “What decision should AI never make?”: **It must never authorize airc
 Run `python3 nazar/scripts/verify_team_pipeline.py` (numpy/pandas required), then use **Data & assumptions → Load current P2/P3 outputs** before presenting this version. Do not narrate the handcrafted sample’s numbers over the native model screens.
 
 - Expected demand: peak daily P50 parking need 91.7, current capacity 90, proposed 139. The remaining median shortfall is 0; the preparation does not eliminate risk.
-- Compare **Arrivals** to show the supplied ordinary baseline against event estimates. Explain that the missing ordinary parking baseline is still a team deliverable.
+- Compare **Arrivals** to show the supplied ordinary baseline against event estimates. Switch back to Parking to compare ordinary and event daily P50 peaks in the same space units.
 - Select game day: the parking P10–P90 range is 54.8–132.6 units and the supplied simulation exceeds proposed capacity in 7.0% of runs. These are unvalidated synthetic-model outputs, not observed probabilities.
 - Show the impact comparison: Expected mean unaccommodated aircraft changes 9.4 → 0.9, but median net benefit is −$15,006 and preparation pays off in only 38.7% of simulations. Discuss the risk/cost tradeoff; do not pitch guaranteed savings. These figures belong to the currently committed synthetic output set and must be refreshed when producers change it.
 - Show the per-category arrival ranges and P2’s synthetic historical test metrics on the data tab. Historical validation does not validate the assumed event uplift.
-- Explain that the 24-hour delay toggle is disabled until Person 3 supplies that variant. Do not describe the current P3 within-day departure-order assumption as a 24-hour delay test.
+- Enable the departure-delay toggle: under the current synthetic release, Expected peak parking rises from 91.7 to 121.9 su and preparation cost changes from $24,400 to $30,000. Departures shift from Feb 14 onward. Inspect Monday and show its recomputed departures, then compare aircraft demand remaining after Feb 17 (17.6 standard vs 29.7 delayed at P50). Carryover assumes unlimited parking; it is not confirmed on-site inventory.
+- Record a changes-requested review for one variant and verify it does not carry into the other. Export the delayed plan and confirm its resources, impact and carryover match the screen.
 - Review the overflow proposal; the displayed weekly preparation cost is $24,400, including supplied action costs. Record a request for confirmed capacity, geometry checks and quotes.
 
 ## What each teammate should demonstrate before the final rehearsal
@@ -30,7 +31,7 @@ Run `python3 nazar/scripts/verify_team_pipeline.py` (numpy/pandas required), the
 - Alan: explain ordinary-week selection, sources, weekday mapping, capacities and synthetic assumptions.
 - Marvin: explain the central prediction, how lower/higher were built, uncertainty meaning and holdout evaluation if available. Event attendance is not aircraft demand.
 - Elia: reconcile occupancy against visits, demonstrate carry-in/carry-out and delayed departures, verify overflow constraints and costs. Export daily peaks without calling them hourly measurements.
-- Nazar: load all seven outputs, reconcile dashboard summaries, show one source failure and one successful human review; explain stale reviews.
+- Nazar: load the complete native comparison release, reconcile dashboard summaries, show one source failure and one successful human review; explain stale reviews.
 
 ## Integration acceptance
 
@@ -48,6 +49,6 @@ Run `python3 nazar/scripts/verify_team_pipeline.py` (numpy/pandas required), the
 
 ## Remaining work before calling it a complete hackathon solution
 
-The dashboard and integration module work now. Marvin’s learned forecasting component and Elia’s Monte Carlo parking component are now integrated from their committed exports. Their current outputs are synthetic. Alan’s real-data baseline, ordinary parking comparison, and a separate delay variant remain incomplete. The sample generator is not the forecasting component. An LLM is optional and must not invent numerical results. Demonstrate model skill with honest validation or present conditional resource improvement estimates with their assumptions. UI polish comes after an early end-to-end integration run, not after every model is finished.
+The dashboard and integration module work now. Marvin’s learned forecasting component and Elia’s Monte Carlo parking component are now integrated from their committed exports. Their current outputs are synthetic. Ordinary parking and the separate delay variant now come from P3. Publishing and regenerating the complete forecast/parking release against the agreed estimated inputs remains team work. The sample generator is not the forecasting component. An LLM is optional and must not invent numerical results. Demonstrate model skill with honest validation or present conditional resource improvement estimates with their assumptions. UI polish comes after an early end-to-end integration run, not after every model is finished.
 
 LA 2028 is a stretch goal. Keep it outside the core demo until this seven-day story is reliable.

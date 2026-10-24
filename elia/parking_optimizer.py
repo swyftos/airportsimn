@@ -80,12 +80,13 @@ def sample_demand(mid, lo, hi, a, rng):
     return mid * np.exp(np.where(z > 0, sig_up, sig_dn) * z)
 
 
-def ramp_sim(arr, dep, capacity_su, a):
+def ramp_sim(arr, dep, capacity_su, a, return_end=False):
     """Day-by-day ramp over all runs. arr/dep [run, day, category], capacity_su [day].
 
     Within a day a share of departures leaves before the arrival peak, the rest after.
     Arrivals that do not fit at the peak are counted as unaccommodated (a human would refer
-    them elsewhere; the system never refuses an aircraft).
+    them elsewhere; the system never refuses an aircraft). With return_end, also returns the
+    aircraft still parked after the last day [run, category].
     """
     su = np.array([a[f"su_{c}"] for c in CATS])
     occ = np.tile([a["initial_transient_aircraft"] * a[f"mix_{c}"] for c in CATS], (arr.shape[0], 1))
@@ -101,7 +102,19 @@ def ramp_sim(arr, dep, capacity_su, a):
         peak_su[:, t] = peak @ su
         unacc[:, t] = (arr[:, t] - accepted).sum(1)
         occ = peak - np.minimum(dep[:, t] - early, peak)
-    return peak_su, unacc
+    return (peak_su, unacc, occ) if return_end else (peak_su, unacc)
+
+
+def shift_departures(dep, a):
+    """24-hour departure delay: from day delay_24h_first_day on, delay_24h_share of each day's departures
+    leaves one day later. Departures pushed past the last day stay parked after the window.
+    Returns (shifted departures [run, day, category], departures pushed past the window [run, category])."""
+    first, share = int(a["delay_24h_first_day"]), a["delay_24h_share"]
+    moved = np.zeros_like(dep)
+    moved[:, first:] = dep[:, first:] * share
+    shifted = dep - moved
+    shifted[:, 1:] += moved[:, :-1]
+    return shifted, moved[:, -1]
 
 
 def gallons(dep_by_cat, a):
@@ -206,14 +219,36 @@ def dist(x):
             "p50": round(float(np.percentile(x, 50)), 1), "p90": round(float(np.percentile(x, 90)), 1)}
 
 
-def run(demand: pd.DataFrame, a: dict):
+def carryover_row(end, pushed, a):
+    """Aircraft still parked after the planning window, end [run, category], pushed [run, category]."""
+    su = np.array([a[f"su_{c}"] for c in CATS])
+    left = end.sum(1)
+    return {"opening_aircraft": a["initial_transient_aircraft"],
+            "aircraft_remaining_p10": round(float(np.percentile(left, 10)), 1),
+            "aircraft_remaining_p50": round(float(np.percentile(left, 50)), 1),
+            "aircraft_remaining_p90": round(float(np.percentile(left, 90)), 1),
+            "parking_su_remaining_p50": round(float(np.percentile(end @ su, 50)), 1),
+            "departures_pushed_past_window_p50": round(float(np.percentile(pushed.sum(1), 50)), 1)}
+
+
+def run(demand: pd.DataFrame, a: dict, variant: str = "standard", carryover: dict | None = None):
+    """Resource table and plans per scenario. variant 'departure_delay_24h' re-runs the same demand paths
+    with departures shifted by shift_departures. If a dict is passed as carryover, it is filled per scenario
+    with the aircraft still parked after the last day (demand not limited by capacity)."""
     rng = np.random.default_rng(int(a["mc_seed"]))
     rows, recs = [], {}
     for scenario, sdf in demand.groupby("scenario", sort=False):
         dates, mid, lo, hi = scenario_arrays(sdf)
         draws = sample_demand(mid, lo, hi, a, rng)
         arr, dep = draws[:, 0], draws[:, 1]
-        free_peak, _ = ramp_sim(arr, dep, np.full(len(dates), np.inf), a)
+        pushed = np.zeros((arr.shape[0], len(CATS)))
+        if variant == "departure_delay_24h":
+            dep, pushed = shift_departures(dep, a)
+        elif variant != "standard":
+            raise ValueError(f"unknown variant {variant}")
+        free_peak, _, end = ramp_sim(arr, dep, np.full(len(dates), np.inf), a, return_end=True)
+        if carryover is not None:
+            carryover[scenario] = carryover_row(end, pushed, a)
         need_su = np.percentile(free_peak, a["planning_quantile"] * 100, axis=0)
         movements = (arr + dep).sum(2)
         gal = gallons(dep, a)
@@ -265,23 +300,110 @@ def run(demand: pd.DataFrame, a: dict):
     return pd.DataFrame(rows), recs
 
 
-def main():
-    a = load_assumptions()
-    demand = load_demand(sys.argv[1] if len(sys.argv) > 1 else None)
-    table, recs = run(demand, a)
-    table.to_csv(HERE / "resource_requirements.csv", index=False)
-    out = {"meta": {
+def load_ordinary_demand(p2_dir=None) -> pd.DataFrame:
+    """P2's ordinary (no-event) forecast for the same dates, in the load_demand layout, scenario 'ordinary'.
+
+    Point value = baseline_arrivals / baseline_departures (identical across P2 scenarios, checked).
+    Range = baseline +/- baseline_radius, P2's nominal 90 % baseline interval, floored at zero.
+    """
+    p2_dir = Path(p2_dir) if p2_dir else next((d for d in P2_DIRS if d.exists()), P2_DIRS[0])
+    keys = ["date", "aircraft_category"]
+    d = pd.read_csv(p2_dir / "demand_predictions.csv")
+    u = pd.read_csv(p2_dir / "uncertainty_results.csv")
+    parts = []
+    for direction in DIRS:
+        base = d.groupby(keys)[f"baseline_{direction}"].agg(["min", "max"])
+        if (base["max"] - base["min"]).abs().max() > 1e-9:
+            raise ValueError(f"P2 baseline_{direction} differs across scenarios")
+        radius = u[u["target"] == direction].groupby(keys)["baseline_radius"].max()
+        p = base[["min"]].rename(columns={"min": "expected_movements"}).join(radius)
+        p["lower90_prediction"] = (p["expected_movements"] - p["baseline_radius"]).clip(lower=0)
+        p["upper90_prediction"] = p["expected_movements"] + p["baseline_radius"]
+        parts.append(p.reset_index().assign(direction=direction))
+    df = pd.concat(parts).assign(scenario="ordinary")
+    df["aircraft_category"] = df["aircraft_category"].replace(CATEGORY_ALIASES)
+    df.attrs["source"] = str(p2_dir)
+    return df
+
+
+def run_ordinary(ordinary: pd.DataFrame, a: dict):
+    """Ordinary-week parking with the same units, opening inventory, capacity and staffing rules as the
+    event runs. Returns (daily table, carryover row)."""
+    rng = np.random.default_rng(int(a["mc_seed"]))
+    dates, mid, lo, hi = scenario_arrays(ordinary)
+    draws = sample_demand(mid, lo, hi, a, rng)
+    arr, dep = draws[:, 0], draws[:, 1]
+    peak, _, end = ramp_sim(arr, dep, np.full(len(dates), np.inf), a, return_end=True)
+    ramp = a["ramp_capacity_su"]
+    busiest = max(a[f"shift_share_{s}"] for s in SHIFTS)
+    movements, gal = (arr + dep).sum(2), gallons(dep, a)
+    rows = []
+    for t, date in enumerate(dates):
+        p10, p50, p90 = np.percentile(peak[:, t], [10, 50, 90])
+        mov50 = float(np.median(movements[:, t]))
+        rows.append({
+            "date": date, "variant": "ordinary",
+            "arrivals_baseline": round(float(mid[0, t].sum()), 1), "departures_baseline": round(float(mid[1, t].sum()), 1),
+            "parking_demand_su_p10": round(p10, 1), "parking_demand_su_p50": round(p50, 1),
+            "parking_demand_su_p90": round(p90, 1), "capacity_normal_su": ramp,
+            "utilization_normal_p50": round(p50 / ramp, 3),
+            "prob_over_normal_capacity": round(float((peak[:, t] > ramp).mean()), 3),
+            "risk_level": risk_level(p50 / ramp, a),
+            "staff_required_peak_shift": math.ceil(mov50 * busiest / a["movements_per_tech_shift"]),
+            "techs_normal_per_shift": int(a["normal_techs_per_shift"]),
+            "fuel_gallons_p50": round(float(np.median(gal[:, t]))),
+            "data_status": "provisional"})
+    return pd.DataFrame(rows), carryover_row(end, np.zeros_like(end), a)
+
+
+def implied_dwell_days(table: pd.DataFrame, a: dict) -> float:
+    """Little's law check: average parked aircraft / average daily arrivals, with aircraft = su / mean footprint."""
+    mean_su = sum(a[f"mix_{c}"] * a[f"su_{c}"] for c in CATS)
+    return float(table["parking_demand_su_p50"].mean() / mean_su / table["arrivals_baseline"].mean())
+
+
+def recommendations_json(demand, a, recs, variant):
+    method = (f"{int(a['mc_runs'])} Monte Carlo demand paths per scenario drawn from P2 point forecasts and 90 % "
+              "prediction ranges, with a shared event shock. Parking prepared for the planning quantile, "
+              "staffing and fuel for P50 plus buffer. Impact compares normal plan vs prepared plan on the same paths.")
+    if variant == "departure_delay_24h":
+        method += (f" Variant: from day index {int(a['delay_24h_first_day'])} (0 = first planning date), "
+                   f"{a['delay_24h_share']:.0%} of each day's departures leave 24 h later, on the same demand paths.")
+    meta = {
         "demand_source": demand.attrs["source"], "demand_provenance": demand.attrs["provenance"],
-        "assumptions_file": "assumptions_p3.csv",
-        "method": f"{int(a['mc_runs'])} Monte Carlo demand paths per scenario drawn from P2 point forecasts and 90 % "
-                  "prediction ranges, with a shared event shock. Parking prepared for the planning quantile, "
-                  "staffing and fuel for P50 plus buffer. Impact compares normal plan vs prepared plan on the same paths.",
+        "assumptions_file": "assumptions_p3.csv", "method": method,
         "limitations": "P2 demand is synthetic demo data, so all results are illustrative, not observed performance. "
                        "P2 event-week ranges are not validated against observed Super Bowl outcomes.",
         "human_in_command": "Recommendations only. Every action needs approval by the named role. The system never "
-                            "accepts, rejects or cancels an individual aircraft reservation."},
-        "scenarios": recs}
-    (HERE / "scenario_recommendations.json").write_text(json.dumps(out, indent=2))
+                            "accepts, rejects or cancels an individual aircraft reservation."}
+    if variant != "standard":
+        meta.update({"variant": variant, "data_status": "provisional"})
+    return {"meta": meta, "scenarios": recs}
+
+
+def main():
+    a = load_assumptions()
+    demand = load_demand(sys.argv[1] if len(sys.argv) > 1 else None)
+    carry = {"standard": {}, "departure_delay_24h": {}}
+    table, recs = run(demand, a, carryover=carry["standard"])
+    table.to_csv(HERE / "resource_requirements.csv", index=False)
+    (HERE / "scenario_recommendations.json").write_text(json.dumps(recommendations_json(demand, a, recs, "standard"), indent=2))
+
+    d_table, d_recs = run(demand, a, "departure_delay_24h", carry["departure_delay_24h"])
+    d_table.to_csv(HERE / "resource_requirements_departure_delay_24h.csv", index=False)
+    (HERE / "scenario_recommendations_departure_delay_24h.json").write_text(
+        json.dumps(recommendations_json(demand, a, d_recs, "departure_delay_24h"), indent=2))
+
+    o_table, carry_ordinary = run_ordinary(load_ordinary_demand(sys.argv[1] if len(sys.argv) > 1 else None), a)
+    o_table.to_csv(HERE / "ordinary_week_parking.csv", index=False)
+    rows = [{"variant": "ordinary", "scenario": "ordinary", **carry_ordinary}]
+    rows += [{"variant": v, "scenario": s, **c} for v, per in carry.items() for s, c in per.items()]
+    pd.DataFrame(rows).assign(data_status="provisional").to_csv(HERE / "parking_carryover.csv", index=False)
+    print(f"ordinary week: peak P50 {o_table['parking_demand_su_p50'].max():.1f} su, "
+          f"implied average dwell {implied_dwell_days(o_table, a):.2f} days")
+    for s, r in d_recs.items():
+        print(f"delay24h {s:7} peak P50 {r['summary']['peak_parking_demand_su_p50']:6.1f} su  "
+              f"actions {[x['id'] for x in r['actions']]}  prep ${r['preparation_cost_usd']:,.0f}")
     for s, r in recs.items():
         i = r["impact"]
         print(f"{s:7} peak P50 {r['summary']['peak_parking_demand_su_p50']:6.1f} su  P90 "

@@ -96,7 +96,11 @@ class Handler(BaseHTTPRequestHandler):
                         sc=q.get('scenario',['medium'])[0]; variant=q.get('variant',['standard'])[0]
                         data={'dataset':self.app.bundle['meta'],'source':self.app.source,'assumptions':self.app.bundle['assumptions'],'basis':'Daily P50 parking peaks from P3' if self.app.bundle.get('native') else 'Supplied daily peak parking fixtures/outputs','version':self.app.bundle['version'],'scenario':sc,'variant':variant,
                             'summary':summarize(self.app.bundle,sc,variant),
-                            'simulation_impact':self.app.bundle.get('impacts',{}).get(sc),
+                            'simulation_impact':self.app.bundle.get('impacts_by_variant',{}).get(variant,self.app.bundle.get('impacts',{})).get(sc),
+                            'baseline':self.app.bundle['baseline'],
+                            'resources':[r for r in self.app.bundle['resources'] if r['scenario']==sc and r['variant']==variant],
+                            'carryover':[r for r in self.app.bundle.get('carryover',[]) if r['variant']=='ordinary' or (r['variant']==variant and r['scenario']==sc)],
+                            'delay_definition':self.app.bundle.get('delay_definition') if variant=='departure_delay_24h' else None,
                             'forecast_drivers':[r for r in self.app.bundle.get('forecast_drivers',[]) if r['scenario']==sc],
                             'input_limitations':self.app.bundle.get('limitations',[]),
                             'recommendations':[r for r in self.app.bundle['recommendations'] if r['scenario']==sc and r['variant']==variant],
