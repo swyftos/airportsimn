@@ -1,0 +1,54 @@
+id,owner,label,value,unit,classification,confidence,source,status,note
+ALAN-fbo_market_share,Alan,Fictional FBO's share of LAX GA + air-taxi traffic,0.2,fraction,assumption,,"Team judgment, informed by Nazar's apron research (2 real incumbent FBOs: Atlantic, Signature)",,"Conservative share for a smaller/newer third entrant, not an even 1/3 split. Change the FBO_MARKET_SHARE constant in build_baseline.py to revise."
+ALAN-avg_dwell_days,Alan,"Average parking dwell time, ordinary week",1.1,days,benchmark,,"Weighted from illustrative occupancy mix: 40% same-day turn (0.5d), 45% overnight (1d), 15% multi-day (3d)",,"Occupancy-mix shares are illustrative per project brief Section 4, not measured for this FBO. Refine if real dwell-time evidence is found."
+ALAN-parking_units_method,Alan,Parking occupancy estimation method,Little's Law: parking_units = arrivals_fbo x avg_dwell_days,method,assumption,,Standard steady-state queueing relationship,,"Assumes the ordinary week is already in steady state (opening occupancy = computed average), not ramping up from empty."
+ALAN-historical_base,Alan,Underlying airport-wide movement data,"LAWA TCOM monthly movements, Feb (ordinary years), disaggregated to daily",n/a,benchmark,,"Elia (LAWA TCOM, verified_public) via Alan's build_historical_traffic.py (monthly->daily, 50/50 arrivals/departures)",,"Weekday-matched February average across ordinary (non-COVID, non-2022) years; see alan/scripts/build_baseline.py docstring for full methodology."
+ALAN-baseline_training_window,Alan,Years used for the ordinary-week baseline average,"[2023, 2024, 2025]",years,assumption,,Alan's analysis of alan/elia_output lax_monthly_movements.csv,,"Restricted to post-COVID years only. Feb daily mean: ~175/day in 2016-2019 vs ~98/day in 2023-2025 (~45% drop, structural break not noise). Blending both without a level-shift would overstate 2027 ordinary traffic. 2016-2019 remain in historical_traffic_interim.csv as reference data, excluded only from this baseline average. See issue #10."
+ALAN-weekday_multiplier,Alan,Day-of-week traffic multiplier applied to flat monthly average,"{'Monday': 1.08, 'Tuesday': 1.12, 'Wednesday': 1.12, 'Thursday': 1.08, 'Friday': 1.0, 'Saturday': 0.65, 'Sunday': 0.95}",ratio per weekday,benchmark,,"Illustrative general aviation/business-jet weekly pattern (weekday-heavy, Saturday trough, partial Sunday rebound)",,"Not measured for this FBO or LAX specifically; the underlying historical file has no native day-of-week signal (monthly totals were spread evenly across days). Multipliers average to 1.0, so weekly totals are unchanged. See alan/scripts/build_baseline.py."
+NAZAR-A01,Nazar,fictional_fbo_reference,Atlantic LAX,facility,assumption,medium,NAZAR-S01;NAZAR-S02,selected_reference,Selected for stronger public site evidence; no claim of access to Atlantic operations.
+NAZAR-A02,Nazar,provisional_gross_ramp_area,566280,sq_ft,benchmark,low,NAZAR-S07,optional_historical_proxy_not_current_capacity,13 acres x 43560. Carrying the 2008 reported ramp forward is an unvalidated assumption. About 566000 sq ft at source precision.
+NAZAR-A03,Nazar,usable_parking_fraction,,fraction,assumption,unknown,,not_selected,"Need taxi/access lanes, clearances, servicing and unavailable areas; no arbitrary default supplied."
+NAZAR-A04,Nazar,based_aircraft_reserve,,sq_ft,assumption,unknown,,not_selected,Near-zero airport based-aircraft count would not prove zero FBO commitments.
+NAZAR-A05,Nazar,area_per_space_unit,,sq_ft_per_su,assumption,unknown,,not_selected,Elia must define this with aircraft class and clearance assumptions; 90 su is not a measured stand count.
+NAZAR-A06,Nazar,additional_overflow_capacity,,su,assumption,unknown,,not_established,No public source here verifies the existing model assumption of 40 overflow units.
+ELIA-ramp_capacity_su,Elia,ramp_capacity_su,75,space units,assumption,,round(ramp_area_m2 x usable_parking_share / m2_per_su). Range 61 to 91 su for 550-650 m2 per su and 75-95 % usable. Low confidence: the area is a 2008 figure,,
+ELIA-ramp_area_m2,Elia,ramp_area_m2,52600,m2,benchmark,,Atlantic Aviation LAX ramp reported as 13 acres in 2008 (AIN; Nazar source NAZAR-S07 in alan/docs/data_sources_nazar.md). Reference facility for the fictional FBO. Not a current survey,,
+ELIA-m2_per_su,Elia,m2_per_su,600,m2 per space unit,assumption,,Light-jet position (Citation CJ3 16.3 m span x 15.6 m length) plus 3 m clearance and half of a 24 m shared taxilane = 589 m2. Same method gives 1.46 su for a Challenger 350 and 2.57 su for a G650,,
+ELIA-usable_parking_share,Elia,usable_parking_share,0.85,share of ramp,assumption,,Ramp left for parking after fuel-truck lanes hangar fronts and ground equipment areas,,
+ELIA-overflow_capacity_su,Elia,overflow_capacity_su,40,space units,synthetic,,Fictional remote apron that can be leased for the event week. Activation needs management approval,,
+ELIA-tow_packing_gain,Elia,tow_packing_gain,0.10,share of ramp,assumption,,Tighter tow-in packing when aircraft stay several nights. Planning estimate to be confirmed with ops,,
+ELIA-initial_transient_aircraft,Elia,initial_transient_aircraft,22.2,aircraft,assumption,,Opening inventory on 2027-02-11 morning = P2 baseline arrivals on 2027-02-11 (20.14) x opening_dwell_days (Little's law). Recompute when P2 changes; test_opening_inventory_follows_p2_baseline fails otherwise,,
+ELIA-opening_dwell_days,Elia,opening_dwell_days,1.1,days,benchmark,,Average ordinary dwell used to set initial_transient_aircraft. Value from Alan's ledger avg_dwell_days (40 % turns / 45 % overnight / 15 % multi-day),,
+ELIA-mix_light,Elia,mix_light,0.47,share,assumption,,Category share of the initial parked aircraft. Matches P2 forecast mix,,
+ELIA-mix_midsize,Elia,mix_midsize,0.33,share,assumption,,Category share of the initial parked aircraft. Matches P2 forecast mix,,
+ELIA-mix_large,Elia,mix_large,0.20,share,assumption,,Category share of the initial parked aircraft. Matches P2 forecast mix,,
+ELIA-su_light,Elia,su_light,1.0,space units,assumption,,Footprint relative to a light jet,,
+ELIA-su_midsize,Elia,su_midsize,1.5,space units,assumption,,Footprint relative to a light jet (Challenger 350 / Praetor class),,
+ELIA-su_large,Elia,su_large,2.5,space units,assumption,,Footprint relative to a light jet (G650 / Global class),,
+ELIA-dep_share_before_peak,Elia,dep_share_before_peak,0.5,share of daily departures,assumption,,Departures that leave before the daily arrival peak,,
+ELIA-shift_share_morning,Elia,shift_share_morning,0.40,share of daily movements,assumption,,06:00-14:00,,
+ELIA-shift_share_day,Elia,shift_share_day,0.40,share of daily movements,assumption,,14:00-22:00,,
+ELIA-shift_share_night,Elia,shift_share_night,0.20,share of daily movements,assumption,,22:00-06:00,,
+ELIA-movements_per_tech_shift,Elia,movements_per_tech_shift,6,movements,assumption,,Arrivals or departures one line technician can handle in an 8 h shift including towing and servicing,,
+ELIA-normal_techs_per_shift,Elia,normal_techs_per_shift,3,technicians,synthetic,,Normal operating plan of the fictional FBO,,
+ELIA-staffing_buffer,Elia,staffing_buffer,0.15,share,assumption,,Buffer above P50 workload when staffing the prepared plan,,
+ELIA-fuel_uplift_rate,Elia,fuel_uplift_rate,0.85,share of departures,assumption,,Departures that take fuel at the FBO,,
+ELIA-gal_light,Elia,gal_light,150,gallons,assumption,,Typical uplift per departure,,
+ELIA-gal_midsize,Elia,gal_midsize,400,gallons,assumption,,Typical uplift per departure,,
+ELIA-gal_large,Elia,gal_large,1000,gallons,assumption,,Typical uplift per departure,,
+ELIA-truck_capacity_gal,Elia,truck_capacity_gal,5000,gallons,assumption,,Jet-A refueler capacity,,
+ELIA-truck_loads_per_shift,Elia,truck_loads_per_shift,3,loads,assumption,,Refill cycles per truck per 8 h shift,,
+ELIA-normal_fuel_trucks,Elia,normal_fuel_trucks,2,trucks,synthetic,,Normal operating plan of the fictional FBO,,
+ELIA-revenue_per_aircraft_usd,Elia,revenue_per_aircraft_usd,2400,USD,assumption,,Lost revenue per aircraft that cannot be accommodated (parking fees for ~3 nights plus fuel margin). Explicit cost assumption,,
+ELIA-extra_tech_shift_cost_usd,Elia,extra_tech_shift_cost_usd,600,USD,assumption,,Cost of one additional technician shift (overtime or agency),,
+ELIA-overflow_cost_per_day_usd,Elia,overflow_cost_per_day_usd,4000,USD,assumption,,Lease of the remote apron per day once activated,,
+ELIA-extra_truck_cost_per_day_usd,Elia,extra_truck_cost_per_day_usd,1500,USD,assumption,,Rental refueler with driver per day,,
+ELIA-delayed_turn_cost_usd,Elia,delayed_turn_cost_usd,150,USD,assumption,,Service cost of a turn handled late because of understaffing,,
+ELIA-risk_medium_threshold,Elia,risk_medium_threshold,0.85,utilization,assumption,,Utilization above which a day is Medium risk,,
+ELIA-risk_high_threshold,Elia,risk_high_threshold,1.00,utilization,assumption,,Utilization above which a day is High risk,,
+ELIA-mc_runs,Elia,mc_runs,10000,simulations,assumption,,Monte Carlo demand paths per scenario,,
+ELIA-mc_seed,Elia,mc_seed,42,seed,synthetic,,Reproducible random draws,,
+ELIA-mc_common_shock_share,Elia,mc_common_shock_share,0.6,share of log variance,assumption,,Part of each day's deviation shared across days categories and directions (the event turns out bigger or smaller overall). P2 does not model cross-category correlation,,
+ELIA-planning_quantile,Elia,planning_quantile,0.90,quantile,assumption,,Parking capacity is prepared for this quantile of simulated parking demand,,
+ELIA-delay_24h_first_day,Elia,delay_24h_first_day,3,day index,assumption,,Departure-delay variant: first affected planning day (0 = 2027-02-11 so 3 = game day Sun 2027-02-14). Represents a post-game ground stop or weather hold,,
+ELIA-delay_24h_share,Elia,delay_24h_share,1.0,share of departures,assumption,,Departure-delay variant: share of each affected day's departures that leave 24 h later. Departures pushed past 2027-02-17 stay parked after the window,,
