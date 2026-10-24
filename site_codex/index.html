@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f3ee">
+  <title>Ramp / 27 — Super Bowl week planning</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" type="module"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to forecast</a>
+  <header class="masthead">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">R<span>·</span>27</span><span class="brand-sub">LAX PRIVATE AVIATION<br>PLANNING DESK</span></div>
+    <div class="mast-right"><span class="edition">SUPER BOWL LXI / 11–17 FEB 2027</span><button id="theme-toggle" class="icon-button" type="button" aria-label="Switch to dark theme">◐ <span>Theme</span></button></div>
+  </header>
+  <div class="control-bar" aria-label="Forecast controls">
+    <div class="control-inner">
+      <div class="control-group"><span class="control-label">DEMAND CASE</span><div class="segments" role="group" aria-label="Demand case"><button type="button" data-scenario="Low">Low</button><button type="button" data-scenario="Medium">Medium</button><button type="button" data-scenario="High">High</button></div></div>
+      <div class="control-group variant-group"><label class="control-label" for="variant">SITUATION</label><select id="variant"><option value="standard">Normal operations</option><option value="departure_delay_24h">24 h departure delay</option><option value="security_restriction">Security restriction</option><option value="heavy_rain">Heavy rain</option></select></div>
+      <div class="control-group date-group"><label class="control-label" for="day-select">FOCUS DAY</label><select id="day-select"></select></div>
+      <span class="control-window">PLANNING WINDOW · 7 DAYS</span>
+    </div>
+  </div>
+  <main id="main">
+    <section class="intro page-wrap" aria-labelledby="page-title">
+      <div><p class="eyebrow"><span class="signal"></span> DECISION INTELLIGENCE / LAX</p><h1 id="page-title">Make room for<br><em>the moment.</em></h1><p class="lede">A seven-day view of extra private-aircraft landings, departures and ramp demand around the game. Explore a case, test a situation, then review a parking plan for human approval.</p></div>
+      <aside class="briefing" aria-live="polite"><div class="briefing-top"><span>01 / MANAGER'S BRIEF</span><span id="brief-risk" class="risk-pill">—</span></div><p id="brief-headline" class="brief-headline">Loading forecast…</p><p id="brief-detail" class="brief-detail"></p><a href="#plan" class="text-link">Review proposed plan <span aria-hidden="true">↗</span></a></aside>
+    </section>
+    <nav class="section-nav page-wrap" aria-label="Sections"><a href="#overview">Overview</a><a href="#predict">Predict</a><a href="#plan">Plan</a><a href="#trust">Trust & data</a></nav>
+    <section id="overview" class="page-wrap section" aria-labelledby="overview-title">
+      <div class="section-heading"><div><p class="eyebrow">01 / WEEK AT A GLANCE</p><h2 id="overview-title">The week, in numbers</h2></div><p class="section-aside">Forecasts are estimates. Ranges describe uncertainty, not a booking limit.</p></div>
+      <div id="kpis" class="kpi-grid" aria-live="polite"></div>
+      <div class="chart-panel"><div class="panel-head"><div><h3>Landings & departures</h3><p>Ordinary week against game week · aircraft per day</p></div><span class="badge estimated">ESTIMATED</span></div><div class="chart-key"><span><i class="key-arrival"></i>Landings</span><span><i class="key-departure"></i>Departures</span><span><i class="key-ordinary"></i>Ordinary week</span><span><i class="key-range"></i>90% range</span></div><div id="movement-chart" class="chart-scroll"></div><p id="movement-detail" class="chart-caption" aria-live="polite"></p><details class="data-details"><summary>View daily movement values</summary><div class="table-scroll"><table id="movement-table"></table></div></details></div>
+    </section>
+    <section id="predict" class="page-wrap section" aria-labelledby="predict-title">
+      <div class="section-heading"><div><p class="eyebrow">02 / PREDICT</p><h2 id="predict-title">Pressure on the ramp</h2></div><p class="section-aside">Space units (su) account for aircraft size: light 1, midsize 1.5, large 2.5.</p></div>
+      <div class="predict-grid"><div class="chart-panel parking-panel"><div class="panel-head"><div><h3>Parking occupancy</h3><p>Game week P10–P90 band, P50 line, and ordinary week P50</p></div><span class="badge estimated">ESTIMATED</span></div><div class="chart-key"><span><i class="key-parking"></i>Game week P50</span><span><i class="key-range"></i>P10–P90</span><span><i class="key-ordinary"></i>Ordinary P50</span><span><i class="key-capacity"></i>Normal / prepared capacity</span></div><div id="parking-chart" class="chart-scroll"></div><p id="parking-detail" class="chart-caption" aria-live="polite"></p><details class="data-details"><summary>View daily parking values</summary><div class="table-scroll"><table id="parking-table"></table></div></details></div>
+      <aside class="daily-panel"><p class="eyebrow">SELECTED DAY</p><h3 id="selected-day-heading">—</h3><div id="daily-detail"></div><div class="what-if"><p class="eyebrow">QUICK WHAT-IF</p><label for="capacity-slider">Extra usable ramp space <strong id="capacity-value">+0 su</strong></label><input id="capacity-slider" type="range" min="0" max="20" step="0.5" value="0"><p id="what-if-result" aria-live="polite"></p><small>Browser approximation: compares the selected day's published P10/P50/P90 occupancy with normal capacity plus your extra space. It does not rerun the parking model, optimize a plan, or change plan costs.</small></div></aside></div>
+      <div class="size-panel"><div><p class="eyebrow">AIRCRAFT MIX / SELECTED DAY</p><h3>Landings and departures by size</h3></div><div id="size-detail" class="size-grid"></div></div>
+    </section>
+    <section id="plan" class="page-wrap section" aria-labelledby="plan-title">
+      <div class="section-heading"><div><p class="eyebrow">03 / PLAN</p><h2 id="plan-title">A proposal, awaiting people</h2></div><p class="section-aside">Decision records stay in this browser. A recorded approval does not commit money or activate a facility.</p></div>
+      <div id="plan-summary" class="plan-summary" aria-live="polite"></div><div id="plan-actions" class="action-list"></div>
+      <div class="plan-footer"><p><strong>Human in command.</strong> The system never accepts or refuses an individual aircraft. Managers review every proposed action.</p><button id="export-decisions" type="button" class="outline-button">Export decisions ↓</button></div>
+      <div class="advice-panel"><div><p class="eyebrow">PRICE INCENTIVE ADVICE</p><h3>Keep aircraft moving, with consent</h3><p id="slot-advice"></p></div><div id="slot-table" class="slot-data"></div></div>
+    </section>
+    <section id="trust" class="page-wrap section" aria-labelledby="trust-title"><div class="section-heading"><div><p class="eyebrow">04 / TRUST & DATA</p><h2 id="trust-title">Know what supports the call</h2></div><p class="section-aside">Measured observations, model estimates and planning assumptions are separated throughout.</p></div>
+      <div class="boundary"><span class="boundary-icon" aria-hidden="true">!</span><div><p class="eyebrow">THE DECISION THE AI MUST NEVER MAKE</p><p id="never-allowed"></p></div></div>
+      <div class="evidence-grid"><article class="evidence-card"><p class="eyebrow">FORECAST BACKTEST <span class="badge estimated">ESTIMATED</span></p><h3 id="accuracy-head">—</h3><p id="accuracy-copy"></p><div id="accuracy-bars"></div></article><article class="evidence-card"><p class="eyebrow">SUPER BOWL CHECK <span class="badge measured">MEASURED FAA</span></p><h3>Past host airports</h3><p id="event-copy"></p><div class="table-scroll"><table id="event-table"></table></div></article></div>
+      <div class="evidence-grid"><article class="evidence-card"><p class="eyebrow">WEATHER EFFECTS <span class="badge measured">FAA + NOAA</span></p><h3>Operational weather context</h3><div class="table-scroll"><table id="weather-table"></table></div></article><article class="evidence-card"><p class="eyebrow">FAA HISTORY <span class="badge measured">MEASURED</span></p><h3>Three years of daily operations</h3><p>Monthly average Part 91 and Part 135 tower operations at LAX, 2023–2025.</p><div id="history-chart" class="history-chart"></div><details class="data-details"><summary>View monthly values</summary><div class="table-scroll"><table id="history-table"></table></div></details></article></div>
+      <div class="evidence-grid bottom-evidence"><article class="evidence-card"><p class="eyebrow">MODEL BOUNDARIES</p><h3>Assumptions and limits</h3><div id="assumptions"></div><p id="method-note" class="method-note"></p></article><article class="evidence-card"><p class="eyebrow">SOURCE INDEX</p><h3>Trace the inputs</h3><ul id="sources" class="sources"></ul><p class="method-note">A proportional FBO share changes aircraft counts and ramp size together; modelled ramp utilization stays the same.</p><div class="data-access"><h4>Explore the complete dataset</h4><p>Every model output is available here, including all 1,096 FAA daily records.</p><label for="data-section">Dataset section</label><select id="data-section"></select><pre id="raw-data" tabindex="0"></pre><a href="fbo_data.json" download class="outline-button">Download full JSON ↓</a></div></article></div>
+    </section>
+  </main>
+  <footer class="footer page-wrap"><span class="brand-mark">R<span>·</span>27</span><p>Fictional FBO at LAX · planning prototype · model data generated 24 Oct 2026</p><a href="#main">Back to top ↑</a></footer>
+</body>
+</html>
