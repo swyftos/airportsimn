@@ -1,0 +1,20 @@
+{
+  "source_url": "https://aspm.faa.gov/opsnet/sys/Airport.asp",
+  "source_repository": "swyftos/airportsimn",
+  "source_commit": "3f8aa2bbd348fcef7c0e52200352adbcf9bc7263",
+  "source_path": "alan/elia_output/data/processed/opsnet_daily_superbowl.csv",
+  "source_file_sha256": "800532237dd3d5cc865dfcb3d503498cb47a91fc0ab511d0f991442307cdcc40",
+  "selection": "locid == LAX and date in 2022",
+  "daily_rows": 28,
+  "status": "Historical repository-export subset; not a live feed; not independently re-downloaded in this review",
+  "limitations": [
+    "Operations include takeoffs and landings, not distinct aircraft or FBO customers",
+    "Descriptive period windows differ in length and weekday composition; not causal event estimates",
+    "Ground-service durations remain unverified; no placeholder durations included"
+  ],
+  "files": {
+    "lax_superbowl_daily_2022.csv": "f0a13db74c900083e535aba3bd8fc13a6110892f3e826971b1c6dc715ef7e099",
+    "lax_superbowl_period_summary.csv": "6c4b5756cd2fabc48185cc1a870e9deb0f37eeb78eaf21c765fb88d851deb4d0",
+    "SOURCE_VERIFICATION.md": "87e0eaeb6e2a22db2a8e1e6665e624c4d33174d5a8c3dd02cf81c01e3304d2a2"
+  }
+}

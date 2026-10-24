@@ -1,0 +1,4 @@
+period,start_date,end_date,days,air_taxi_total,ga_total,total_operations,air_taxi_per_day,ga_air_taxi_per_day,all_operations_per_day,classification
+before,2022-02-03,2022-02-09,7,594,257,9796,84.857143,121.571429,1399.428571,derived_from_repository_historical_FAA_export
+during,2022-02-10,2022-02-14,5,528,275,7587,105.6,160.6,1517.4,derived_from_repository_historical_FAA_export
+after,2022-02-15,2022-02-21,7,647,337,10411,92.428571,140.571429,1487.285714,derived_from_repository_historical_FAA_export
