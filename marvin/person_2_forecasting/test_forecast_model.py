@@ -2,7 +2,7 @@ import copy
 import tempfile
 import unittest
 from pathlib import Path
-from datetime import date
+from datetime import date, timedelta
 import forecast_model as m
 
 class ForecastTests(unittest.TestCase):
@@ -45,16 +45,20 @@ class ForecastTests(unittest.TestCase):
         for r in result:
             for t in m.TARGETS:
                 self.assertEqual(r['expected_'+t],r['baseline_'+t])
-    def test_test_period_does_not_leak(self):
+    def test_holdout_metrics_use_earlier_data_and_forecast_refits(self):
         changed = copy.deepcopy(self.history)
         test_start = date.fromisoformat(self.metrics[0]['test_start'])
         for r in changed:
             if r['date'] >= test_start:
                 r['arrivals'] += 500
         predictions,intervals,metrics = m.forecast(changed,self.planning)
-        self.assertEqual(predictions,self.pred)
-        self.assertEqual(intervals,self.intervals)
-        self.assertNotEqual(metrics,self.metrics)
+        # The evaluated model and its calibration radius never see the test period ...
+        for old, new in zip(self.metrics, metrics):
+            self.assertEqual((old['baseline_radius'], old['train_end']), (new['baseline_radius'], new['train_end']))
+            if new['target'] == 'arrivals':
+                self.assertGreater(new['model_mae'], old['model_mae'])
+        # ... while the final forecast refits on every day, the most recent included.
+        self.assertNotEqual(predictions,self.pred)
     def test_invalid_planning_rejected(self):
         with self.assertRaises(ValueError):
             m.forecast(self.history,self.planning[:-1])
@@ -142,6 +146,16 @@ class ForecastTests(unittest.TestCase):
         self.assertGreater(holiday, 1)
         self.assertAlmostEqual(model.predict(date(2027,2,15)), model.ordinary(date(2027,2,15))*holiday)
         self.assertEqual(model.predict(date(2027,2,22)), model.ordinary(date(2027,2,22)))
+
+    def test_holiday_ratio_uses_neighbouring_weeks(self):
+        rows = [dict(date=date(2024,2,19)+timedelta(weeks=k), arrivals=10.0) for k in (-3,-2,-1,1,2,3)]
+        rows.append(dict(date=date(2024,2,19), arrivals=13.0))
+        self.assertAlmostEqual(m.holiday_factors(rows,'arrivals')['presidents_day'], 1.3)
+        model = m.SeasonalModel(rows,'arrivals',{'presidents_day':2.0})
+        self.assertAlmostEqual(model.predict(date(2027,2,15)), 2*model.ordinary(date(2027,2,15)))
+        long = m.load_holiday_history(Path(__file__).resolve().parent/'provisional_inputs/holiday_history.csv')
+        self.assertEqual({r['date'].year for r in long}, {2016,2017,2018,2019,2023,2024,2025})
+        self.assertGreater(m.holiday_factors(long,'arrivals')['presidents_day'], 1)
 
 if __name__ == '__main__':
     unittest.main()

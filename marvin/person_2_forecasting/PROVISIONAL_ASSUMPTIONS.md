@@ -28,7 +28,7 @@ The 10% share is the value in Alan's ledger, so nazar/scripts/release_team.py re
 
 ## Presidents' Day
 
-Monday 2027-02-15 is Presidents' Day. The model learns a factor per holiday from its training days: observed count divided by the ordinary month/weekday prediction. The training split contains the 2023 and 2024 holidays and gives **1.20**. Measured against the surrounding Mondays, GA was 1.17, 0.96 and 1.36 times a normal Monday in 2023, 2024 and 2025, and air taxi 1.19, 1.34 and 1.08, so the effect is real but noisy. The factor applies to the baseline, so the ordinary week includes it too.
+Monday 2027-02-15 is Presidents' Day. Each year's holiday is compared with the same weekday one to three weeks before and after, and the ratios are averaged. The final forecast takes them from the long FAA history (GA + air taxi, 2016–2019 and 2023–2025, seven holidays; provisional_inputs/holiday_history.csv): **1.25**. Ratios are scale-free, so the pre-COVID level shift does not matter. The evaluated model learns the same ratio from its own training days only. The factor applies to the baseline, so the ordinary week includes it too.
 
 ## Event scenarios
 
@@ -37,31 +37,56 @@ The event window is Thursday–Monday around February 13, 2022. Each day's basel
 | Scenario | Five-day excess | Source |
 | --- | --- | --- |
 | Low | 3.1% | LAX general aviation, control-adjusted |
-| Medium | 15.5% | LAX air taxi, control-adjusted, used as the analog for event-driven business-jet demand |
+| Medium | 15.5% | LAX air taxi, control-adjusted |
 | High | 31% | Twice Medium, stress case |
 
 Why Medium uses air taxi: the GA category mixes FBO visitors with training and local flying, and the event TFR banned training, so GA hides the event response (six-airport GA: −25%; LAX GA control years range from 1.14 to 1.43). Air taxi is the cleanest measured response of business jets to the game, and with Part 135 in scope it is a direct measurement for most of the modeled traffic.
 
-Timing and direction are unchanged: the positive regional air-taxi daily shape spreads the excess over Thursday–Monday, scaled so baseline-weighted five-day forecast movements rise by exactly the scenario excess. Aircraft are conserved: extra arrivals Thursday to Saturday plus half of game day, the same number of extra departures on the other half of game day and Monday. Tuesday and Wednesday stay at baseline. The scenarios are assumptions, not confidence bounds or probabilities. Per-day multipliers are in provisional_inputs/event_evidence.json and planning_inputs.csv.
+Timing and direction: the positive regional air-taxi daily shape spreads the excess over Thursday–Monday, scaled so baseline-weighted five-day forecast movements rise by exactly the scenario excess. Aircraft are conserved: extra arrivals Thursday to Saturday plus half of game day, the same number of extra departures on the other half of game day and Monday. Tuesday and Wednesday stay at baseline. Per-day multipliers are in provisional_inputs/event_evidence.json and planning_inputs.csv.
+
+### Test against other Super Bowls
+
+The same method, applied to the host-city airports of seven other games (alan/elia_output/data/processed/superbowl_hosts_excess.csv, FAA daily counts fetched with `fetch_opsnet.py hosts`), gives these five-day air-taxi excesses:
+
+| Game | Host airports | Air taxi | Position vs scenarios |
+| --- | --- | --- | --- |
+| LII 2018 Minneapolis | MSP, STP, FCM | +90% | above High |
+| LIII 2019 Atlanta | ATL, PDK, FTY | +12% | Low to Medium |
+| LIV 2020 Miami | MIA, OPF, FLL, FXE, TMB | +32% | just above High |
+| LVI 2022 Los Angeles | LAX | +15.5% | Medium (the anchor) |
+| LVII 2023 Phoenix | PHX, SDL, DVT, IWA, FFZ | −22% | below Low |
+| LVIII 2024 Las Vegas | LAS, VGT, HND | +19% | Medium to High |
+| LIX 2025 New Orleans | MSY, NEW | +285% | above High |
+| LX 2026 Bay Area | SJC, OAK, PAO, RHV | +61% | above High |
+
+In the large metro areas (Atlanta, Miami, Los Angeles, Phoenix, Las Vegas, Bay Area), three of six events fall inside Low–High, one sits on the High edge, one is above (Bay Area) and one below (Phoenix, where the Phoenix Open golf tournament fills the same week in every control year). Small markets (Minneapolis, New Orleans) jump far more because their ordinary traffic is small. Medium (+15.5%) is close to the large-metro median; High (+31%) was exceeded in two of six large-metro events, so it is a stress case, not a worst case. GA alone falls at most host airports because the security restriction bans training flights.
 
 ## Evaluation and uncertainty
 
-The 2023–2025 chronological split has 657 training, 219 calibration and 220 test dates. Training ends 2024-10-18; calibration starts 2024-10-19; testing starts 2025-05-26. The calibrated model is frozen.
+The 2023–2025 chronological split has 657 training, 219 calibration and 220 test dates. Training ends 2024-10-18; calibration starts 2024-10-19; testing starts 2025-05-26. Metrics come from the train-only model. The forecast then refits on every day of 2023–2025, so the most recent year informs it, and its range is the 90% conformal radius of the held-out errors over the calibration and test periods together (wider than the calibration-only radius, which covered 86.8% of test days).
 
-Because the history is now observed daily counts, the holdout measures real daily accuracy of the airport GA pattern:
-
-| Measure on the 2025 test days | Value |
+| Measure on the 2025 test days (single split) | Value |
 | --- | --- |
 | Average daily error, model | 17.2% of the mean |
 | Average daily error, overall average | 19.8% |
 | Improvement | 13.3% |
 | Days inside the nominal 90% range | 86.8% |
 
-This is the accuracy of the airport-level daily pattern; the FBO share is a constant, so it does not change these percentages. It is not observed FBO accuracy. Event ranges are assumption-scaled planning ranges with unvalidated coverage.
+**Rolling backtest** (backtest.py, backtest_metrics.csv): every Monday of 2025 (51 origins), the model is fitted only on earlier days and forecasts the next seven days, against four simple baselines.
+
+| Model | Average daily error (WAPE) |
+| --- | --- |
+| This model (month and weekday, holiday ratio) | **14.9%** |
+| Same weekday, mean of the last 8 weeks | 16.6% |
+| Same day last year | 17.8% |
+| Overall mean | 18.4% |
+| Same day last week | 21.5% |
+
+Rolling 90% ranges built from the previous 12 weeks' errors covered 87.9% of days. On Presidents' Day 2025 the model was off by 4.2%, against 15.8% for the 8-week weekday mean. This is the accuracy of the airport-level daily pattern; the FBO share is a constant, so it does not change these percentages. It is not observed FBO accuracy. Event ranges are assumption-scaled planning ranges with unvalidated coverage.
 
 ## Matching parking outputs
 
-Elia's optimizer is rerun on this release. Opening inventory is recomputed as first-day baseline arrivals times the 1.1-day dwell assumption (5.9 aircraft). Ramp capacity and other operating assumptions are unchanged.
+Elia's optimizer is rerun on this release. Opening inventory is recomputed as first-day baseline arrivals times the 1.1-day dwell assumption (6.1 aircraft). Ramp capacity and other operating assumptions are unchanged.
 
 ## Release and review
 
