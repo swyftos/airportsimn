@@ -55,6 +55,18 @@ Definition: from game day (Sunday 2027-02-14, `delay_24h_first_day` = 3) onward,
 
 Effect in the Medium scenario: Monday's parking peak goes from 5.9 to 9.5 su at P50, and aircraft keep accumulating until the delayed departures leave. In the Low scenario, it goes from 5.3 to 8.0 su. No scenario exceeds the 75 su ramp at P50, even with the delay (High peaks at 11.4 su).
 
+## Game-day security restriction variant
+
+`resource_requirements_security_restriction.csv` and `scenario_recommendations_security_restriction.json`.
+
+Input: Alan's `alan/data/processed/security_restriction_model_input.csv`. No private movements on Sunday 2027-02-14 between 14:30 and 20:30, the window of the Super Bowl LVI security TFR (FAA flight advisory), with LAX inside the 10 NM inner ring. This is a precedent-based assumption; no TFR has been published for 2027.
+
+Method: movements are spread evenly within each shift (morning 06–14, day 14–22, night 22–06). The window covers 6 of the day shift's 8 hours, so 30 % of game-day movements are blocked. They are released evenly over `security_release_hours` (4 h) after 20:30. Game-day shift shares go from 40 / 40 / 20 % to 40 / 21 / 39 %, so the night shift handles almost twice its usual share. `security_next_day_share` (0 by default, because LAX is open 24 h) sends a share of blocked departures to Monday instead. Same 10,000 demand paths as the standard run.
+
+Result at the current demand: parking is unchanged with no next-day slips (5.3 / 6.5 / 8.3 su P50 peaks). If half or all blocked departures slip to Monday, the peaks rise to 5.4–5.6 / 6.7–6.9 / 8.5–8.7 su. The normal crew of 3 technicians per shift covers the game-day night surge in every scenario, so the plan recommends no action. With a larger FBO share, the night shift is the first place this variant would require extra staff.
+
+The dashboard contract (`nazar/readiness/contracts.py`) accepts only the standard and 24-hour delay variants, so these two files are not displayed yet, and the carryover table does not include them.
+
 ## Aircraft still parked after 2027-02-17 (`parking_carryover.csv`)
 
 One row per variant and scenario: opening aircraft, aircraft remaining after the last day (P10, P50, P90, demand not limited by capacity), space units remaining at P50, and departures pushed past the window by the delay.

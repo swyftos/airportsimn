@@ -40,3 +40,5 @@ mc_common_shock_share,0.6,share of log variance,estimate,Part of each day's devi
 planning_quantile,0.90,quantile,estimate,Parking capacity is prepared for this quantile of simulated parking demand
 delay_24h_first_day,3,day index,estimate,Departure-delay variant: first affected planning day (0 = 2027-02-11 so 3 = game day Sun 2027-02-14). Represents a post-game ground stop or weather hold
 delay_24h_share,1.0,share of departures,estimate,Departure-delay variant: share of each affected day's departures that leave 24 h later. Departures pushed past 2027-02-17 stay parked after the window
+security_release_hours,4,hours,estimate,Security-restriction variant: movements blocked by the game-day TFR window (alan/data/processed/security_restriction_model_input.csv) are released evenly over this many hours after it ends. Not observed
+security_next_day_share,0.0,share of blocked departures,estimate,Security-restriction variant: share of departures blocked by the TFR window that leave the next day instead of the same night. 0 = all leave after the window (LAX is open 24 h); raise it to test crew-rest or night-throughput slips

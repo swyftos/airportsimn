@@ -1,0 +1,211 @@
+{
+  "meta": {
+    "demand_source": "marvin/person_2_forecasting",
+    "demand_provenance": [
+      "estimated"
+    ],
+    "assumptions_file": "assumptions_p3.csv",
+    "method": "10000 Monte Carlo demand paths per scenario drawn from P2 point forecasts and assumed planning ranges mapped to 5th/95th percentiles, with a shared event shock. P2 expected counts are treated as medians. Parking prepared for the planning quantile, staffing and fuel for P50 plus buffer. Impact compares normal plan vs prepared plan on the same paths. Variant: no private movements on 2027-02-14 between 14.50 and 20.50 h (Alan's TFR input, https://www.faasafety.gov/files/notices/2022/Jan/SB_LVI_Flight_Advisory.pdf). Movements in that window are released over 4 h after it; 0% of blocked departures leave the next day. Same demand paths.",
+    "limitations": "P2 historical input provenance: estimated. FBO allocation, reservations and event assumptions are provisional; results are conditional simulations, not observed FBO performance. P2 event-week ranges are not validated against observed Super Bowl outcomes.",
+    "human_in_command": "Recommendations only. Every action needs approval by the named role. The system never accepts, rejects or cancels an individual aircraft reservation.",
+    "variant": "security_restriction",
+    "data_status": "provisional"
+  },
+  "scenarios": {
+    "Low": {
+      "summary": {
+        "peak_day": "2027-02-15",
+        "peak_parking_demand_su_p50": 5.3,
+        "peak_parking_demand_su_p90": 8.0,
+        "normal_capacity_su": 75.0,
+        "max_prepared_capacity_su": 75.0,
+        "risk_days": [],
+        "overall_risk": "Low"
+      },
+      "actions": [],
+      "preparation_cost_usd": 0,
+      "impact": {
+        "runs": 10000,
+        "no_preparation": {
+          "unaccommodated_aircraft": {
+            "mean": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "delayed_turns": {
+            "mean": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "total_cost_usd": {
+            "mean": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "prob_any_unaccommodated": 0.0
+        },
+        "ai_preparation": {
+          "unaccommodated_aircraft": {
+            "mean": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "delayed_turns": {
+            "mean": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "total_cost_usd": {
+            "mean": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "prob_any_unaccommodated": 0.0
+        },
+        "net_benefit_usd": {
+          "mean": 0.0,
+          "p10": 0.0,
+          "p50": 0.0,
+          "p90": 0.0
+        },
+        "prob_preparation_pays_off": 0.0
+      }
+    },
+    "Medium": {
+      "summary": {
+        "peak_day": "2027-02-14",
+        "peak_parking_demand_su_p50": 6.5,
+        "peak_parking_demand_su_p90": 10.0,
+        "normal_capacity_su": 75.0,
+        "max_prepared_capacity_su": 75.0,
+        "risk_days": [],
+        "overall_risk": "Low"
+      },
+      "actions": [],
+      "preparation_cost_usd": 0,
+      "impact": {
+        "runs": 10000,
+        "no_preparation": {
+          "unaccommodated_aircraft": {
+            "mean": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "delayed_turns": {
+            "mean": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "total_cost_usd": {
+            "mean": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "prob_any_unaccommodated": 0.0
+        },
+        "ai_preparation": {
+          "unaccommodated_aircraft": {
+            "mean": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "delayed_turns": {
+            "mean": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "total_cost_usd": {
+            "mean": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "prob_any_unaccommodated": 0.0
+        },
+        "net_benefit_usd": {
+          "mean": 0.0,
+          "p10": 0.0,
+          "p50": 0.0,
+          "p90": 0.0
+        },
+        "prob_preparation_pays_off": 0.0
+      }
+    },
+    "High": {
+      "summary": {
+        "peak_day": "2027-02-14",
+        "peak_parking_demand_su_p50": 8.3,
+        "peak_parking_demand_su_p90": 11.4,
+        "normal_capacity_su": 75.0,
+        "max_prepared_capacity_su": 75.0,
+        "risk_days": [],
+        "overall_risk": "Low"
+      },
+      "actions": [],
+      "preparation_cost_usd": 0,
+      "impact": {
+        "runs": 10000,
+        "no_preparation": {
+          "unaccommodated_aircraft": {
+            "mean": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "delayed_turns": {
+            "mean": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "total_cost_usd": {
+            "mean": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "prob_any_unaccommodated": 0.0
+        },
+        "ai_preparation": {
+          "unaccommodated_aircraft": {
+            "mean": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "delayed_turns": {
+            "mean": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "total_cost_usd": {
+            "mean": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "prob_any_unaccommodated": 0.0
+        },
+        "net_benefit_usd": {
+          "mean": 0.0,
+          "p10": 0.0,
+          "p50": 0.0,
+          "p90": 0.0
+        },
+        "prob_preparation_pays_off": 0.0
+      }
+    }
+  }
+}
