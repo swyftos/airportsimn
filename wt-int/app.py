@@ -85,13 +85,14 @@ with forecast_tab:
     with st.container(key='forecast-visual'):
         chart = st.container(key='occupancy-chart')
         with st.container(key='scenario-controls'):
-            controls = st.columns([3,2])
+            controls = st.columns([3,2,1.6])
             with controls[0]:
                 label = st.radio('Demand case',list(LABELS),horizontal=True,key='case',disabled=source=='upload')
                 st.caption('Expected is the model’s central case. Lower and higher are alternatives, not confidence bounds.')
             with controls[1]:
                 delay = st.slider('Departures run late by 0–6 hours',0,6,0,key='delay')
-    st.button('Preview preparation plan',type='primary',key='preview',on_click=lambda: st.session_state.update(show_plan=True))
+            with controls[2]:
+                st.button('Preview preparation plan',type='primary',key='preview',on_click=lambda: st.session_state.update(show_plan=True))
     plan_inline = st.container()
     with st.expander('Why this forecast'):
         why = st.container()
