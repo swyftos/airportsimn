@@ -1,0 +1,7 @@
+event,metric,airports,airport_count,event_year_ratio,control_mean_2019_and_recent,excess_vs_all_controls,control_mean_recent_only,excess_vs_recent_controls,scope,data_classification,transfer_to_selected_fleet_validated
+LIX_2025_New_Orleans,general_aviation,MSY|NEW,2,0.886149,0.927285,-0.0444,0.947219,-0.0645,airport_itinerant_category,derived_public_benchmark,no
+LIX_2025_New_Orleans,air_taxi,MSY|NEW,2,5.046296,1.275886,2.9551,1.335075,2.7798,airport_itinerant_category,derived_public_benchmark,no
+LVIII_2024_Las_Vegas,general_aviation,HND|LAS|VGT,3,0.866046,0.979411,-0.1157,0.964379,-0.102,airport_itinerant_category,derived_public_benchmark,no
+LVIII_2024_Las_Vegas,air_taxi,HND|LAS|VGT,3,1.17586,0.987808,0.1904,1.001199,0.1745,airport_itinerant_category,derived_public_benchmark,no
+LVII_2023_Phoenix,general_aviation,CHD|DVT|FFZ|GEU|GYR|IWA|PHX|SDL,8,0.675029,1.056607,-0.3611,0.893749,-0.2447,airport_itinerant_category,derived_public_benchmark,no
+LVII_2023_Phoenix,air_taxi,CHD|DVT|FFZ|GEU|GYR|IWA|PHX|SDL,8,0.718816,0.962606,-0.2533,0.874998,-0.1785,airport_itinerant_category,derived_public_benchmark,no

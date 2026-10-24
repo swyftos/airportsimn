@@ -1,0 +1,5 @@
+year,holiday_date,train_end,training_holiday_count,observed_lax_ga_operations,frozen_ordinary_model,observed_to_ordinary_ratio,learned_holiday_factor,factor_relative_error,role,scope,data_classification
+2023,2023-02-20,2024-10-18,2,46,39.4284,1.1667,1.0525,0.1084,fit,LAX_airport_itinerant_GA,derived_public_diagnostic
+2024,2024-02-19,2024-10-18,2,37,39.4284,0.9384,1.0525,-0.1084,fit,LAX_airport_itinerant_GA,derived_public_diagnostic
+2025,2025-02-17,2024-10-18,2,50,39.4284,1.2681,1.0525,0.2048,held_out_holiday_check,LAX_airport_itinerant_GA,derived_public_diagnostic
+2026,2026-02-16,2024-10-18,2,69,39.4284,1.75,1.0525,0.6627,held_out_holiday_check,LAX_airport_itinerant_GA,derived_public_diagnostic
