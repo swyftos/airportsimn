@@ -103,3 +103,14 @@ expansion (e.g., for an unannounced VIP attendee) during the planning
 window could ground FBO traffic entirely for hours, independent of
 parking capacity. This belongs in the guardrail/risk section of the
 plan, not the demand forecast.
+
+## Model input
+
+The LVI precedent above is now encoded as a structured, model-consumable
+row: `alan/data/processed/security_restriction_model_input.csv` — start
+time, end time, timezone, inner/outer ring radii and exactly which
+movement types each ring blocks or exempts, for game day (2027-02-14,
+Sunday) in this project's planning week. It is explicitly labeled
+`classification=assumption` (a precedent applied to a future, unannounced
+event, not a confirmed restriction) and cross-referenced from
+`assumptions.csv`'s `ALAN-security_restriction_window` row.
