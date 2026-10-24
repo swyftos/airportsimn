@@ -21,7 +21,8 @@ def run():
     commands=[
         [sys.executable,str(P2/'convert_monthly_to_daily.py')],
         [sys.executable,str(P2/'forecast_model.py'),'--history',str(P2/'provisional_inputs/historical_traffic.csv'),
-         '--planning',str(P2/'provisional_inputs/planning_inputs.csv'),'--output-dir',str(P2)],
+         '--planning',str(P2/'provisional_inputs/planning_inputs.csv'),'--output-dir',str(P2),
+         '--holiday-history',str(P2/'provisional_inputs/holiday_history.csv')],
         [sys.executable,'elia/parking_optimizer.py',str(P2)]]
     for command in commands:
         if command[1]=='elia/parking_optimizer.py':

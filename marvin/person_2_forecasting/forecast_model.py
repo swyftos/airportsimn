@@ -16,6 +16,31 @@ def presidents_day(year):
 
 HOLIDAYS = {'presidents_day': presidents_day}
 
+def holiday_factors(rows, target):
+    """Per holiday: observed / mean of the same weekday 1-3 weeks before and after, averaged over the years in rows."""
+    by_date = defaultdict(float)
+    for r in rows:
+        by_date[r['date']] += r[target]
+    factors = {}
+    for name, rule in HOLIDAYS.items():
+        ratios = []
+        for year in sorted({d.year for d in by_date}):
+            day = rule(year)
+            ref = [by_date[day + timedelta(weeks=k)] for k in (-3, -2, -1, 1, 2, 3) if day + timedelta(weeks=k) in by_date]
+            if day in by_date and len(ref) >= 4 and sum(ref) > 0:
+                ratios.append(by_date[day] / (sum(ref) / len(ref)))
+        factors[name] = sum(ratios) / len(ratios) if ratios else 1.0
+    return factors
+
+def load_holiday_history(path):
+    """Long daily airport history (any scale) used only for holiday ratios; COVID years dropped."""
+    rows = []
+    for r in read_csv(path):
+        d = date.fromisoformat(r['date'])
+        if d.year not in EXCLUDED:
+            rows.append(dict(date=d, **{t: number(r, t) for t in TARGETS}))
+    return rows
+
 def read_csv(path):
     with open(path, newline='', encoding='utf-8-sig') as f:
         return list(csv.DictReader(f))
@@ -58,19 +83,15 @@ def load_history(path):
 
 class SeasonalModel:
     """Month/weekday mean shrunk toward weekday mean using 14 prior days."""
-    def __init__(self, rows, target):
+    def __init__(self, rows, target, holiday=None):
         self.mean = sum(r[target] for r in rows) / len(rows)
         self.weekday, self.seasonal = defaultdict(list), defaultdict(list)
         for r in rows:
             d = r['date']
             self.weekday[d.weekday()].append(r[target])
             self.seasonal[d.month, d.weekday()].append(r[target])
-        # Holiday effect learned from training days: observed / ordinary prediction.
-        self.holiday = {}
-        for name, rule in HOLIDAYS.items():
-            ratios = [r[target] / self.ordinary(r['date']) for r in rows
-                      if r['date'] == rule(r['date'].year) and self.ordinary(r['date']) > 0]
-            self.holiday[name] = sum(ratios) / len(ratios) if ratios else 1.0
+        # Holiday effect vs neighbouring same weekdays, from the rows unless a longer history supplies it.
+        self.holiday = holiday if holiday is not None else holiday_factors(rows, target)
     def ordinary(self, d):
         w = self.weekday[d.weekday()]
         parent = sum(w) / len(w) if w else self.mean
@@ -86,7 +107,7 @@ def conformal_radius(residuals, coverage):
         raise ValueError('Insufficient calibration days for requested coverage')
     return sorted(residuals)[rank - 1]
 
-def fit_and_evaluate(history, coverage):
+def fit_and_evaluate(history, coverage, holiday_rows=None):
     # Enforce the post-COVID window for direct in-memory callers too.
     history = sorted((r for r in history if TRAINING_START <= r["date"] <= TRAINING_END), key=lambda r: r["date"])
     fitted, metrics = {}, []
@@ -105,8 +126,11 @@ def fit_and_evaluate(history, coverage):
         for t in TARGETS:
             model = SeasonalModel(train, t)
             radius = conformal_radius([abs(r[t]-model.predict(r['date'])) for r in cal], coverage)
-            # Freeze the calibrated model: refitting changes residuals.
-            fitted[c,t] = model, radius, provenance
+            # Metrics come from the train-only model. The forecast refits on every day and takes its range from
+            # the held-out errors of the calibration and test periods, which include the most recent year.
+            final = SeasonalModel(rows, t, holiday_factors(holiday_rows, t) if holiday_rows else None)
+            final_radius = conformal_radius([abs(r[t]-model.predict(r['date'])) for r in cal + test], coverage)
+            fitted[c,t] = final, final_radius, provenance
             mae = sum(abs(r[t]-model.predict(r['date'])) for r in test)/len(test)
             base_mae = sum(abs(r[t]-model.mean) for r in test)/len(test)
             covered = sum(max(0,model.predict(r['date'])-radius) <= r[t] <= model.predict(r['date'])+radius for r in test)/len(test)
@@ -119,10 +143,10 @@ def fit_and_evaluate(history, coverage):
                 nominal_coverage=coverage, test_coverage=round(covered,4), baseline_radius=round(radius,4)))
     return fitted, metrics
 
-def forecast(history, planning, coverage=.9):
+def forecast(history, planning, coverage=.9, holiday_rows=None):
     if not .5 <= coverage < 1:
         raise ValueError('coverage must be in [0.5,1)')
-    fitted, metrics = fit_and_evaluate(history, coverage)
+    fitted, metrics = fit_and_evaluate(history, coverage, holiday_rows)
     predictions, uncertainty, seen = [], [], set()
     categories = {k[0] for k in fitted}
     dates = {date(2027,2,11)+timedelta(days=i) for i in range(7)}
@@ -202,6 +226,7 @@ def main():
     p.add_argument('--planning',type=Path)
     p.add_argument('--output-dir',type=Path,default=Path('.'))
     p.add_argument('--coverage',type=float,default=.9)
+    p.add_argument('--holiday-history',type=Path,help='Long daily history for holiday ratios (scale-free)')
     args = p.parse_args()
     if args.demo and (args.history or args.planning):
         p.error('Do not combine --demo with supplied inputs')
@@ -211,7 +236,8 @@ def main():
     if args.demo:
         args.history,args.planning = make_demo(args.output_dir)
     history = load_history(args.history)
-    forecasts,intervals,metrics = forecast(history,read_csv(args.planning),args.coverage)
+    holiday_rows = load_holiday_history(args.holiday_history) if args.holiday_history else None
+    forecasts,intervals,metrics = forecast(history,read_csv(args.planning),args.coverage,holiday_rows)
     for name, rows in [('demand_predictions.csv',forecasts),('uncertainty_results.csv',intervals),('evaluation_metrics.csv',metrics)]:
         write_csv(args.output_dir/name,rows)
     totals = []
@@ -228,7 +254,7 @@ def main():
         seed=42 if args.demo else None,history_file=str(args.history),planning_file=str(args.planning),
         historical_data_classes=sorted({r['data_class'] for r in history}),nominal_baseline_coverage=args.coverage,
         uncertainty='Baseline split-conformal intervals scaled by assumed multipliers; event coverage not validated',
-        caution='Training/calibration/test use only 2023-2025 observed daily FAA GA counts scaled by an assumed FBO share. MAE and coverage measure how well the daily airport GA pattern is predicted, not observed FBO accuracy. Event scenarios: Low from LAX GA, Medium from LAX air taxi as the event-response analog; FBO transfer and direction split are unvalidated. No booking data supplied; reservation floors disabled.')
+        caution='Training/calibration/test use only 2023-2025 observed daily FAA GA + air-taxi counts scaled by an assumed FBO share; metrics come from the train-only model, the forecast refits on all 2023-2025 days with a range from held-out errors. Holiday factors from '+(args.holiday_history.name if args.holiday_history else 'the history')+'. MAE and coverage measure how well the daily airport pattern is predicted, not observed FBO accuracy. Event scenarios: Low from LAX GA, Medium from LAX air taxi as the event-response analog; FBO transfer and direction split are unvalidated. No booking data supplied; reservation floors disabled.')
     (args.output_dir/'run_metadata.json').write_text(json.dumps(metadata,indent=2),encoding='utf-8')
     print(f'Wrote {len(forecasts)} scenario/category forecasts to {args.output_dir}')
 

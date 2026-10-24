@@ -1,7 +1,7 @@
 """FAA ATADS/OPSNET anchored scenarios, with explicit unvalidated FBO transfer."""
 from datetime import date, timedelta
 from pathlib import Path
-from forecast_model import load_history, fit_and_evaluate, read_csv
+from forecast_model import load_history, load_holiday_history, fit_and_evaluate, read_csv
 
 HERE = Path(__file__).resolve().parent
 DATA = HERE.parents[1]/'alan/elia_output/data/processed'
@@ -11,7 +11,7 @@ DATA = HERE.parents[1]/'alan/elia_output/data/processed'
 # High doubles Medium as a stress case.
 EVENT_EXCESS = {'low': ('general_aviation', 1), 'medium': ('air_taxi', 1), 'high': ('air_taxi', 2)}
 
-def build(history_path):
+def build(history_path, holiday_path=None):
     surge = read_csv(DATA/'superbowl_lvi_surge.csv')
     lax = {r['metric']: float(r['excess_2022']) for r in surge if r['locid']=='LAX'}
     regional = next(r for r in surge if r['metric']=='air_taxi' and r['locid']=='ALL6')
@@ -19,7 +19,8 @@ def build(history_path):
     scenario_excess = {s: lax[metric]*k for s,(metric,k) in EVENT_EXCESS.items()}
     excess = scenario_excess['medium']
     assert 0 < scenario_excess['low'] <= excess < 1
-    fitted, _ = fit_and_evaluate(load_history(history_path), .9)
+    fitted, _ = fit_and_evaluate(load_history(history_path), .9,
+                                 load_holiday_history(holiday_path) if holiday_path else None)
     days = [date(2027,2,11)+timedelta(days=i) for i in range(7)]
     categories = sorted({key[0] for key in fitted})
     baseline = {i: sum(fitted[c,t][0].predict(d) for c in categories

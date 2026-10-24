@@ -35,33 +35,33 @@
   "daily": [
     {
       "date": "2027-02-11",
-      "medium_operations_multiplier": 1.0793339871377772,
-      "medium_arrivals_multiplier": 1.1585335752187615,
+      "medium_operations_multiplier": 1.0788573827033006,
+      "medium_arrivals_multiplier": 1.1602280548460402,
       "medium_departures_multiplier": 1.0
     },
     {
       "date": "2027-02-12",
-      "medium_operations_multiplier": 1.215748305795071,
-      "medium_arrivals_multiplier": 1.431131114155189,
+      "medium_operations_multiplier": 1.2144521828724433,
+      "medium_arrivals_multiplier": 1.4357392414153847,
       "medium_departures_multiplier": 1.0
     },
     {
       "date": "2027-02-13",
-      "medium_operations_multiplier": 1.0553369700359878,
-      "medium_arrivals_multiplier": 1.110580194164995,
+      "medium_operations_multiplier": 1.055004529347436,
+      "medium_arrivals_multiplier": 1.1117621260424193,
       "medium_departures_multiplier": 1.0
     },
     {
       "date": "2027-02-14",
-      "medium_operations_multiplier": 1.0921278168536688,
-      "medium_arrivals_multiplier": 1.0920497803642888,
-      "medium_departures_multiplier": 1.092205985768366
+      "medium_operations_multiplier": 1.0915743525991262,
+      "medium_arrivals_multiplier": 1.0930336506725657,
+      "medium_departures_multiplier": 1.0901601277485122
     },
     {
       "date": "2027-02-15",
-      "medium_operations_multiplier": 1.2816232970202404,
+      "medium_operations_multiplier": 1.2799314255152994,
       "medium_arrivals_multiplier": 1.0,
-      "medium_departures_multiplier": 1.5637244993731656
+      "medium_departures_multiplier": 1.5512166314899696
     },
     {
       "date": "2027-02-16",

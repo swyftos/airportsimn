@@ -5,7 +5,7 @@ m2_per_su,600,m2 per space unit,estimate,Light-jet position (Citation CJ3 16.3 m
 usable_parking_share,0.85,share of ramp,estimate,Ramp left for parking after fuel-truck lanes hangar fronts and ground equipment areas
 overflow_capacity_su,40,space units,synthetic,Fictional remote apron that can be leased for the event week. Activation needs management approval
 tow_packing_gain,0.10,share of ramp,estimate,Tighter tow-in packing when aircraft stay several nights. Planning estimate to be confirmed with ops
-initial_transient_aircraft,5.9,aircraft,estimate,"P2 ordinary arrivals 5.381 x opening_dwell_days 1.1; derived estimate refreshed with this release, not observed inventory."
+initial_transient_aircraft,6.1,aircraft,estimate,"P2 ordinary arrivals 5.500 x opening_dwell_days 1.1; derived estimate refreshed with this release, not observed inventory."
 opening_dwell_days,1.1,days,benchmark,Average ordinary dwell used to set initial_transient_aircraft. Value from Alan's ledger avg_dwell_days (40 % turns / 45 % overnight / 15 % multi-day)
 mix_light,0.47,share,estimate,Category share of the initial parked aircraft. Matches P2 forecast mix
 mix_midsize,0.33,share,estimate,Category share of the initial parked aircraft. Matches P2 forecast mix
@@ -42,3 +42,4 @@ delay_24h_first_day,3,day index,estimate,Departure-delay variant: first affected
 delay_24h_share,1.0,share of departures,estimate,Departure-delay variant: share of each affected day's departures that leave 24 h later. Departures pushed past 2027-02-17 stay parked after the window
 security_release_hours,4,hours,estimate,Security-restriction variant: movements blocked by the game-day TFR window (alan/data/processed/security_restriction_model_input.csv) are released evenly over this many hours after it ends. Not observed
 security_next_day_share,0.0,share of blocked departures,estimate,Security-restriction variant: share of departures blocked by the TFR window that leave the next day instead of the same night. 0 = all leave after the window (LAX is open 24 h); raise it to test crew-rest or night-throughput slips
+heavy_rain_day,3,day index,estimate,"Heavy-rain variant: day with at least 0.5 in of rain (0 = 2027-02-11, 3 = game day). The effect size is measured (marvin/person_2_part91_part135_forecast/results/weather_effect_measured.csv), not set here"

@@ -29,6 +29,8 @@ import pandas as pd
 HERE = Path(__file__).parent
 P2_DIRS = (HERE.parent / "marvin" / "person_2_forecasting", HERE.parent / "marvin" / "Person2-Forecasting")
 SECURITY_FILE = HERE.parent / "alan" / "data" / "processed" / "security_restriction_model_input.csv"
+WEATHER_FILE = HERE.parent / "marvin" / "person_2_part91_part135_forecast" / "results" / "weather_effect_measured.csv"
+FAA_DAILY = HERE.parent / "alan" / "elia_output" / "data" / "processed" / "opsnet_lax_daily.csv"
 CATS = ("light", "midsize", "large")
 CATEGORY_ALIASES = {"light_jet": "light", "midsize_jet": "midsize", "super_midsize": "midsize", "large_jet": "large"}
 DIRS = ("arrivals", "departures")
@@ -176,6 +178,31 @@ def restrict_departures(dep, day, blocked, a):
     return shifted, moved[:, -1]
 
 
+def load_heavy_rain() -> dict:
+    """Measured change in completed operations on LAX heavy-rain days (NOAA x FAA), weighted by the 2023-2025
+    Part 91 (GA) / Part 135 (air taxi) traffic split."""
+    w = pd.read_csv(WEATHER_FILE)
+    w = w[(w["window"] == "2016-2019+2023-2025") & (w["weather_type"] == "heavy_rain")].set_index("category")
+    faa = pd.read_csv(FAA_DAILY)
+    faa = faa[faa["date"].str[:4].isin(["2023", "2024", "2025"])]
+    share = {"part91_general_aviation": faa["general_aviation"].mean(), "part135_air_taxi": faa["air_taxi"].mean()}
+    total = sum(share.values())
+    effect = sum(w.loc[c, "effect"] * v / total for c, v in share.items())
+    return {"effect": float(effect), "parts": {c: float(w.loc[c, "effect"]) for c in share}}
+
+
+def heavy_rain_shift(arr, dep, day, effect):
+    """On a heavy-rain day the movements that did not happen (effect < 0) happen the next day instead."""
+    out = []
+    for x in (arr, dep):
+        moved = np.zeros_like(x)
+        moved[:, day] = x[:, day] * -min(effect, 0)
+        shifted = x - moved
+        shifted[:, 1:] += moved[:, :-1]
+        out.append((shifted, moved[:, -1]))
+    return out[0][0], out[1][0], out[1][1]
+
+
 def gallons(dep_by_cat, a):
     return dep_by_cat @ np.array([a["fuel_uplift_rate"] * a[f"gal_{c}"] for c in CATS])
 
@@ -294,6 +321,7 @@ def run(demand: pd.DataFrame, a: dict, variant: str = "standard", carryover: dic
     with the aircraft still parked after the last day (demand not limited by capacity)."""
     rng = np.random.default_rng(int(a["mc_seed"]))
     restriction = load_restriction() if variant == "security_restriction" else None
+    rain = load_heavy_rain() if variant == "heavy_rain" else None
     rows, recs = [], {}
     for scenario, sdf in demand.groupby("scenario", sort=False):
         dates, mid, lo, hi = scenario_arrays(sdf)
@@ -305,6 +333,8 @@ def run(demand: pd.DataFrame, a: dict, variant: str = "standard", carryover: dic
             dep, pushed = shift_departures(dep, a)
         elif variant == "security_restriction":
             dep, pushed = restrict_departures(dep, list(dates).index(restriction["date"]), blocked, a)
+        elif variant == "heavy_rain":
+            arr, dep, pushed = heavy_rain_shift(arr, dep, int(a["heavy_rain_day"]), rain["effect"])
         elif variant != "standard":
             raise ValueError(f"unknown variant {variant}")
         free_peak, _, end = ramp_sim(arr, dep, np.full(len(dates), np.inf), a, return_end=True)
@@ -432,6 +462,13 @@ def recommendations_json(demand, a, recs, variant):
     if variant == "departure_delay_24h":
         method += (f" Variant: from day index {int(a['delay_24h_first_day'])} (0 = first planning date), "
                    f"{a['delay_24h_share']:.0%} of each day's departures leave 24 h later, on the same demand paths.")
+    if variant == "heavy_rain":
+        r = load_heavy_rain()
+        method += (f" Variant: heavy rain (at least 0.5 in) on day index {int(a['heavy_rain_day'])}. Completed operations "
+                   f"change by {r['effect']:+.1%} (measured on LAX heavy-rain days vs comparable dry days, NOAA x FAA "
+                   f"2016-2019 and 2023-2025, weighted Part 91 {r['parts']['part91_general_aviation']:+.1%} / Part 135 "
+                   f"{r['parts']['part135_air_taxi']:+.1%}); the missing arrivals and departures happen the next day. "
+                   "About 5% of February days at LAX have heavy rain.")
     if variant == "security_restriction":
         r = load_restriction()
         method += (f" Variant: no private movements on {r['date']} between {r['start']:05.2f} and {r['end']:05.2f} h "
@@ -469,6 +506,11 @@ def main():
     s_table.to_csv(HERE / "resource_requirements_security_restriction.csv", index=False)
     (HERE / "scenario_recommendations_security_restriction.json").write_text(
         json.dumps(recommendations_json(demand, a, s_recs, "security_restriction"), indent=2))
+
+    h_table, h_recs = run(demand, a, "heavy_rain")
+    h_table.to_csv(HERE / "resource_requirements_heavy_rain.csv", index=False)
+    (HERE / "scenario_recommendations_heavy_rain.json").write_text(
+        json.dumps(recommendations_json(demand, a, h_recs, "heavy_rain"), indent=2))
 
     o_table, carry_ordinary = run_ordinary(load_ordinary_demand(sys.argv[1] if len(sys.argv) > 1 else None), a)
     o_table.to_csv(HERE / "ordinary_week_parking.csv", index=False)

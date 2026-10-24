@@ -15,8 +15,8 @@
     "Low": {
       "summary": {
         "peak_day": "2027-02-15",
-        "peak_parking_demand_su_p50": 13.8,
-        "peak_parking_demand_su_p90": 18.1,
+        "peak_parking_demand_su_p50": 14.2,
+        "peak_parking_demand_su_p90": 18.4,
         "normal_capacity_su": 75.0,
         "max_prepared_capacity_su": 75.0,
         "risk_days": [],
@@ -80,8 +80,8 @@
     "Medium": {
       "summary": {
         "peak_day": "2027-02-14",
-        "peak_parking_demand_su_p50": 17.0,
-        "peak_parking_demand_su_p90": 21.0,
+        "peak_parking_demand_su_p50": 17.4,
+        "peak_parking_demand_su_p90": 21.3,
         "normal_capacity_su": 75.0,
         "max_prepared_capacity_su": 75.0,
         "risk_days": [],
@@ -145,8 +145,8 @@
     "High": {
       "summary": {
         "peak_day": "2027-02-14",
-        "peak_parking_demand_su_p50": 22.6,
-        "peak_parking_demand_su_p90": 28.2,
+        "peak_parking_demand_su_p50": 23.0,
+        "peak_parking_demand_su_p90": 28.5,
         "normal_capacity_su": 75.0,
         "max_prepared_capacity_su": 75.0,
         "risk_days": [],

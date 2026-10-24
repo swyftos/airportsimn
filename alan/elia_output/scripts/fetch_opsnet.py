@@ -9,9 +9,12 @@ Outputs (alan/elia_output/data/processed/):
                                   (13 Feb 2022, SoFi) and the same calendar window in control years
   opsnet_vs_lawa_crosscheck.csv   LAX monthly OPSNET vs LAWA TCOM (from fetch_lawa_tcom.py)
   opsnet_lax_daily.csv            LAX daily operations by category, 2015-01-01 to 2025-12-31
+  opsnet_daily_superbowl_hosts.csv  daily operations at other Super Bowl host-city airports around each game
+                                  and the same calendar window in control years (python fetch_opsnet.py hosts)
 
-Usage: python fetch_opsnet.py            # everything
+Usage: python fetch_opsnet.py            # everything except hosts
        python fetch_opsnet.py lax-daily  # only the LAX daily series
+       python fetch_opsnet.py hosts      # only the host-city event windows
 
 Private aviation only: itinerant air_taxi (Part 135, mostly on-demand charter), itinerant general_aviation
 (Part 91) and local civil operations (local_ga). The FAA report also returns air carrier (Part 121),
@@ -49,6 +52,17 @@ EVENT_AIRPORTS = ["LAX", "VNY", "BUR", "HHR", "LGB", "SMO"]
 # Super Bowl LVI week (game Sun 13 Feb 2022) and the same window in control years; 2023 game was in Phoenix
 EVENT_WINDOWS = {2022: ("20220130", "20220226"), 2019: ("20190130", "20190226"),
                  2023: ("20230130", "20230226"), 2024: ("20240130", "20240226")}
+# Other Super Bowls: game Sunday, towered airports business jets use in the host area, control years
+# (no game in that city, no COVID). Window = game Sunday -14 to +13 days, same as Super Bowl LVI.
+HOST_EVENTS = {
+    "LII": ("2018-02-04", ["MSP", "STP", "FCM"], [2016, 2017, 2019]),
+    "LIII": ("2019-02-03", ["ATL", "PDK", "FTY"], [2016, 2017, 2018]),
+    "LIV": ("2020-02-02", ["MIA", "OPF", "FLL", "FXE", "TMB"], [2017, 2018, 2019]),
+    "LVII": ("2023-02-12", ["PHX", "SDL", "DVT", "IWA", "FFZ"], [2019, 2024, 2025]),
+    "LVIII": ("2024-02-11", ["LAS", "VGT", "HND"], [2019, 2023, 2025]),
+    "LIX": ("2025-02-09", ["MSY", "NEW"], [2019, 2023, 2024]),
+    "LX": ("2026-02-08", ["SJC", "OAK", "PAO", "RHV"], [2023, 2024, 2025]),
+}
 
 
 class Opsnet:
@@ -126,12 +140,38 @@ def lax_daily(api, retrieved):
     return rows
 
 
+def control_sunday(game, year):
+    """Sunday in a control year closest to the game's calendar date."""
+    target = game.replace(year=year)
+    return target + dt.timedelta(days=(6 - target.weekday() + 3) % 7 - 3)
+
+
+def hosts(api, retrieved):
+    rows = []
+    for event, (game, airports, controls) in HOST_EVENTS.items():
+        game = dt.date.fromisoformat(game)
+        for sunday in [game] + [control_sunday(game, y) for y in controls]:
+            start, end = (sunday - dt.timedelta(days=14)).strftime("%Y%m%d"), (sunday + dt.timedelta(days=13)).strftime("%Y%m%d")
+            for date, loc, *vals in api.query("yyyymmdd,LOCID", f"yyyymmdd>={start} and yyyymmdd<={end} and locid in ("
+                                              + ",".join(f"'{a}'" for a in airports) + ")",
+                                              "r", "yyyymmdd", start, end, airports):
+                mm, dd, yy = date.split("/")
+                rows.append([event, sunday.isoformat(), sunday == game, f"{yy}-{mm}-{dd}", loc.strip(), *private(vals),
+                             "verified_public", FORM, retrieved])
+    write(OUT / "opsnet_daily_superbowl_hosts.csv",
+          ["event", "anchor_sunday", "is_game_year", "date", "locid", *COLS, "data_classification", "source", "retrieved_utc"], rows)
+    return rows
+
+
 def main(what="all"):
     OUT.mkdir(parents=True, exist_ok=True)
     retrieved = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
     api = Opsnet()
     if what == "lax-daily":
         print(f"{len(lax_daily(api, retrieved))} LAX daily rows")
+        return
+    if what == "hosts":
+        print(f"{len(hosts(api, retrieved))} host-city daily rows")
         return
 
     monthly = []
