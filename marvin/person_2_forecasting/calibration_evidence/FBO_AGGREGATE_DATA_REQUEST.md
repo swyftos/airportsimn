@@ -4,7 +4,7 @@ The public FAA data count airport operations. To estimate arrivals, departures, 
 
 ## Minimum extract
 
-One row per local date, airport, FBO/site, operation basis, fleet segment, and parking-size bin. Include ordinary weeks, comparable major-event weeks, and at least several February holiday weekends. A useful starting period is 2023–2026; document missing dates and any changes in operating hours or booking policy. Suppress or combine small cells before transfer.
+One row per local date, airport, FBO/site, fleet segment, and parking-size bin. Include ordinary weeks, comparable major-event weeks, and at least several February holiday weekends. A useful starting period is 2023–2026; document missing dates and any changes in operating hours or booking policy. Suppress or combine small cells before transfer.
 
 | Field | Meaning |
 | --- | --- |

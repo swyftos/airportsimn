@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT / "alan/elia_output/scripts"))
 from fetch_opsnet import Opsnet, FORM, private  # noqa: E402
 
 OUT = Path(__file__).resolve().parent
+# 2019 is a calendar-matched reference weekend, not the 2019 game weekend.
 SUNDAYS = {2019: date(2019, 2, 10), 2023: date(2023, 2, 12),
            2024: date(2024, 2, 11), 2025: date(2025, 2, 9)}
 EVENTS = {
