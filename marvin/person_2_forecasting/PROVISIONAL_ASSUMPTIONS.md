@@ -1,10 +1,10 @@
-# Provisional forecast assumptions — private (Part 91) scope, daily FAA history
+# Provisional forecast assumptions — Part 91 + Part 135 scope, daily FAA history
 
-This release applies the team's private-only scope (Part 91 general aviation; air taxi/charter, airlines and military excluded), trains on observed daily FAA counts instead of monthly totals spread evenly across days, adds a Presidents' Day effect learned from history, and derives all three event scenarios from FAA measurements. It is still an estimated fictional-FBO scenario model, not a validated forecast of observed FBO demand.
+This release applies the team's scope (Part 91 general aviation plus Part 135 air taxi; airlines and military excluded), trains on observed daily FAA counts instead of monthly totals spread evenly across days, adds a Presidents' Day effect learned from history, and derives all three event scenarios from FAA measurements. It is still an estimated fictional-FBO scenario model, not a validated forecast of observed FBO demand.
 
 ## Sources and original data
 
-Ordinary input: **FAA ATADS/OPSNET** LAX daily tower operations, itinerant general aviation, 2023–2025 (1,096 days), in alan/elia_output/data/processed/opsnet_lax_daily.csv (retrieved 2026-10-24, https://aspm.faa.gov/opsnet/sys/Airport.asp). The daily values are identical to marvin/person_2_forecasting/private_only_review/ga_only_daily_source.csv. Each month's daily sum is checked against the FAA monthly total (opsnet_lax_monthly.csv); all 36 months match exactly, and the conversion stops if one does not.
+Ordinary input: **FAA ATADS/OPSNET** LAX daily tower operations, itinerant general aviation plus air taxi, 2023–2025 (1,096 days), in alan/elia_output/data/processed/opsnet_lax_daily.csv (retrieved 2026-10-24, https://aspm.faa.gov/opsnet/sys/Airport.asp). The GA values are identical to marvin/person_2_forecasting/private_only_review/ga_only_daily_source.csv and the air-taxi values to alan/data/processed/historical_traffic_air_taxi_interim.csv. Each month's daily sum is checked against the FAA monthly total (opsnet_lax_monthly.csv); all 36 months match exactly, and the conversion stops if one does not.
 
 Event evidence: the same FAA source, daily counts around Super Bowl LVI:
 - alan/elia_output/data/processed/superbowl_lvi_surge.csv.
@@ -16,8 +16,8 @@ Event evidence: the same FAA source, daily counts around Super Bowl LVI:
 
 | Driver | Value | Meaning |
 | --- | --- | --- |
-| Scope | LAX itinerant general aviation (Part 91) | Includes some non-FBO flying (training, positioning); FAA does not split it further |
-| FBO share | 10% of GA | fbo_market_share in alan/assumptions.csv: 50% private-eligible x 20% capture, range 5–15%; one setting, FBO_SHARE in convert_monthly_to_daily.py |
+| Scope | LAX general aviation (Part 91) + air taxi (Part 135) | GA includes training and positioning; air taxi includes cargo feeders and small commuter flights; FAA does not split them further. Air taxi is about 63% of the total |
+| FBO share | 10% of GA + air taxi | fbo_market_share in alan/assumptions.csv: 50% private-eligible x 20% capture, range 5–15%; one setting, FBO_SHARE in convert_monthly_to_daily.py |
 | Direction split | 50% arrivals / 50% departures | Assumed |
 | Category mix | 47% light, 33% midsize, 20% large | Team assumption; no official source found (alan/docs/traffic_categories_and_fleet_mix.md) |
 | Daily pattern | Observed day by day | Weekday and holiday variation comes from the data |
@@ -28,7 +28,7 @@ The 10% share is the value in Alan's ledger, so nazar/scripts/release_team.py re
 
 ## Presidents' Day
 
-Monday 2027-02-15 is Presidents' Day. The model learns a factor per holiday from its training days: observed count divided by the ordinary month/weekday prediction. The training split contains the 2023 and 2024 holidays and gives **1.053**. Measured against the surrounding Mondays, GA was 1.17, 0.96 and 1.36 times a normal Monday in 2023, 2024 and 2025, so the effect is real but noisy. The factor applies to the baseline, so the ordinary week includes it too.
+Monday 2027-02-15 is Presidents' Day. The model learns a factor per holiday from its training days: observed count divided by the ordinary month/weekday prediction. The training split contains the 2023 and 2024 holidays and gives **1.20**. Measured against the surrounding Mondays, GA was 1.17, 0.96 and 1.36 times a normal Monday in 2023, 2024 and 2025, and air taxi 1.19, 1.34 and 1.08, so the effect is real but noisy. The factor applies to the baseline, so the ordinary week includes it too.
 
 ## Event scenarios
 
@@ -40,7 +40,7 @@ The event window is Thursday–Monday around February 13, 2022. Each day's basel
 | Medium | 15.5% | LAX air taxi, control-adjusted, used as the analog for event-driven business-jet demand |
 | High | 31% | Twice Medium, stress case |
 
-Why Medium uses air taxi: the GA category mixes FBO visitors with training and local flying, and the event TFR banned training, so GA hides the event response (six-airport GA: −25%; LAX GA control years range from 1.14 to 1.43). Air taxi is the cleanest measured response of business jets to the game. Only the size of the response is borrowed; the counts are GA.
+Why Medium uses air taxi: the GA category mixes FBO visitors with training and local flying, and the event TFR banned training, so GA hides the event response (six-airport GA: −25%; LAX GA control years range from 1.14 to 1.43). Air taxi is the cleanest measured response of business jets to the game, and with Part 135 in scope it is a direct measurement for most of the modeled traffic.
 
 Timing and direction are unchanged: the positive regional air-taxi daily shape spreads the excess over Thursday–Monday, scaled so baseline-weighted five-day forecast movements rise by exactly the scenario excess. Aircraft are conserved: extra arrivals Thursday to Saturday plus half of game day, the same number of extra departures on the other half of game day and Monday. Tuesday and Wednesday stay at baseline. The scenarios are assumptions, not confidence bounds or probabilities. Per-day multipliers are in provisional_inputs/event_evidence.json and planning_inputs.csv.
 
@@ -52,20 +52,20 @@ Because the history is now observed daily counts, the holdout measures real dail
 
 | Measure on the 2025 test days | Value |
 | --- | --- |
-| Average daily error, model | 25.9% of the mean |
-| Average daily error, overall average | 27.8% |
-| Improvement | 7.1% |
-| Days inside the nominal 90% range | 85.5% |
+| Average daily error, model | 17.2% of the mean |
+| Average daily error, overall average | 19.8% |
+| Improvement | 13.3% |
+| Days inside the nominal 90% range | 86.8% |
 
 This is the accuracy of the airport-level daily pattern; the FBO share is a constant, so it does not change these percentages. It is not observed FBO accuracy. Event ranges are assumption-scaled planning ranges with unvalidated coverage.
 
 ## Matching parking outputs
 
-Elia's optimizer is rerun on this release. Opening inventory is recomputed as first-day baseline arrivals times the 1.1-day dwell assumption (2.2 aircraft). Ramp capacity and other operating assumptions are unchanged.
+Elia's optimizer is rerun on this release. Opening inventory is recomputed as first-day baseline arrivals times the 1.1-day dwell assumption (5.9 aircraft). Ramp capacity and other operating assumptions are unchanged.
 
 ## Release and review
 
-Producer filenames, CSV column order and metadata keys are preserved; convert_monthly_to_daily.py keeps its name for the release contract although it now reads daily data. The 20-file release manifest lists opsnet_lax_daily.csv as its source in place of the LAWA monthly series (nazar/readiness/release_status.py updated to match), and monthly_reconciliation.csv names its airport column airport_ga_ops (nazar/scripts/release_team.py updated). Additional evidence is hashed in event_evidence_manifest.json.
+Producer filenames, CSV column order and metadata keys are preserved; convert_monthly_to_daily.py keeps its name for the release contract although it now reads daily data. The 20-file release manifest lists opsnet_lax_daily.csv as its source in place of the LAWA monthly series (nazar/readiness/release_status.py updated to match), and monthly_reconciliation.csv names its airport column airport_private_ops (nazar/scripts/release_team.py updated). Additional evidence is hashed in event_evidence_manifest.json.
 
 Run from the repository root, using Python with numpy and pandas:
 
