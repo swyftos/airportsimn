@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101719">
+  <title>Shift Board · LAX FBO</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body data-theme="dark">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">✳</span><div><strong>SHIFT BOARD</strong><small>LAX FBO · Super Bowl LXI week</small></div></div>
+    <div class="top-controls">
+      <label>Scenario <select id="scenario"><option>Low</option><option selected>Medium</option><option>High</option></select></label>
+      <label>Day <select id="day"></select></label>
+      <label>Weather <select id="top-weather" aria-label="Weather for selected day"><option value="clear">Clear</option><option value="rain">Rain</option><option value="heavy_rain">Heavy rain</option><option value="heavy_fog">Heavy fog</option></select></label>
+      <label>Demo now <input id="now" type="time"></label>
+      <button id="theme" class="icon-button" type="button" aria-label="Switch to light theme" title="Toggle theme">☼</button>
+    </div>
+  </header>
+  <nav class="tabs" aria-label="Views">
+    <button type="button" class="tab active" data-view="today" aria-current="page">Today <span>01</span></button>
+    <button type="button" class="tab" data-view="week">Week plan <span>02</span></button>
+    <button type="button" class="tab" data-view="evidence">Evidence <span>03</span></button>
+  </nav>
+  <main id="main" aria-live="polite"></main>
+  <footer class="footer"><span>Planning aid · Pacific time · Fictional FBO</span><span>Aircraft movements only · No passenger data</span></footer>
+  <input id="csv-file" type="file" accept=".csv,text/csv" hidden>
+</body>
+</html>
