@@ -16,7 +16,22 @@ The first dashboard contract was prepared against an empty repository. While wor
 
 The adapter reads fixed relative paths, requires a complete set, validates scenario/date/category combinations, reconciles P2 point estimates against uncertainty rows, checks parking quantile order and probability ranges, reconciles weekly action costs, and rejects actions without human approval. It keeps only specified aggregate fields in the display bundle. Producer prose still requires human review and must contain no identifying data.
 
-No forecasts or simulations are re-run on load. Regenerate P2, then P3 against those P2 outputs, then refresh the dashboard. **The producers currently provide no common run ID or input hash, so the adapter cannot prove the files come from the same run.** Recommend adding `p2_input_hash` / `run_id` to P3’s metadata next. The dashboard hashes all seven input files to attach reviews to the exact loaded set, but that does not establish upstream coherence.
+No forecasts or simulations are re-run on load. Regenerate P2, then P3 against those P2 outputs, then refresh the dashboard. **The producers currently provide no common run ID or input hash, so the adapter cannot prove the files come from the same run.** Recommend adding `p2_input_hash` / `run_id` to P3’s metadata next. The dashboard hashes all loaded input files (seven base files plus four comparison files when present) to attach reviews to the exact loaded set, but that does not establish upstream coherence.
+
+## Optional parking comparison release
+
+The following four files are accepted only as a complete group:
+
+| Key | Path | Use |
+| --- | --- | --- |
+| `p3_ordinary` | `elia/ordinary_week_parking.csv` | Seven ordinary daily peaks, in P3 space units |
+| `p3_delay_resources` | `elia/resource_requirements_departure_delay_24h.csv` | 21 separately simulated delayed resource rows |
+| `p3_delay_recommendations` | `elia/scenario_recommendations_departure_delay_24h.json` | Delayed actions, costs and impact for three scenarios |
+| `p3_carryover` | `elia/parking_carryover.csv` | Ordinary plus three scenarios × two variants after Feb 17 |
+
+With none present, the seven-file native mode remains supported. If any is present, all must validate. Missing/duplicate rows, mismatched ordinary flows/capacity, invalid quantiles, contradictory provenance or opening inventory fail loading. Partial or invalid refreshes keep the previously loaded dataset visible with an error. Structural validation does not prove numerical coherence; run the verifier below.
+
+All eleven files contribute to the review version. Reviews remain scoped to scenario and variant; approving a standard proposal never approves its delayed counterpart. Exports contain the selected variant’s seven resource rows, impact, recommendations, matching reviews, the ordinary baseline and matching carryover. Sample/import contracts are unchanged.
 
 ## Verify before refreshing
 
@@ -25,7 +40,7 @@ python3 -m unittest discover -s nazar/tests -v
 python3 nazar/scripts/verify_team_pipeline.py
 ```
 
-The second command requires numpy/pandas and invokes Elia’s existing model in memory. It compares all 21 resource rows and all three scenario recommendations/impact distributions to the saved outputs, then prints the loaded dataset version and SHA-256 hashes. It fails on inconsistent outputs or changes during verification, without rewriting any teammate file. A successful result establishes reproducibility for that exact file set, not source reliability or model accuracy. This is a separate handoff check, not an automatic dashboard load gate.
+The second command requires numpy/pandas and invokes Elia’s existing model in memory. It compares 21 standard resource rows and three scenario recommendations/impact distributions; when extensions are present it additionally compares 21 delayed resource rows, three delayed recommendation/impact results, seven ordinary parking rows and seven carryover rows, then prints the loaded dataset version and SHA-256 hashes. It fails on inconsistent outputs or changes during verification, without rewriting any teammate file. A successful result establishes reproducibility for that exact file set, not source reliability or model accuracy. This is a separate handoff check, not an automatic dashboard load gate.
 
 The current native schema expects `light_jet`, `midsize_jet`, `large_jet`; Low/Medium/High; Feb 11–17, 2027; and 90% nominal baseline coverage because P3 interprets interval endpoints as 5th/95th percentiles. A schema or coverage change needs coordination with both consumers. Evaluation rows must carry the same historical provenance as demand; estimated/synthetic history requires `non_observed_demonstration`. Output generation time is explicitly unavailable.
 
@@ -33,7 +48,7 @@ The current native schema expects `light_jet`, `midsize_jet`, `large_jet`; Low/M
 
 - Daily arrivals and departures are sums of P2 category **point estimates**. They can differ from P3’s medians of simulated totals; these are different quantities.
 - Ordinary arrivals/departures use P2’s `baseline_arrivals` / `baseline_departures`, requiring it to agree across scenarios. It is a model comparison, not a measured ordinary-week count.
-- Ordinary **parking** is absent and stays `null`. The parking chart omits its bar and labels it unavailable. The Arrivals chart provides the available ordinary/event comparison. Alan and Elia need to supply an ordinary parking simulation for that additional comparison.
+- Ordinary **parking** uses `parking_demand_su_p50` from P3’s ordinary simulation, with P10/P90 retained. Its baseline arrival/departure totals must match P2 within the producer’s one-decimal rounding tolerance, and normal capacity must match event runs. It does not read Alan’s aircraft-count `parking_units` as space units. If the four comparison files are absent, ordinary parking remains `null`.
 - Parking chart and gap arithmetic use P3’s daily `parking_demand_su_p50` values. “Peak” means the maximum of those daily medians, not the median of each simulation’s whole-week maximum.
 - P10–P90 is an **80% central model quantile range** for each daily parking peak. It is distinct from P2’s **90%** category event planning ranges. Neither establishes validated Super Bowl event coverage. A zero P50 gap would not imply zero risk.
 - Daily capacity exceedance probability comes directly from P3. It is not an empirical probability established from observed Super Bowl outcomes.
@@ -43,7 +58,8 @@ The current native schema expects `light_jet`, `midsize_jet`, `large_jet`; Low/M
 - Selected-day arrival details retain each category’s event multiplier, reservation floor, reservation provenance and assumption source.
 - Staffing support shows the maximum proposed technician count over the three shifts; daily details retain morning/day/night counts. This includes P3’s staffing buffer, not unique people employed over the week.
 - Fuel is the sum of P3 daily median fuel volumes. It is labelled a weekly estimate, not the median of the simulated weekly total or tank inventory. Fuel availability is unavailable and stays `null`.
-- No native `departure_delay_24h` output exists, so only `standard` is exposed. P3’s within-day early-departure assumption is not a 24-hour delay scenario.
+- `departure_delay_24h` selects separate resource, recommendation, cost and impact results. The UI reads its start date and delayed share from P3 assumptions (currently all departures from Feb 14). Daily departures show P3 simulated P50 values for the selected variant, alongside the original P2 point estimate. Arrivals retain their original P2 estimate.
+- Carryover is unconstrained demand assuming unlimited parking. It is not the inventory after rejected/referred arrivals under the prepared plan. Display remaining aircraft, their P10–P90 range, size-weighted space units and departures shifted beyond the window separately. The latter is a scheduled flow, not another inventory to add to remaining aircraft.
 
 ## Recommendations and human authority
 
@@ -56,8 +72,8 @@ All native evidence chips are copied from validated resource rows. Producer narr
 ## Remaining team work
 
 1. **Alan + Marvin:** connect documented real/estimated inputs with correct provenance; never relabel synthetic model validation as observed accuracy.
-2. **Elia + Alan:** export an ordinary parking simulation using the same space-unit convention and initial-occupancy assumptions.
-3. **Elia:** add a separately simulated departure-delay variant, with daily resource outputs and recommendations.
+2. **Elia + Alan:** align baseline capture share, flow assumptions, opening inventory and dwell interpretation; the dashboard uses P3’s ordinary daily peaks for a consistent comparison.
+3. **Elia:** regenerate ordinary, standard, delayed and carryover outputs together whenever P2 changes.
 4. **Marvin + Elia:** add an upstream input hash/run ID to prove P3 used the current P2 output set.
 5. **All:** verify prepared capacity and physical layout assumptions, cost components and event uncertainty before using the model beyond the demo.
 6. **Nazar:** extend the adapter to those new outputs when available, run the complete demo and keep the UI labels aligned with actual model semantics.

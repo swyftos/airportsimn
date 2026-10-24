@@ -42,7 +42,7 @@ function render(){
  if(b){
   if(!b.variants.includes(state.variant))state.variant='standard';
   $('stress-toggle').disabled=!b.variants.includes('departure_delay_24h');$('stress-toggle').checked=state.variant==='departure_delay_24h';
-  $('stress-description').textContent=$('stress-toggle').disabled?'No delay output supplied by resource module':'Uses a separate supplied resource scenario';
+  $('stress-description').textContent=$('stress-toggle').disabled?'No delay output supplied by resource module':b.delay_definition?`${fmt(b.delay_definition.share*100)}% of departures from ${day(b.delay_definition.start_date)} shift one day`:'Uses a separate supplied resource scenario';
   document.querySelectorAll('[data-scenario]').forEach(el=>{const selected=el.dataset.scenario===state.scenario;el.classList.toggle('selected',selected);el.setAttribute('aria-pressed',selected);});
   renderOverview();
  }
@@ -62,8 +62,9 @@ function renderOverview(){
  renderChart();
  $('week-table').innerHTML=`<table><thead><tr><th>Date</th><th>Ordinary parking</th><th>${b.native?'Event P50':'Event peak'}</th><th>On-site capacity</th><th>Proposed total</th><th>Remaining gap</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${day(r.date)}</td><td>${b.baseline.find(x=>x.date===r.date).parking_units===null?'Not supplied':fmt(b.baseline.find(x=>x.date===r.date).parking_units)}</td><td>${fmt(r.parking_units)}</td><td>${fmt(r.capacity_units)}</td><td>${fmt(r.prepared_capacity_units)}</td><td>${fmt(Math.max(0,r.parking_units-r.prepared_capacity_units))}</td></tr>`).join('')}</tbody></table>`;
  renderDay();
+ renderCarryover();
  $('impact-days').textContent=`${s.days_over_capacity} → ${s.remaining_days}`;$('impact-gap').textContent=`${fmt(s.peak_shortfall)} → ${fmt(s.remaining_shortfall)}`;$('impact-cost').textContent=money(s.preparation_cost);
- const impact=b.impacts?.[state.scenario];
+ const impact=b.impacts_by_variant?.[state.variant]?.[state.scenario] ?? b.impacts?.[state.scenario];
  $('simulation-impact').hidden=!impact;
  if(impact){
   const measures=[['Aircraft unaccommodated · simulated mean','unaccommodated_aircraft',fmt],['Delayed turns · simulated mean','delayed_turns',fmt],['Total modeled cost · simulated mean','total_cost_usd',money]];
@@ -81,11 +82,11 @@ function renderOverview(){
 }
 function renderChart(){
  const b=state.data.bundle,parking=state.chart==='parking',rs=currentRows();
- $('ordinary-legend').hidden=parking&&!!b.native;$('capacity-legend').hidden=!parking;
+ $('ordinary-legend').hidden=parking&&b.baseline.every(r=>r.parking_units===null);$('capacity-legend').hidden=!parking;
  const points=rs.map(r=>{const base=b.baseline.find(x=>x.date===r.date),d=b.demand.find(x=>x.date===r.date&&x.scenario===state.scenario);return {date:r.date,ordinary:parking?base.parking_units:base.arrivals,value:parking?r.parking_units:d.arrivals,capacity:parking?r.capacity_units:null};});
  const scale=Math.max(1,...points.map(r=>Math.max(r.value,r.capacity||0,r.ordinary||0)))*1.17;
  document.querySelectorAll('[data-chart]').forEach(el=>{el.classList.toggle('selected',el.dataset.chart===state.chart);el.setAttribute('aria-pressed',el.dataset.chart===state.chart);});
- $('chart-basis').textContent=parking&&b.native?'P3 simulated P50 peaks · ordinary parking not supplied':parking?'Daily peak parking units':'P2 ordinary baseline vs event arrival point estimates';
+ $('chart-basis').textContent=parking&&b.native?(b.carryover?`P3 ordinary vs ${state.variant==='standard'?'standard event':'delayed event'} daily P50 peaks · space units`:'P3 simulated P50 peaks · ordinary parking not supplied'):parking?'Daily peak parking units':'P2 ordinary baseline vs event arrival point estimates';
  $('chart-caption').textContent=parking?'Parking units · select a day':'Aircraft arrivals per day · select a day';
  $('chart').innerHTML=points.map(r=>{
   const selected=r.date===state.date;
@@ -94,8 +95,15 @@ function renderChart(){
 }
 function renderDay(){
  const b=state.data.bundle,r=currentRows().find(x=>x.date===state.date),d=b.demand.find(x=>x.scenario===state.scenario&&x.date===state.date);if(!r||!d)return;
- $('day-detail').innerHTML=`<div class="day-summary"><small>SELECTED DAY</small><strong>${esc(day(r.date,{weekday:'long',month:'short',day:'numeric'}))}</strong></div><div><small>Arrival estimate · ${state.variant==='standard'?'standard':'original demand input'}</small><strong>${fmt(d.arrivals)}</strong> <small>${b.native?'P2 category point forecasts summed':`Supplied range ${fmt(d.arrivals_lower)}–${fmt(d.arrivals_upper)}`}</small></div><div><small>Planned departures · before delay</small><strong>${fmt(d.departures)}</strong></div><div><small>${b.native?'P50 gap':'Gap'} after proposed capacity</small><strong>${fmt(Math.max(0,r.parking_units-r.prepared_capacity_units))} units</strong></div>`;
+ $('day-detail').innerHTML=`<div class="day-summary"><small>SELECTED DAY</small><strong>${esc(day(r.date,{weekday:'long',month:'short',day:'numeric'}))}</strong></div><div><small>Arrival estimate · ${state.variant==='standard'?'standard':'original demand input'}</small><strong>${fmt(d.arrivals)}</strong> <small>${b.native?'P2 category point forecasts summed':`Supplied range ${fmt(d.arrivals_lower)}–${fmt(d.arrivals_upper)}`}</small></div><div><small>${b.native?'Simulated departures · '+(state.variant==='standard'?'standard':'24-hour delay'):'Planned departures · before delay'}</small><strong>${fmt(b.native?r.departures_p50:d.departures)}</strong>${b.native?`<small>Daily P50 · original P2 estimate ${fmt(d.departures)}</small>`:''}</div><div><small>${b.native?'P50 gap':'Gap'} after proposed capacity</small><strong>${fmt(Math.max(0,r.parking_units-r.prepared_capacity_units))} units</strong></div>`;
  $('category-detail').innerHTML=b.native?`<div class="native-risk"><strong>Parking P10–P90: ${fmt(r.parking_p10)}–${fmt(r.parking_p90)} units</strong><span>Simulated probability of exceeding proposed capacity: ${fmt(r.prob_over_prepared*100)}%</span><small>Unvalidated event-week model outputs. P50 is the median of simulations, not a safe capacity limit.</small></div><details class="inline-details"><summary>Inspect arrival ranges by aircraft category and staffing by shift</summary><table><thead><tr><th>Category</th><th>P2 arrival estimate</th><th>Event planning range · unvalidated</th></tr></thead><tbody>${b.category_ranges.filter(x=>x.date===state.date&&x.scenario===state.scenario&&x.direction==='arrivals').map(x=>`<tr><td>${esc(x.category.replace('_',' '))}</td><td>${fmt(x.expected)}</td><td>${fmt(x.lower)}–${fmt(x.upper)}</td></tr>`).join('')}</tbody></table>${renderForecastDrivers()}<p>Do not sum category interval endpoints into a total interval. Event-week coverage is unvalidated.</p><p>Proposed technicians by shift: morning ${fmt(r.staff_shifts.morning)}, day ${fmt(r.staff_shifts.day)}, night ${fmt(r.staff_shifts.night)}. Ordinary staffing: ${fmt(r.staff_available)} per shift.</p></details>`:'';
+}
+function renderCarryover(){
+ const b=state.data.bundle,rows=(b.carryover||[]).filter(r=>r.variant==='ordinary'||(r.variant===state.variant&&r.scenario===state.scenario));
+ $('carryover').hidden=!rows.length;
+ if(!rows.length)return;
+ const metrics=[['Opening aircraft',r=>fmt(r.opening_aircraft)],['Remaining aircraft · P50',r=>fmt(r.aircraft_remaining_p50)],['Remaining aircraft · P10–P90',r=>`${fmt(r.aircraft_remaining_p10)}–${fmt(r.aircraft_remaining_p90)}`],['Remaining space units · P50',r=>fmt(r.parking_su_remaining_p50)],['Departures shifted beyond window · P50',r=>fmt(r.departures_pushed_past_window_p50)]];
+ $('carryover').innerHTML=`<h3>Demand remaining after February 17</h3><p>Unconstrained simulation: aircraft that would remain if parking were unlimited. These are not confirmed on-site counts.</p><table><thead><tr><th>Measure</th>${rows.map(r=>`<th>${r.variant==='ordinary'?'Ordinary':state.variant==='standard'?'Event · standard':'Event · 24-hour delay'}</th>`).join('')}</tr></thead><tbody>${metrics.map(([label,format])=>`<tr><td>${label}</td>${rows.map(r=>`<td>${format(r)}</td>`).join('')}</tr>`).join('')}</tbody></table><p class="fine">Aircraft counts and size-weighted space units are different quantities. Departures shifted beyond the window are a scheduled flow, not another inventory to add to remaining aircraft.</p>`;
 }
 function renderForecastDrivers(){
  const b=state.data.bundle;

@@ -34,7 +34,7 @@ The native adapter reads the existing P2/P3 formats without requiring teammates 
 
 At the integrated revision, the expected scenario has a daily P50 parking peak of **91.7 units**, ordinary capacity **90**, and proposed capacity **139**: the maximum median gap changes **1.7 → 0**, with **1 → 0** days above capacity and **$24,400** of proposed weekly preparation cost. These are synthetic model results, not verified LAX demand or confirmed resources.
 
-Click **Arrivals** above the chart for an ordinary/event comparison using P2’s learned baseline. Parking displays P3 daily P50 peaks and P10–P90 ranges. The ordinary parking baseline is explicitly unavailable; the app does not fabricate it. The delay toggle is disabled for native outputs because no separate delayed-departure result is supplied. Category arrival intervals are shown individually and never added into a false total interval. The data tab shows P2’s historical holdout metrics with the producer’s observed/estimated/synthetic classification. Scores against estimated inputs are not observed FBO accuracy. Selected-day details expose event multipliers, reservation floors and their sources. The preparation panel compares simulated unaccommodated aircraft, delayed turns and modeled costs, including negative net benefits; exports retain these results.
+Click **Arrivals** above the chart for an ordinary/event comparison using P2’s learned baseline. Parking displays P3 daily P50 peaks and P10–P90 ranges. When all four P3 comparison files are present, the chart also displays ordinary parking in the same space units and daily-P50 basis. The delay toggle selects a separate simulation and updates parking, departures, staffing, fuel, costs, impact and recommendations together. Carryover shows unconstrained aircraft demand after February 17, including departures pushed beyond the window. Without the comparison files, ordinary parking and the delay option remain unavailable; a partial set is rejected. Category arrival intervals are shown individually and never added into a false total interval. The data tab shows P2’s historical holdout metrics with the producer’s observed/estimated/synthetic classification. Scores against estimated inputs are not observed FBO accuracy. Selected-day details expose event multipliers, reservation floors and their sources. The preparation panel compares simulated unaccommodated aircraft, delayed turns and modeled costs, including negative net benefits; exports retain these results.
 
 See [NATIVE-INTEGRATION.md](NATIVE-INTEGRATION.md) for exact mappings, limitations and remaining team work. The models are **not** re-run on load: regenerate P2 and P3 outputs coherently, then refresh. The app’s source badge always distinguishes team outputs from the handcrafted sample.
 
@@ -87,7 +87,7 @@ For a read-only numerical check that Elia’s committed results match the curren
 python3 nazar/scripts/verify_team_pipeline.py
 ```
 
-The verifier reproduces P3 in memory, compares resources and recommendation/impact results, and prints input SHA-256 hashes. It does not overwrite producer files or validate physical capacity. Run it after every P2/P3 update; normal dashboard loading does not run simulations.
+The verifier reproduces P3 in memory, compares standard and delayed resources/recommendations/impact, ordinary parking and all carryover rows, and prints input SHA-256 hashes. It does not overwrite producer files or validate physical capacity. Run it after every P2/P3 update; normal dashboard loading does not run simulations.
 
 Tests cover data contracts, missing/invalid files, evidence mismatches, finite values, summaries, persisted reviews, stale-version rejection, role checks, CSRF/origin checks, export and source restoration. See [DEMO.md](DEMO.md) for the presentation walkthrough and integration acceptance checklist.
 
@@ -98,6 +98,7 @@ Tests cover data contracts, missing/invalid files, evidence mismatches, finite v
 - `readiness/data.py`: fixed teammate paths and explicit source loading.
 - `readiness/storage.py`: local source/review persistence.
 - `readiness/team_adapter.py`: validates and normalizes the existing P2/P3 exports without changing their code.
+- `readiness/parking_variants.py`: validates the optional four-file ordinary/delay/carryover release; keeps variant-specific costs, impacts and recommendations separate.
 - `static/`: dashboard HTML, CSS and browser interactions.
 - `sample-data/`: fixtures and reproducible fixture generator.
 - `tests/`: standard-library automated checks, including mandatory current-repository integration tests. Missing native files fail instead of skipping.
