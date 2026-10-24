@@ -1,0 +1,7 @@
+"assumption_id","parameter","value","unit","classification","confidence","source_ids","status","notes"
+"NAZAR-A01","fictional_fbo_reference","Atlantic LAX","facility","assumption","medium","NAZAR-S01;NAZAR-S02","selected_reference","Selected for stronger public site evidence; no claim of access to Atlantic operations."
+"NAZAR-A02","provisional_gross_ramp_area","566280","sq_ft","benchmark estimate","low","NAZAR-S07","optional_historical_proxy_not_current_capacity","13 acres x 43560. Carrying the 2008 reported ramp forward is an unvalidated assumption. About 566000 sq ft at source precision."
+"NAZAR-A03","usable_parking_fraction",,"fraction","assumption","unknown","","not_selected","Need taxi/access lanes, clearances, servicing and unavailable areas; no arbitrary default supplied."
+"NAZAR-A04","based_aircraft_reserve",,"sq_ft","assumption","unknown","","not_selected","Near-zero airport based-aircraft count would not prove zero FBO commitments."
+"NAZAR-A05","area_per_space_unit",,"sq_ft_per_su","assumption","unknown","","not_selected","Elia must define this with aircraft class and clearance assumptions; 90 su is not a measured stand count."
+"NAZAR-A06","additional_overflow_capacity",,"su","assumption","unknown","","not_established","No public source here verifies the existing model assumption of 40 overflow units."
