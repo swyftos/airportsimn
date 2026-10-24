@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="LAX FBO 3D Ramp and Parking Operations Simulator for Super Bowl LXI week (Feb 11-17, 2027). Explorable 3D ramp, daylight/night lighting, and operational capacity decision dashboard.">
+  <title>LAX FBO • 3D Ramp & Parking Operations • Super Bowl LXI</title>
+  <link rel="stylesheet" href="./styles.css">
+
+  <!-- Pinned Three.js CDN with Import Map (no build step) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <!-- Header & Sticky Control Bar -->
+  <header class="site-header">
+    <div class="header-inner container">
+      <div class="brand-group">
+        <div class="brand-badge">LAX FBO</div>
+        <div class="brand-text">
+          <h1 class="brand-title">Ramp & Parking Operations</h1>
+          <span class="brand-subtitle">Super Bowl LXI Window &bull; Feb 11–17, 2027</span>
+        </div>
+      </div>
+
+      <!-- Sticky Operational Controls -->
+      <nav class="sticky-controls" aria-label="Scenario and situation controls">
+        <div class="control-field">
+          <label for="situation-select" class="control-label">Situation Variant</label>
+          <select id="situation-select" class="control-select">
+            <option value="standard">Standard: Normal Operations</option>
+            <option value="departure_delay_24h">24h Departure Delay (Post-Game)</option>
+            <option value="security_restriction">Game-Day Security Pause (14:30–20:30)</option>
+            <option value="heavy_rain">Heavy Rain on Game Day</option>
+          </select>
+        </div>
+
+        <div class="control-field">
+          <label for="scenario-select" class="control-label">Traffic Scenario</label>
+          <select id="scenario-select" class="control-select">
+            <option value="Low">Low (+3.1% measured GA)</option>
+            <option value="Medium" selected>Medium (+15.5% air taxi) &mdash; FORECAST</option>
+            <option value="High">High (+31% stress case)</option>
+          </select>
+        </div>
+
+        <div class="control-field clock-field">
+          <span class="control-label">Simulated Operations Clock</span>
+          <div id="sim-clock-display" class="clock-display" aria-live="polite">Loading...</div>
+        </div>
+
+        <button id="theme-toggle" class="btn-secondary btn-theme" aria-label="Toggle dark/light theme">🌙 Dark</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container main-content">
+    <div id="init-error" class="error-banner" style="display:none;" role="alert"></div>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 1: THE 2D ANSWER FIRST (VISIBLE WITHOUT 3D SCENE) -->
+    <!-- ============================================================ -->
+    <section class="section-card answer-section" aria-labelledby="heading-answer">
+      <div class="section-header">
+        <div class="badge-tag">2D Executive Decision</div>
+        <h2 id="heading-answer" class="section-title">When Demand Exceeds Ramp Capacity</h2>
+        <p class="section-desc">
+          Operational answer derived from 10,000 simulated weeks based on FAA ATADS/OPSNET historical data.
+          Normal ramp capacity is <strong><span class="js-ramp-su">–</span> space units (su)</strong>.
+        </p>
+      </div>
+
+      <!-- 4 Executive KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card" id="kpi-overflow-timing">
+          <div class="kpi-label">First Over-Capacity Day</div>
+          <div class="kpi-value">Calculating...</div>
+        </div>
+        <div class="kpi-card" id="kpi-peak-demand">
+          <div class="kpi-label">Peak Demand Day</div>
+          <div class="kpi-value">Calculating...</div>
+        </div>
+        <div class="kpi-card" id="kpi-plan-impact">
+          <div class="kpi-label">AI Preparation Plan</div>
+          <div class="kpi-value">Calculating...</div>
+        </div>
+        <div class="kpi-card" id="kpi-ordinary-compare">
+          <div class="kpi-label">Ordinary Week Baseline</div>
+          <div class="kpi-value">Calculating...</div>
+        </div>
+      </div>
+
+      <!-- 2D SVG Forecast Chart -->
+      <div class="chart-block">
+        <div class="chart-header">
+          <h3 class="chart-title">Daily Ramp Parking Demand Range (P10–P90) vs Ramp Capacity</h3>
+          <div class="chart-legend" aria-hidden="true">
+            <span class="legend-item"><span class="legend-box band-box"></span> P10–P90 Band</span>
+            <span class="legend-item"><span class="legend-line p50-line"></span> P50 Forecast</span>
+            <span class="legend-item"><span class="legend-line normal-cap-line"></span> Normal ramp</span>
+            <span class="legend-item"><span class="legend-line prep-cap-line"></span> Prepared capacity</span>
+            <span class="legend-item"><span class="legend-line ord-line"></span> Ordinary Week</span>
+          </div>
+        </div>
+        <div id="chart-container" class="chart-svg-wrap"></div>
+      </div>
+
+      <!-- 7-Day Accessible Data Table with formulas -->
+      <details class="details-panel" open>
+        <summary class="details-summary"><strong>Accessible 7-Day Operational Planning Table (with formulas)</strong></summary>
+        <div class="table-responsive">
+          <table class="data-table" aria-label="7-day parking demand and capacity statistics">
+            <thead>
+              <tr>
+                <th scope="col">Date & Event</th>
+                <th scope="col" class="num">Arr P50</th>
+                <th scope="col" class="num">Dep P50</th>
+                <th scope="col" class="num">P10 su</th>
+                <th scope="col" class="num">P50 su</th>
+                <th scope="col" class="num">P90 su</th>
+                <th scope="col" class="num">Normal Cap</th>
+                <th scope="col" class="num">Over-Cap %</th>
+                <th scope="col">Risk Level</th>
+                <th scope="col">Operational Formulas</th>
+              </tr>
+            </thead>
+            <tbody id="data-table-body">
+              <!-- Rendered via app.js -->
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <!-- AI Preparation Plan Approvals Module -->
+      <div class="plan-card">
+        <div class="plan-header">
+          <div>
+            <h3 class="plan-title">AI Preparation Plan Proposals</h3>
+            <span class="plan-subtitle">Named manager approval required for every action. The system recommends; humans command.</span>
+          </div>
+          <div class="plan-meta-stats">
+            <span id="plan-cost-display" class="badge-cost">Loading...</span>
+            <span id="plan-payoff-display" class="badge-payoff"></span>
+          </div>
+        </div>
+
+        <div class="plan-actions-grid">
+          <!-- Action 1: Tow-in Packing -->
+          <div class="plan-action-box">
+            <div class="action-top">
+              <label class="switch-wrap">
+                <input type="checkbox" id="toggle-tow-packing" checked>
+                <span class="switch-slider"></span>
+              </label>
+              <div>
+                <strong>Switch to tight tow-in packing on Main Ramp</strong>
+                <div class="action-meta">Gain: <strong>+10% ramp capacity (+1.5 su &rarr; 16.5 su)</strong> &bull; Cost: <strong>$0</strong></div>
+              </div>
+            </div>
+            <div class="action-desc">Allows tight positioning for multi-night stays. Approver: <strong>Line Service Manager</strong></div>
+            <div class="action-notes-row">
+              <input type="text" id="notes-tow-packing" class="control-input" placeholder="Manager notes (stored locally)...">
+            </div>
+          </div>
+
+          <!-- Action 2: Remote Overflow Apron Lease -->
+          <div class="plan-action-box">
+            <div class="action-top">
+              <label class="switch-wrap">
+                <input type="checkbox" id="toggle-overflow-lease" checked>
+                <span class="switch-slider"></span>
+              </label>
+              <div>
+                <strong>Lease Remote Overflow Apron (5 su)</strong>
+                <div class="action-meta">Capacity: <strong>+5.0 su</strong> &bull; Cost: <strong>$3,500 ($100/su-day &times; 7 days)</strong></div>
+              </div>
+            </div>
+            <div class="action-desc">Leases remote apron positions to prevent staging holds. Approver: <strong>FBO General Manager</strong></div>
+            <div class="action-notes-row">
+              <input type="text" id="notes-overflow-lease" class="control-input" placeholder="General manager authorization notes...">
+            </div>
+          </div>
+        </div>
+
+        <div class="plan-impact-summary">
+          <strong>Plan Accommodation Impact:</strong>
+          <span id="plan-unaccommodated-display">Calculating unaccommodated aircraft reduction...</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 2: EXPLORABLE 3D RAMP & TIMELINE STRIP -->
+    <!-- ============================================================ -->
+    <section class="section-card ramp3d-section" aria-labelledby="heading-ramp3d">
+      <div class="section-header">
+        <div class="badge-tag">Interactive 3D Simulation</div>
+        <h2 id="heading-ramp3d" class="section-title">Explorable 3D Ramp & Operations Visualizer</h2>
+        <p class="section-desc">
+          Free orbit camera (left-click rotate, right-click pan, scroll zoom). Light theme airport environment
+          with day/night lighting that follows the simulated clock. Click any aircraft to inspect its details.
+        </p>
+      </div>
+
+      <!-- 3D Header: Camera Presets & Live Gauges -->
+      <div class="ramp-toolbar">
+        <div class="camera-presets-group">
+          <span class="toolbar-label">Camera:</span>
+          <button class="btn-chip camera-preset-btn active" data-preset="overview">🌐 Overview</button>
+          <button class="btn-chip camera-preset-btn" data-preset="mainRamp">🛩️ Main Ramp</button>
+          <button class="btn-chip camera-preset-btn" data-preset="overflow">🅿️ Overflow Apron</button>
+          <button class="btn-chip camera-preset-btn" data-preset="decisionArea">⚠️ Holding Area</button>
+          <button class="btn-chip camera-preset-btn" data-preset="tower">🏢 Tower View</button>
+        </div>
+
+        <div class="live-gauges-group">
+          <div class="gauge-pill">
+            <span class="gauge-name">Main Ramp:</span>
+            <span id="gauge-main-ramp-su" class="gauge-val">0 / 15 su</span>
+          </div>
+          <div class="gauge-pill">
+            <span class="gauge-name">Overflow:</span>
+            <span id="gauge-overflow-su" class="gauge-val">0 / 5 su</span>
+          </div>
+          <div class="gauge-pill alert-pill">
+            <span class="gauge-name">Decision Holding:</span>
+            <span id="gauge-decision-area-su" class="gauge-val">0 waiting</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3D Viewport with Overlay Inspector -->
+      <div class="viewport-wrap">
+        <div id="ramp-canvas-container" class="canvas-3d-box" role="region" aria-label="3D visualizer of FBO airfield">
+          <!-- Three.js canvas dynamically injected here -->
+        </div>
+
+        <!-- Aircraft Inspector Overlay Card (Populated when user clicks an aircraft) -->
+        <div id="aircraft-inspector-card" class="inspector-card" style="display:none;" role="dialog" aria-label="Aircraft details">
+          <!-- Populated by app.js -->
+        </div>
+      </div>
+
+      <!-- Simulation Playback Controller -->
+      <div class="playback-panel">
+        <div class="playback-controls-row">
+          <button id="btn-play-pause" class="btn-primary" aria-label="Play or pause simulation">▶ Play</button>
+          <button id="btn-step-prev" class="btn-secondary" title="Step back 1 hour">&minus;1h</button>
+          <button id="btn-step-next" class="btn-secondary" title="Step forward 1 hour">+1h</button>
+          <button id="btn-jump-kickoff" class="btn-chip" title="Jump to Game Kickoff (Sun 15:30)">🏆 Game Kickoff</button>
+
+          <div class="speed-selector">
+            <span class="toolbar-label">Speed:</span>
+            <button class="btn-chip speed-btn" data-speed="20">1x</button>
+            <button class="btn-chip speed-btn active" data-speed="120">5x</button>
+            <button class="btn-chip speed-btn" data-speed="600">25x</button>
+            <button class="btn-chip speed-btn" data-speed="1800">75x</button>
+          </div>
+        </div>
+
+        <!-- Full Week Scrubber Slider (0 to 604,800 seconds) -->
+        <div class="scrubber-wrap">
+          <label for="time-scrubber" class="sr-only">Scrub simulation time through the week</label>
+          <input type="range" id="time-scrubber" min="0" max="604800" step="60" value="0" class="time-slider">
+        </div>
+      </div>
+
+      <!-- Week Timeline Strip directly under 3D Scene -->
+      <div class="timeline-strip-wrapper">
+        <div class="timeline-header-row">
+          <span class="timeline-title">Week Timeline Strip &mdash; Click any day to jump simulation</span>
+          <span class="timeline-instruction">Coloured by model's probability of exceeding ramp capacity</span>
+        </div>
+
+        <div class="timeline-strip-track">
+          <div class="timeline-track-inner">
+            <!-- Playhead indicator moving across the week -->
+            <div id="timeline-playhead" class="timeline-playhead" aria-hidden="true"></div>
+
+            <!-- 7-Day Interactive Strip Cards -->
+            <div id="week-timeline-strip" class="timeline-days-grid">
+              <!-- Injected by app.js -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 3: GOVERNANCE, ASSUMPTIONS & SOURCES -->
+    <!-- ============================================================ -->
+    <section class="section-card governance-section" aria-labelledby="heading-governance">
+      <div class="section-header">
+        <div class="badge-tag">Human in Command</div>
+        <h2 id="heading-governance" class="section-title">Decision Governance & Data Provenance</h2>
+      </div>
+
+      <div class="governance-grid">
+        <!-- Mandate & Policy -->
+        <div class="gov-card mandate-card">
+          <h3 class="gov-card-title">What decision should your AI never be allowed to make?</h3>
+          <blockquote class="gov-quote">
+            &ldquo;The model recommends; a named manager approves every action. It never accepts, refuses or reassigns an individual aircraft. Overflow is a flag for a person to resolve.&rdquo;
+          </blockquote>
+          <p class="gov-desc">
+            <strong>Operational Rule:</strong> Aircraft are <em>never refused automatically</em>.
+            When parking demand exceeds ramp capacity, extra aircraft stage in the highlighted
+            "Awaiting Manager Decision Area" until a supervisor authorizes tow-packing, leases overflow apron, or coordinates PPR referrals.
+          </p>
+        </div>
+
+        <!-- Capacity Derivations & Formulas -->
+        <div class="gov-card">
+          <h3 class="gov-card-title">Capacity Derivation & Assumptions</h3>
+          <ul class="gov-list">
+            <li>
+              <strong>Main Ramp Capacity: <span class="js-ramp-su">–</span> su</strong>
+              <span class="badge-provenance estimated">estimated</span><br>
+              Derived from Atlantic Aviation LAX reference ramp (AIN 2008):<br>
+              <code class="js-ramp-derivation"></code>.
+              <em>Estimated, not a measured stand count.</em>
+            </li>
+            <li>
+              <strong>Tow-Packing Gain: +10% (+1.5 su)</strong>
+              <span class="badge-provenance assumed">assumed</span><br>
+              Tight tow-in packing for multi-night stays brings ramp capacity to <strong>16.5 su</strong> at zero cash cost.
+            </li>
+            <li>
+              <strong>Aircraft Size Mix:</strong>
+              <span class="badge-provenance assumed">assumed</span><br>
+              Light Jet (1.0 su, 47%, e.g. Citation CJ3) &bull; Midsize Jet (1.5 su, 33%, e.g. Challenger 350) &bull; Large Jet (2.5 su, 20%, e.g. Gulfstream G650).
+            </li>
+            <li>
+              <strong>Hourly Profile & Stay Mix:</strong>
+              <span class="badge-provenance placeholder">placeholder / assumed</span><br>
+              Hour-of-day shares are a placeholder curve, not observed data. Average dwell: 1.1 days (same-day 40%, overnight 45%, multi-day 15%).
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Sources & Privacy -->
+      <div class="sources-footer">
+        <div class="sources-list">
+          <strong>Data Sources:</strong>
+          <a href="https://www.aspm.faa.gov/opsnet/sys/Airport.asp" target="_blank" rel="noopener noreferrer">FAA ATADS/OPSNET daily operations</a> (forecast input, <span class="badge-provenance measured">measured</span>) &bull;
+          <a href="https://www.ainonline.com/aviation-news/business-aviation/2008-02-08/atlantic-completes-los-angeles-and-santa-barbara-fbos" target="_blank" rel="noopener noreferrer">Atlantic Aviation LAX ramp area (AIN 2008)</a> (capacity reference).
+        </div>
+        <div class="privacy-note">
+          <strong>Privacy:</strong> No passenger, owner, staffing, or fuel data is collected, modeled, or displayed. Parking only.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- App logic entry point -->
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
