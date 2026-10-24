@@ -1,6 +1,6 @@
 # P3 parking model: assumptions, variants and exports
 
-**Status: provisional.** Inputs are Marvin's provisional estimated forecasts (`marvin/person_2_forecasting/`, built from the LAWA monthly series with a 25 % FBO capture assumption, pending Alan's review) and the P3 assumption ledger `assumptions_p3.csv`. Every number below is a planning assumption or a model output, not an observation. Regenerate everything with `python parking_optimizer.py`.
+**Status: provisional.** Inputs are Marvin's provisional estimated forecasts (`marvin/person_2_forecasting/`, built from the LAWA monthly series with a 25 % FBO capture assumption, pending Alan's review) and the P3 assumption ledger `assumptions_p3.csv`. Every number below is a planning assumption or a model output, not an observation. Regenerate the complete release from the repository root with `python marvin/person_2_forecasting/run_provisional.py`. This verifies all parking variants and refreshes the release hashes together.
 
 ## Units and aircraft sizes
 
@@ -31,7 +31,7 @@ The model does not track individual aircraft or draw a stay length per aircraft.
 
 - **Within a day**, half of the day's departures (`dep_share_before_peak` = 0.5) leave before the arrival peak, the rest after it. Every arrival of the day is on the ramp at the peak. A same-day **turn** therefore always occupies a position at the daily peak, which is conservative for parking.
 - **Overnight and multi-day stays** are whatever aircraft remain after the day's departures. The share of stays of each length is not an input. It follows from how P2's departure flow lags its arrival flow (for the event, the departure wave on Monday 15 and Tuesday 16).
-- **Check against Alan's benchmark.** Alan's ledger uses 40 % turns (0.5 day), 45 % overnight (1 day) and 15 % multi-day (3 days), an average of 1.1 days. Little's law on the ordinary-week run gives an implied dwell of **1.62 days** (average daily-peak aircraft divided by average daily arrivals). The model measures the daily peak, not the average over the day, so it holds more aircraft than Alan's benchmark.
+- **Check against Alan's benchmark.** Alan's ledger uses 40 % turns (0.5 day), 45 % overnight (1 day) and 15 % multi-day (3 days), an average of 1.1 days. The ordinary-week run gives a peak-occupancy-to-arrival ratio of **1.62 days** (average daily-peak aircraft divided by average daily arrivals). Because this uses daily peaks rather than time-average occupancy, it is a diagnostic ratio, not a Little's-law estimate of actual dwell time.
 
 ## Ordinary-week baseline (`ordinary_week_parking.csv`)
 
@@ -39,7 +39,7 @@ Same model, units, opening inventory, capacity and staffing rules, run on P2's o
 
 Result: daily parking peaks of 47 to 49 su at P50, up to 66 % of the 75 su ramp, at most a 4 % chance of exceeding it, and 3 technicians on the busiest shift.
 
-**This level depends on P2's ordinary forecast of 20 arrivals a day.** P2 currently averages 2016 to 2019 with 2023 to 2025, while its own 2023 to 2025 history is about 11.7 arrivals a day. If P2 moves to the post-COVID window, as Alan's baseline does, ordinary and event demand both fall by roughly 40 %, and so does parking.
+**This level depends on P2's ordinary forecast of 20 arrivals a day.** P2's input history spans 2016–2019 and 2023–2025, but the frozen model trains on the earliest 60% of dates; later dates evaluate it rather than refit it. Its allocated 2023–2025 history averages about 11.7 arrivals a day. A post-COVID training window could lower the baseline materially. Its effect on event demand and parking must be measured by rerunning the full pipeline, including reservation floors, opening inventory and nonlinear capacity effects; a proportional 40% reduction is not established.
 
 **Open point with Alan.** `alan/baseline.csv` gives `parking_units` of 7 to 12, computed as FBO arrivals × 1.1 days (a count of aircraft, at a 20 % share). To compare it with P3 in the same unit, multiply by 1.47 su per aircraft, and agree first on the capture share (Alan 20 %, P2 25 %) and the training window.
 

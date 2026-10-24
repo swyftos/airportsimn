@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-24T01:58:57.170490+00:00",
+  "generated_at": "2026-10-24T02:53:43.135432+00:00",
   "status": "provisional_pending_Alan_review",
   "historical_data_class": "estimated",
   "reservation_class": "synthetic",
@@ -9,18 +9,22 @@
     "marvin/person_2_forecasting/uncertainty_results.csv": "57dde4b4d1115dff5d8e257d6eda4faec66f8cdfe0635215425b8377c8c74dbe",
     "marvin/person_2_forecasting/evaluation_metrics.csv": "321299f6aeb243f3bae9850480d8f55285187242c3bfde551a9e439ad47d7d86",
     "marvin/person_2_forecasting/daily_totals.csv": "729966dae23a9151c243bc5418e5a13f8679748e1010b5334461ac66dc2a132e",
-    "marvin/person_2_forecasting/run_metadata.json": "40215abad4c4d79c597d5749f987aeea218d4611623d952f9735dc9eec55f208",
+    "marvin/person_2_forecasting/run_metadata.json": "362e2473af0d04ac15a50d0c47278014c2bc9a1b4c31c8ee5ea6abc99704ab1c",
     "marvin/person_2_forecasting/forecast_model.py": "134d8341143e4df8eb524fcbfc4e8ccce1f4fd436ec6e71f973891b87749b51c",
     "marvin/person_2_forecasting/convert_monthly_to_daily.py": "95ddf8b26df87efb0d041422165575cfbea26cdae15e43b1f0b180e8d721406b",
-    "marvin/person_2_forecasting/PROVISIONAL_ASSUMPTIONS.md": "7d606d40b23b60a3e99d1045b63ce819fd6da51b5c8c90ba67f6b73e05d6380b",
-    "marvin/person_2_forecasting/run_provisional.py": "74bb27625b2e675230675be86b227ab5c71d9628992e795d5254deaee2993f9d",
+    "marvin/person_2_forecasting/PROVISIONAL_ASSUMPTIONS.md": "bfc79c38ecd649e311a9ddf6db61f5c485748d41cfd7ffe1ab438c6521b6952a",
+    "marvin/person_2_forecasting/run_provisional.py": "ef250ce50e02c98aa70ca983069cb5806f04c26c404f3ff4b307117ebadb519c",
     "marvin/person_2_forecasting/provisional_inputs/historical_traffic.csv": "32296b1dc2c0ff28dd571ef296d69467cf240c6b906af8789a99c024cbe3fab1",
     "marvin/person_2_forecasting/provisional_inputs/planning_inputs.csv": "6b8b6a8d1bce4d1bc4b96ec4bf825ec802284564d6d2155ecc100c689ae91336",
-    "elia/resource_requirements.csv": "0de3ab0d779b9272f1b13715d5c6d7646e5664433552cb1f4d353282b33964ba",
-    "elia/scenario_recommendations.json": "c25095d5592e8cdd635664c9243880214480f46a984761310a06c17e47ecfbdf",
-    "elia/assumptions_p3.csv": "9988b9445b059424053acf24a1a94fc395fedfa8a840ac274fd9cc8e8c8eb6e3",
-    "elia/parking_optimizer.py": "df151fcaee5429ff7e72c69f2076286702e90f07a62da8bbd09efd3f33526239",
-    "alan/elia_output/data/processed/lax_monthly_movements.csv": "90365f62d769babbffde5902c6a7d8c8a36218e2ed43449e9c7c491e9e82a9cc"
+    "elia/resource_requirements.csv": "8818ff0fecb5c5ce2497c34748a65ff81c20bd74f6d16514df8811f1604ed3f1",
+    "elia/scenario_recommendations.json": "7148390a918d7e390cf25c190091d36a6b444da81772642149c60b9d5b146d64",
+    "elia/assumptions_p3.csv": "ae3a6b44be1574e7a925b42d315cbd3e2b2156cca37522a5f916314d215c22b9",
+    "elia/parking_optimizer.py": "c0b855dbd45cfccbf2cbee29234c19d8e96ddb53fb266f8d9dab70f03b1f5550",
+    "alan/elia_output/data/processed/lax_monthly_movements.csv": "90365f62d769babbffde5902c6a7d8c8a36218e2ed43449e9c7c491e9e82a9cc",
+    "elia/ordinary_week_parking.csv": "f2423cea4b6af04e1bd9d18a320684368d9d30c6efb7f4350e9b09ee985a8cb8",
+    "elia/parking_carryover.csv": "7f21bdc404a76ef60b5a7401fb77d4a25bf1e1c2b4ea72402f8ff2c630a32550",
+    "elia/resource_requirements_departure_delay_24h.csv": "3cf71ceb8931e499a56ad357afbdf284a217afee4fe09b12f66fc83e44c677ca",
+    "elia/scenario_recommendations_departure_delay_24h.json": "9ead45178c34944fbd15c1540c8c77533b825e423619f92b8f1beba5e0fb6ec1"
   },
-  "run_id": "e6409ca97b13d5415e1a376910de1c60cadda906ef2b8cdd9742b5b66e9a553a"
+  "run_id": "0704c8ccb32289e5e811dd5b8783a5d712596577bfbc258c9338e2feb00c3262"
 }

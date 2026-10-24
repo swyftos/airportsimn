@@ -51,7 +51,7 @@ From the repository root, using Python with numpy and pandas installed:
 
     python marvin/person_2_forecasting/run_provisional.py
 
-The runner converts inputs, runs the existing P2 model, then runs P3 on those exact outputs. It verifies current output columns and metadata keys, validates category-range agreement, and writes a separate release_manifest.json with SHA-256 hashes. That sidecar does not change any existing producer schema. Both producer output sets must ship in the same commit. The runner should be used on an isolated branch, not directly on a dashboard's live data directory.
+The runner converts inputs, runs the existing P2 model, then runs P3 standard, ordinary-week, delayed-departure and carryover simulations on those exact outputs. The read-only team pipeline verifier must pass before the runner stamps the release. It verifies current output columns and metadata keys, validates category-range agreement, and writes a separate release_manifest.json with SHA-256 hashes covering 20 files, including all four parking comparison artifacts. The refreshed manifest supersedes the 16-file manifest from the supplied ZIP. That sidecar does not change any existing producer schema. Both producer output sets must ship in the same commit. The runner should be used on an isolated branch, not directly on a dashboard's live data directory.
 
 Alan: please review the 25% effective FBO share, 50/50 split, 47/33/20 mix, uniform daily allocation, source caveats, and historical training window. Until reviewed, retain the provisional/estimated labels.
 
