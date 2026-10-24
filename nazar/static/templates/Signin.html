@@ -1,0 +1,72 @@
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mona+Sans:wdth,wght@75..125,300..800&amp;display=swap">
+<style>
+body{margin:0;background:#FFFFFF;color:#14213D;font-family:'Mona Sans',system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.55;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+a{color:#14213D}
+.w{font-stretch:115%}
+.muted{color:#5D6B82}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid #14213D;outline-offset:3px;border-radius:8px}
+.in{width:100%;box-sizing:border-box;min-height:48px;padding:0 16px;border:1px solid #D0D5DD;border-radius:12px;background:#FFFFFF;font-size:16px}
+.in:focus{border-color:#14213D;outline:none;box-shadow:0 0 0 3px rgba(20,33,61,.12)}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;border-radius:999px;border:0;background:#14213D;color:#FFFFFF;font-weight:600;cursor:pointer}
+.btn:hover{background:#24365C}
+.demo{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid #EAECF0;border-radius:14px;text-decoration:none}
+.demo:hover{border-color:#14213D;background:#F9FAFB}
+.av{width:40px;height:40px;border-radius:50%;background:#F2F4F7;display:inline-flex;align-items:center;justify-content:center;font-weight:600;flex:none}
+.stall{position:relative;flex:none;width:52px;height:100%;border-left:1px solid rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center}
+.stall.need{border-left:1px dashed rgba(255,106,43,.9);background:rgba(255,106,43,.10)}
+.pl{width:34px;height:34px;fill:#FFFFFF;opacity:.92}
+.pl.down{transform:rotate(180deg)}
+.pl.small{width:26px;height:26px}
+.pl.big{width:44px;height:44px}
+</style>
+
+<div style="min-height: 100vh; display: flex; flex-wrap: wrap">
+
+<section style="flex: 1 1 520px; display: flex; flex-direction: column; justify-content: space-between; gap: 48px; padding: 40px 48px; box-sizing: border-box; min-height: 100vh">
+<span class="w" style="font-size: 20px; font-weight: 700; letter-spacing: -0.01em">RampReady</span>
+
+<div style="width: 100%; max-width: 400px">
+<h1 class="w" style="margin: 0; font-size: 44px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.05">Sign in</h1>
+<p class="muted" style="margin: 12px 0 32px; font-size: 17px">Plan Super Bowl week at Pacific Executive FBO.</p>
+
+<label for="email" style="display: block; font-weight: 500; margin-bottom: 8px">Work email</label>
+<input id="email" class="in" type="email" placeholder="you@pacificexec.example" autocomplete="email">
+<button class="btn" type="button" data-email-login style="margin-top: 16px">Email me a sign-in link</button>
+<p class="muted" style="margin: 12px 0 0; font-size: 14px">Email sign-in is not connected in this local demo. Choose a demo account below.</p>
+
+<h2 style="margin: 40px 0 12px; font-size: 15px; font-weight: 600">Or look around with a demo account</h2>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<a class="demo" href="#main" data-login="manager"><span class="av">M</span><span style="display: flex; flex-direction: column; line-height: 1.35"><span style="font-weight: 600">Maya, manager</span><span class="muted" style="font-size: 14px">Sees the gap and approves the plan</span></span></a>
+<a class="demo" href="#bookings" data-login="reservations"><span class="av">J</span><span style="display: flex; flex-direction: column; line-height: 1.35"><span style="font-weight: 600">Jordan, reservations</span><span class="muted" style="font-size: 14px">Checks bookings and arrival times</span></span></a>
+<a class="demo" href="#ramp" data-login="operations"><span class="av">S</span><span style="display: flex; flex-direction: column; line-height: 1.35"><span style="font-weight: 600">Sam, operations</span><span class="muted" style="font-size: 14px">Gets the ramp and overflow ready</span></span></a>
+</div>
+<p class="muted" style="margin: 12px 0 0; font-size: 13px">Demo accounts skip real sign-in. They're for the hackathon only.</p>
+</div>
+
+<p class="muted" style="margin: 0; font-size: 13px">Model estimates for a fictional FBO.</p>
+</section>
+
+<aside style="flex: 1 1 520px; min-height: 560px; background: #14213D; color: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between; padding: 48px 0 48px; box-sizing: border-box; overflow: hidden">
+<div style="display: flex; flex-direction: column; gap: 18px; padding-top: 24px" aria-hidden="true">
+<template data-list="{{rows}}" as="row">
+<div style="display: flex; height: 76px; border-top: 1px solid rgba(255,255,255,.22); border-bottom: 1px solid rgba(255,255,255,.22); margin-left: -12px">
+<template data-list="{{row.stalls}}" as="s">
+<span class="stall {{s.cls}}">
+<template data-if="{{s.plane}}">
+<svg viewBox="0 0 40 40" class="{{s.pcls}}"><path d="M20 2c1.6 0 2.2 2.2 2.2 4.2V15l14.8 7v3l-14.8-4v10l4.8 4v2L20 35l-7 2v-2l4.8-4V21L3 25v-3l14.8-7V6.2C17.8 4.2 18.4 2 20 2z"></path></svg>
+</template>
+</span>
+</template>
+</div>
+</template>
+</div>
+<div style="padding: 0 48px; max-width: 30ch">
+<p class="w" style="margin: 0; font-size: clamp(30px, 3.2vw, 42px); line-height: 1.1; font-weight: 600; letter-spacing: -0.02em">Know how full the ramp gets, days before the jets land.</p>
+<p style="margin: 16px 0 0; color: rgba(255,255,255,.7)">Super Bowl LXI, February 11 to 17, 2027</p>
+</div>
+</aside>
+
+</div>

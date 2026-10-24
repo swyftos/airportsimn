@@ -1,0 +1,129 @@
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mona+Sans:wdth,wght@75..125,300..800&amp;display=swap">
+<style>
+body{margin:0;background:#FFFFFF;color:#14213D;font-family:'Mona Sans',system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.55;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+a{color:#14213D}
+.w{font-stretch:115%}
+.muted{color:#5D6B82}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid #14213D;outline-offset:3px;border-radius:8px}
+.nav{display:flex;flex-wrap:wrap;gap:2px}
+.nav a{display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border-radius:999px;text-decoration:none;color:#5D6B82;font-weight:500;font-size:15px}
+.nav a:hover{color:#14213D;background:#F7F8FA}
+.nav a.on{color:#14213D;background:#F2F4F7}
+.av{width:36px;height:36px;border-radius:50%;background:#F2F4F7;display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;flex:none}
+.seg-wrap{display:inline-flex;padding:4px;background:#F2F4F7;border-radius:999px;gap:2px;flex-wrap:wrap}
+.seg{border:0;background:transparent;border-radius:999px;padding:0 16px;min-height:40px;font-size:15px;font-weight:500;color:#5D6B82;cursor:pointer}
+.seg:hover{color:#14213D}
+.seg.on{background:#FFFFFF;color:#14213D;box-shadow:0 1px 2px rgba(20,33,61,.10),0 0 0 1px #E4E7EC}
+.in{box-sizing:border-box;min-height:48px;padding:0 16px;border:1px solid #D0D5DD;border-radius:999px;background:#FFFFFF;width:260px;max-width:100%}
+.in:focus{border-color:#14213D;outline:none;box-shadow:0 0 0 3px rgba(20,33,61,.12)}
+.btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid #D0D5DD;background:#FFFFFF;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:#14213D}
+.btn.dark{background:#14213D;border-color:#14213D;color:#FFFFFF}
+.btn.dark:hover{background:#24365C}
+.tbl{width:100%;border-collapse:collapse;min-width:880px}
+.tbl th{text-align:left;font-weight:500;font-size:14px;color:#5D6B82;padding:0 16px 12px 0;border-bottom:1px solid #EAECF0;white-space:nowrap}
+.tbl td{padding:16px 16px 16px 0;border-bottom:1px solid #EAECF0;vertical-align:middle;white-space:nowrap}
+.tag{display:inline-flex;align-items:center;font-size:13px;font-weight:500;padding:3px 12px;border-radius:999px;white-space:nowrap}
+.t-b{background:#F2F4F7;color:#14213D}
+.t-e{background:#FFFFFF;color:#14213D;border:1.5px dashed #98A2B3;padding:2px 11px}
+.t-h{background:#14213D;color:#FFFFFF}
+.dot{width:8px;height:8px;border-radius:50%;background:#98A2B3;flex:none}
+.ck{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+</style>
+
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+
+<header style="border-bottom: 1px solid #EAECF0">
+<div style="max-width: 1120px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px">
+<div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px 28px">
+<a href="#main" class="w" style="font-size: 19px; font-weight: 700; letter-spacing: -0.01em; text-decoration: none">RampReady</a>
+<nav class="nav" aria-label="Main">
+<a href="#main">Overview</a>
+<a href="#plan">Plan</a>
+<a href="#bookings" class="on" aria-current="page">Bookings</a>
+<a href="#ramp">Ramp</a>
+<a href="#numbers">Numbers</a>
+</nav>
+</div>
+<div style="display: flex; align-items: center; gap: 16px; font-size: 15px">
+<span class="muted" style="font-size: 13px; padding: 4px 12px; border-radius: 999px; background: #F2F4F7">{{dataBadge}}</span>
+<a href="#signin" style="display: inline-flex; align-items: center; gap: 10px; text-decoration: none"><span class="av">{{userInitial}}</span>{{userName}}</a>
+</div>
+</div>
+</header>
+
+<main style="flex: 1; width: 100%; max-width: 1120px; margin: 0 auto; padding: 56px 24px 96px; box-sizing: border-box">
+
+<h1 class="w" style="margin: 0; font-size: clamp(38px, 5.2vw, 64px); line-height: 1.04; font-weight: 600; letter-spacing: -0.025em; max-width: 18ch">{{headline}}</h1>
+<p style="margin: 20px 0 0; font-size: clamp(18px, 1.8vw, 21px); max-width: 56ch; color: #3B4A66">Check the estimated stays before making arrangements. Checking a row records a review; it does not turn it into a booking.</p>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px 56px; margin-top: 40px">
+<div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{booked}}</div><div class="muted" style="margin-top: 8px">bookings loaded</div></div>
+<div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{estimated}}</div><div class="muted" style="margin-top: 8px">estimated stays in this list</div></div>
+<div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{opening}}</div><div class="muted" style="margin-top: 8px">modeled opening inventory</div></div>
+<div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1; color: #14213D">{{toCheck}}</div><div class="muted" style="margin-top: 8px">to check</div></div>
+</div>
+
+<div style="margin-top: 48px; padding: 24px 28px; border-radius: 20px; background: #F7F8FA; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px">
+<div style="max-width: 62ch">
+<div style="font-weight: 600">{{bookingUpdate}}</div>
+<div class="muted" style="font-size: 15px">{{bookingNote}}</div>
+</div>
+<button class="btn dark" type="button" data-upload-bookings>Upload a new file</button>
+</div>
+
+<section style="margin-top: 72px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px">
+<div role="group" aria-label="Show" class="seg-wrap">
+<template data-list="{{filters}}" as="f">
+<button class="seg {{f.cls}}" aria-pressed="{{f.pressed}}" onClick="{{f.pick}}">{{f.label}}</button>
+</template>
+</div>
+<label style="display: flex; align-items: center; gap: 10px"><span class="muted">Find</span><input class="in" type="search" placeholder="Visit code, like V-0412" value="{{q}}" onChange="{{setQ}}"></label>
+</div>
+
+<p class="mobile-table-hint muted">Swipe the table sideways for all columns.</p><div style="overflow-x: auto">
+<table class="tbl">
+<thead><tr><th>Visit</th><th>Plane</th><th>Arrives</th><th>Leaves</th><th>Stay</th><th>Status</th><th><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Action</span></th></tr></thead>
+<tbody>
+<template data-list="{{rows}}" as="r">
+<tr>
+<td>
+<div style="font-weight: 600">{{r.id}}</div>
+<template data-if="{{r.flag}}"><div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #5D6B82"><span class="dot"></span>{{r.reason}}</div></template>
+</td>
+<td>{{r.size}}</td>
+<td>{{r.arr}}</td>
+<td>{{r.dep}}</td>
+<td class="muted">{{r.stay}}</td>
+<td><span class="tag {{r.tcls}}">{{r.status}}</span></td>
+<td style="text-align: right">
+<template data-if="{{r.flag}}"><button class="btn" type="button" onClick="{{r.check}}">Mark as checked</button></template>
+<template data-if="{{r.done}}"><span style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path class="ck" d="M3 8.5l3.2 3.2L13 4.8"></path></svg>Checked</span></template>
+</td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
+
+<template data-if="{{empty}}">
+<div style="padding: 48px 0; text-align: left">
+<div style="font-weight: 600; font-size: 18px">Nothing to check here.</div>
+<div class="muted">{{emptyReason}}</div>
+</div>
+</template>
+
+<p class="muted" style="margin: 20px 0 0; font-size: 14px">Showing {{shown}} of {{filteredCount}} matching visits ({{totalVisits}} total). A landing permission request isn't a booking until the customer confirms.</p>
+<button class="btn" style="margin-top:16px" onClick="{{showMore}}" disabled="{{allShown}}">Show more visits</button></section>
+
+</main>
+
+<footer style="border-top: 1px solid #EAECF0">
+<p class="muted" style="max-width: 1120px; margin: 0 auto; padding: 20px 24px; box-sizing: border-box; font-size: 13px">{{footer}}</p>
+</footer>
+
+</div>

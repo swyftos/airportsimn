@@ -49,3 +49,12 @@ class ReviewStore:
             r=dict(record); r['checks']=json.loads(r['checks']); r['stale']=r['version']!=active_version
             result.append(r)
         return result
+
+    def design_state(self,key,default=None):
+        with self.connect() as db:
+            row=db.execute('SELECT value FROM settings WHERE key=?',('design_'+key,)).fetchone()
+        return json.loads(row[0]) if row else default
+
+    def save_design_state(self,key,value):
+        with self.connect() as db:
+            db.execute('INSERT OR REPLACE INTO settings VALUES (?,?)',('design_'+key,json.dumps(value)))

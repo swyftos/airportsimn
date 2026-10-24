@@ -1,0 +1,257 @@
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mona+Sans:wdth,wght@75..125,300..800&amp;display=swap">
+<style>
+body{margin:0;background:#FFFFFF;color:#14213D;font-family:'Mona Sans',system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.55;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+a{color:#14213D}
+.w{font-stretch:115%}
+.muted{color:#5D6B82}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid #14213D;outline-offset:3px;border-radius:8px}
+
+.seg-wrap{display:inline-flex;padding:4px;background:#F2F4F7;border-radius:999px;gap:2px}
+.seg{border:0;background:transparent;border-radius:999px;padding:0 20px;min-height:40px;font-size:15px;font-weight:500;color:#5D6B82;cursor:pointer}
+.seg:hover{color:#14213D}
+.seg.on{background:#FFFFFF;color:#14213D;box-shadow:0 1px 2px rgba(20,33,61,.10),0 0 0 1px #E4E7EC}
+
+.sw{position:relative;display:inline-flex;align-items:center;gap:12px;cursor:pointer;min-height:44px;font-size:15px}
+.sw input{position:absolute;opacity:0;width:44px;height:26px;margin:0;cursor:pointer}
+.sw-t{position:relative;width:44px;height:26px;border-radius:999px;background:#D0D5DD;flex:none}
+.sw-t::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(20,33,61,.2)}
+.sw input:checked + .sw-t{background:#14213D}
+.sw input:checked + .sw-t::after{left:21px}
+.sw input:focus-visible + .sw-t{outline:2px solid #14213D;outline-offset:3px}
+
+.hb{display:flex;gap:4px;height:72px}
+.hb-n{background-color:#14213D;background-image:linear-gradient(90deg,transparent calc(100% - 1px),rgba(255,255,255,.22) 0);border-radius:10px 0 0 10px}
+.hb-o{background-color:#FF6A2B;background-image:linear-gradient(90deg,transparent calc(100% - 1px),rgba(255,255,255,.38) 0);border-radius:0 10px 10px 0}
+.hb-e{background-color:#F2F4F7;background-image:linear-gradient(90deg,transparent calc(100% - 1px),rgba(20,33,61,.10) 0);border-radius:0 10px 10px 0}
+
+.cta{display:inline-flex;align-items:center;min-height:48px;padding:0 26px;border-radius:999px;background:#14213D;color:#FFFFFF;text-decoration:none;font-weight:600}
+.cta:hover{background:#24365C;color:#FFFFFF}
+
+.wkg{display:grid;grid-template-columns:104px minmax(0,1fr) 112px;gap:28px;padding:0 16px}
+.wk{border:0;background:transparent;text-align:left;width:100%;box-sizing:border-box;align-items:center;padding-top:16px;padding-bottom:16px;border-radius:12px;cursor:pointer}
+.wk:hover{background:#F9FAFB}
+.wk.on{background:#F2F4F7}
+.wk:focus-visible{outline:2px solid #14213D;outline-offset:0}
+.trk{display:flex;flex-direction:column;gap:5px}
+.bar{display:flex;gap:2px;height:14px}
+.tn{background:#14213D;border-radius:5px 0 0 5px}
+.tn.full{border-radius:5px}
+.to{background:#FF6A2B;border-radius:0 5px 5px 0}
+.gh{height:3px;background:#D0D5DD;border-radius:2px}
+.cap{position:absolute;top:0;bottom:0;border-left:1.5px dashed rgba(20,33,61,.45)}
+.nt{font-size:13px}
+.nt.s{color:#B93F0B;font-weight:600}
+.nt.f{color:#5D6B82}
+
+.ap{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 20px;border-radius:999px;border:1px solid #D0D5DD;background:#FFFFFF;font-weight:600;cursor:pointer}
+.ap:hover{border-color:#14213D}
+.ap.on{background:#14213D;border-color:#14213D;color:#FFFFFF}
+.ck{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.nav{display:flex;flex-wrap:wrap;gap:2px}
+.nav a{display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border-radius:999px;text-decoration:none;color:#5D6B82;font-weight:500;font-size:15px}
+.nav a:hover{color:#14213D;background:#F7F8FA}
+.nav a.on{color:#14213D;background:#F2F4F7}
+.av{width:36px;height:36px;border-radius:50%;background:#F2F4F7;display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;flex:none}
+
+@media (prefers-reduced-motion: no-preference){
+.hb-n,.hb-o,.hb-e,.tn,.to{transition:width .55s cubic-bezier(.2,.7,.2,1)}
+.sw-t,.sw-t::after,.seg{transition:all .2s ease}
+}
+@media (max-width: 640px){
+.wkg{grid-template-columns:64px minmax(0,1fr) 76px;gap:14px;padding:0 10px}
+.hb{height:56px}
+}
+</style>
+
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+
+<header style="border-bottom: 1px solid #EAECF0">
+<div style="max-width: 1120px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px">
+<div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px 28px">
+<a href="#main" class="w" style="font-size: 19px; font-weight: 700; letter-spacing: -0.01em; text-decoration: none">RampReady</a>
+<nav class="nav" aria-label="Main">
+<a href="#main" class="on" aria-current="page">Overview</a>
+<a href="#plan">Plan</a>
+<a href="#bookings">Bookings</a>
+<a href="#ramp">Ramp</a>
+<a href="#numbers">Numbers</a>
+</nav>
+</div>
+<div style="display: flex; align-items: center; gap: 16px; font-size: 15px">
+<span class="muted" style="font-size: 13px; padding: 4px 12px; border-radius: 999px; background: #F2F4F7">{{dataBadge}}</span>
+<a href="#signin" style="display: inline-flex; align-items: center; gap: 10px; text-decoration: none"><span class="av">{{userInitial}}</span>{{userName}}</a>
+</div>
+</div>
+</header>
+
+<main style="flex: 1; width: 100%; max-width: 1120px; margin: 0 auto; padding: 40px 24px 0; box-sizing: border-box">
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px">
+<div role="group" aria-label="How busy the week will be" class="seg-wrap">
+<template data-list="{{scenarios}}" as="s">
+<button class="seg {{s.cls}}" aria-pressed="{{s.pressed}}" onClick="{{s.pick}}">{{s.label}}</button>
+</template>
+</div>
+<label class="sw">
+<input type="checkbox" checked="{{late}}" onChange="{{toggleLate}}">
+<span class="sw-t" aria-hidden="true"></span>
+<span>Departures run a day late</span>
+</label>
+</div>
+
+<section style="padding: 72px 0 24px">
+<p class="muted" style="margin: 0 0 16px; font-size: 17px">Super Bowl week at Pacific Executive FBO, LAX. February 11 to 17.</p>
+<h1 class="w" style="margin: 0; font-size: clamp(40px, 6.4vw, 80px); line-height: 1.02; font-weight: 600; letter-spacing: -0.025em; max-width: 15ch">{{headline}}</h1>
+<p style="margin: 24px 0 0; font-size: clamp(18px, 1.8vw, 21px); line-height: 1.5; max-width: 54ch; color: #3B4A66">{{subline}}</p><p class="muted" style="margin:16px 0 0;max-width:65ch;font-size:14px">{{uncertainty}}</p>
+
+<div style="margin-top: 56px">
+<div class="hb" role="img" aria-label="{{hero.aria}}">
+<div class="hb-n" style="width: {{hero.nw}}; background-size: {{hero.ns}} 100%"></div>
+<template data-if="{{hero.short}}">
+<div class="hb-o" style="width: {{hero.ow}}; background-size: {{hero.os}} 100%"></div>
+</template>
+<template data-if="{{hero.spare}}">
+<div class="hb-e" style="width: {{hero.ew}}; background-size: {{hero.es}} 100%"></div>
+</template>
+</div>
+<div style="display: flex; gap: 4px; margin-top: 14px">
+<div style="width: {{hero.nw}}; min-width: 0">
+<div class="w" style="font-size: 24px; font-weight: 600">{{hero.nNum}}</div>
+<div class="muted" style="font-size: 15px">{{hero.nLabel}}</div>
+</div>
+<div style="flex: 1; min-width: 0">
+<div class="w" style="font-size: 24px; font-weight: 600; color: {{hero.rColor}}">{{hero.rNum}}</div>
+<div class="muted" style="font-size: 15px">{{hero.rLabel}}</div>
+</div>
+</div>
+<p class="muted" style="margin: 20px 0 0; font-size: 14px">Each stripe is one model parking unit, not a measured stand. Bigger jets take more room. Daily bars show P3 median peaks.</p>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 48px">
+<a class="cta" href="#plan">See the plan</a>
+<span class="muted">{{planSummary}}</span>
+</div>
+</section>
+
+<section style="margin-top: 96px">
+<div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 32px; margin-bottom: 28px">
+<div>
+<h2 class="w" style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.015em">The week, day by day</h2>
+<p class="muted" style="margin: 6px 0 0">Busiest moment of each day. Pick a day to see what's happening.</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 14px" class="muted">
+<span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 3px; background: #14213D"></span>Fits on our ramp</span>
+<span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 3px; background: #FF6A2B"></span>Needs extra space</span>
+<span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 16px; height: 3px; border-radius: 2px; background: #D0D5DD"></span>A normal week</span>
+</div>
+</div>
+
+<div class="wkg" style="margin-bottom: 6px; font-size: 13px">
+<span></span>
+<span style="position: relative; height: 20px">
+<span class="muted" style="position: absolute; left: {{capPos}}; transform: translateX(-50%); white-space: nowrap">Ramp full, {{capacity}}</span>
+</span>
+<span></span>
+</div>
+
+<div style="position: relative">
+<template data-list="{{week}}" as="r">
+<button class="wk wkg {{r.cls}}" aria-pressed="{{r.pressed}}" onClick="{{r.pick}}">
+<span style="display: flex; flex-direction: column">
+<span style="font-weight: 600">{{r.dn}}</span>
+<span class="muted" style="font-size: 13px">{{r.sub}}</span>
+</span>
+<span class="trk">
+<span class="bar">
+<span class="{{r.tnCls}}" style="width: {{r.nw}}"></span>
+<template data-if="{{r.hasShort}}"><span class="to" style="width: {{r.ow}}"></span></template>
+</span>
+<span class="gh" style="width: {{r.gw}}"></span>
+</span>
+<span style="display: flex; flex-direction: column; align-items: flex-end">
+<span class="w" style="font-size: 19px; font-weight: 600">{{r.v}}</span>
+<span class="nt {{r.ntCls}}">{{r.note}}</span>
+</span>
+</button>
+</template>
+<div class="wkg" aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none">
+<span></span>
+<span style="position: relative"><span class="cap" style="left: {{capPos}}"></span></span>
+<span></span>
+</div>
+</div>
+
+<div style="margin-top: 28px; padding: 32px; border-radius: 16px; background: #F7F8FA">
+<h3 class="w" style="margin: 0; font-size: 22px; font-weight: 600">{{day.title}}</h3>
+<div style="display: flex; flex-wrap: wrap; gap: 24px 56px; margin-top: 24px">
+<div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{day.arr}}</div><div class="muted" style="margin-top: 8px">planes arriving</div></div>
+<div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{day.dep}}</div><div class="muted" style="margin-top: 8px">planes leaving</div></div>
+<div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{day.parked}}</div><div class="muted" style="margin-top: 8px">planes in the hourly illustration</div></div>
+<div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{day.spaces}}</div><div class="muted" style="margin-top: 8px">spaces they need</div></div>
+</div>
+<p class="muted" style="margin: 24px 0 0; max-width: 64ch">Planes from earlier days are still parked here, so arrivals alone don't show how full the ramp gets.</p>
+<a href="#day" style="display: inline-flex; align-items: center; min-height: 44px; margin-top: 12px; font-weight: 600">See this day hour by hour</a>
+</div>
+</section>
+
+<section id="plan" style="margin-top: 112px">
+<div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 32px; margin-bottom: 8px">
+<div>
+<h2 class="w" style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.015em">The plan</h2>
+<p class="muted" style="margin: 6px 0 0">{{planIntro}}</p>
+</div>
+<template data-if="{{hasPlan}}">
+<span style="font-weight: 600">{{approvedText}}</span>
+</template>
+</div>
+
+<template data-if="{{cleared}}">
+<p role="status" style="margin: 16px 0 0; padding: 14px 18px; border-radius: 12px; background: #FFF1EA; color: #8A2F08">The numbers changed, so earlier approvals were cleared. Please review again.</p>
+</template>
+
+<template data-if="{{hasPlan}}">
+<ol style="list-style: none; margin: 16px 0 0; padding: 0">
+<template data-list="{{steps}}" as="s">
+<li style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px; padding: 28px 0; border-top: 1px solid #EAECF0">
+<span class="w" style="flex: none; width: 32px; font-size: 22px; font-weight: 600; color: #98A2B3">{{s.n}}</span>
+<div style="flex: 1 1 340px; min-width: 0">
+<div style="font-size: 18px; font-weight: 500">{{s.t}}</div>
+<template data-if="{{s.hasNote}}"><div class="muted" style="font-size: 14px; margin-top: 4px">{{s.note}}</div></template>
+</div>
+<div style="flex: 0 0 210px; display: flex; align-items: center; gap: 12px">
+<span class="av">{{s.ini}}</span>
+<span style="display: flex; flex-direction: column; line-height: 1.35"><span style="font-weight: 500">{{s.who}}</span><span class="muted" style="font-size: 13px">by {{s.due}}</span></span>
+</div>
+<template data-if="{{s.ok}}">
+<button class="ap on" onClick="{{s.toggle}}"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path class="ck" d="M3 8.5l3.2 3.2L13 4.8"></path></svg>Approved</button>
+</template>
+<template data-if="{{s.notOk}}">
+<button class="ap" onClick="{{s.toggle}}">Approve</button>
+</template>
+</li>
+</template>
+</ol>
+<p class="muted" style="margin: 0; padding-top: 20px; border-top: 1px solid #EAECF0; font-size: 14px">Approvals are saved with your name and this version of the plan. Nothing is booked or paid for automatically.</p>
+</template>
+</section>
+
+<section style="margin-top: 112px; padding-bottom: 96px">
+<h2 class="w" style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.015em">Where these numbers come from</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 24px 64px; margin-top: 28px">
+<div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{booked}}</div><div class="muted" style="margin-top: 8px">bookings loaded</div></div>
+<div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{est}}</div><div class="muted" style="margin-top: 8px">modeled arrivals for the week</div></div>
+<div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{opening}}</div><div class="muted" style="margin-top: 8px">planes parked before the week starts</div></div>
+</div>
+<p style="margin: 28px 0 0; max-width: 64ch; color: #3B4A66">{{sourceExplanation}}</p>
+</section>
+
+</main>
+
+<footer style="border-top: 1px solid #EAECF0">
+<p class="muted" style="max-width: 1120px; margin: 0 auto; padding: 20px 24px; box-sizing: border-box; font-size: 13px">{{footer}}</p>
+</footer>
+
+</div>

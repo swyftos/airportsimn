@@ -4,6 +4,10 @@ A working local readiness desk for a fictional **Pacific Executive FBO at LAX**.
 
 **Owner: Nazar Meniailo / z1ppyyy — Person 4.** Everything in this contribution lives in `nazar/`. The dashboard connects directly to Marvin’s and Elia’s committed outputs through a native adapter. Their forecasting and parking logic remain their responsibility; Alan’s source work and estimated baseline are merged. His baseline appears separately in Data & assumptions because its parked-aircraft counts differ from P3’s size-weighted space units.
 
+## Approved RampReady design
+
+The default app now follows the supplied seven-page HTML design: Sign in, Overview, Day, Plan, Bookings, Ramp and Numbers. See [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md) for the current interaction map, data boundaries and verification. The original technical dashboard remains at `/legacy` for recovery; it is no longer the main interface.
+
 ## Run it
 
 From the shared repository root, with Python **3.10 or newer**:
@@ -12,7 +16,7 @@ From the shared repository root, with Python **3.10 or newer**:
 python3 nazar/app.py
 ```
 
-Open **http://127.0.0.1:4180**, choose the manager demo account, and click **Open readiness desk**. On Windows, `py -3 nazar/app.py` is an alternative. No packages, API key, build step or internet connection are required to run the dashboard. A fresh install opens the current team outputs; an existing installation preserves its previously selected source. If it shows samples, use **Use current team outputs** on the overview. Missing or invalid team files produce an error, never a silent switch to sample data. If the port is taken, use `--port 4181` and open that port. Stop with Ctrl+C.
+Open **http://127.0.0.1:4180**, choose **Maya, manager** to open Overview. On Windows, `py -3 nazar/app.py` is an alternative. No packages, API key or build step are required. Model loading works offline; the approved Mona Sans font loads from Google Fonts when internet access is available, with a system-font fallback. A fresh install opens the current team outputs; an existing installation preserves its previously selected source. If it shows samples, open **Numbers → Data and planning tools → Load a seven-file contract → Use current team release**. Missing or invalid team files produce an error, never a silent switch to sample data. If the port is taken, use `--port 4181` and open that port. Stop with Ctrl+C.
 
 Do not open `static/index.html` directly: the app needs its local Python server. Each teammate runs their own local copy. Sharing the repository shares code and input files, not a central live database.
 

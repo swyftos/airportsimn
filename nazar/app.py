@@ -6,6 +6,7 @@ Do not expose this server publicly or treat demo sign-in as real authentication.
 """
 from __future__ import annotations
 import argparse
+import hashlib
 import json
 import mimetypes
 import secrets
@@ -19,12 +20,13 @@ from readiness.data import sample_bundle, team_bundle, team_status, native_bundl
 from readiness.storage import ReviewStore
 from readiness.release_status import alan_reference
 from readiness.what_if import plan as what_if_plan
+from readiness.design_view import view as design_view, catalog as design_catalog, parse_bookings
 
 ROOT=Path(__file__).resolve().parent
 PROFILES={
     'manager':{'id':'maya-demo','name':'Maya Chen','role':'manager','position':'FBO manager','initials':'MC'},
-    'reservations':{'id':'alex-demo','name':'Alex Rivera','role':'reservations','position':'Reservations coordinator','initials':'AR'},
-    'operations':{'id':'jordan-demo','name':'Jordan Ellis','role':'operations','position':'Operations supervisor','initials':'JE'},
+    'reservations':{'id':'alex-demo','name':'Jordan Rivera','role':'reservations','position':'Reservations coordinator','initials':'JR'},
+    'operations':{'id':'jordan-demo','name':'Sam Ellis','role':'operations','position':'Operations supervisor','initials':'SE'},
 }
 
 class Application:
@@ -64,6 +66,14 @@ class Application:
                 'summaries':{s:{v:summarize(self.bundle,s,v) for v in self.bundle['variants']} for s in ('low','medium','high')} if self.bundle else {},
                 'native_files':native_status(self.repo_root), 'team_files':team_status(self.repo_root),'history':self.store.history(self.bundle['version'] if self.bundle else '')}
 
+    def design_snapshot(self,scenario,variant):
+        if not self.bundle:raise ContractError(self.load_error or 'No valid dataset loaded.')
+        bookings=self.store.design_state('bookings',{'visits':[],'updated_at':None})
+        version=hashlib.sha256(json.dumps([self.bundle['version'],scenario,variant,bookings],sort_keys=True).encode()).hexdigest()
+        return {**design_view(self.bundle,scenario,variant,bookings),'version':version,
+                'history':self.store.history(version),'checks':self.store.design_state('checks',{}),
+                'ramp_checks':self.store.design_state('ramp_checks',{}),'input_status':self.input_status()}
+
 class Handler(BaseHTTPRequestHandler):
     server_version='IntelligentFBOLocal/1.0'
     def log_message(self,format,*args): pass
@@ -77,7 +87,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Cache-Control','no-store')
         self.send_header('X-Content-Type-Options','nosniff')
         self.send_header('Referrer-Policy','no-referrer')
-        self.send_header('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
+        self.send_header('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
         if extra:
             for k,v in extra.items(): self.send_header(k,v)
         self.end_headers()
@@ -102,6 +112,10 @@ class Handler(BaseHTTPRequestHandler):
             if not session: return self.reply(401,{'error':'Choose a demo account first.'})
             with self.app.lock:
                 if url.path=='/api/dashboard': return self.reply(200,self.app.snapshot())
+                if url.path=='/api/design':
+                    q=parse_qs(url.query)
+                    try:return self.reply(200,self.app.design_snapshot(q.get('scenario',['medium'])[0],q.get('variant',['standard'])[0]))
+                    except (ContractError,ValueError,KeyError) as exc:return self.reply(400,{'error':str(exc)})
                 if url.path=='/api/export':
                     q=parse_qs(url.query)
                     if not self.app.bundle: return self.reply(409,{'error':'No valid dataset is loaded.'})
@@ -124,7 +138,9 @@ class Handler(BaseHTTPRequestHandler):
                     except ContractError as exc: return self.reply(400,{'error':str(exc)})
                     return self.reply(200,json.dumps(data,indent=2).encode(),'application/octet-stream',{'Content-Disposition':'attachment; filename="readiness-plan.json"'})
             return self.reply(404,{'error':'Unknown endpoint.'})
-        allowed={'/':'index.html','/app.js':'app.js','/styles.css':'styles.css','/what-if.js':'what-if.js','/what-if.css':'what-if.css'}
+        allowed={'/':'index.html','/legacy':'legacy.html','/app.js':'app.js','/styles.css':'styles.css','/what-if.js':'what-if.js','/what-if.css':'what-if.css','/design-tools.js':'design-tools.js','/design.js':'design.js','/design.css':'design.css'}
+        for name in ('Signin','Main','Day','Plan','Bookings','Ramp','Numbers'):
+            allowed['/templates/'+name+'.html']='templates/'+name+'.html'
         if url.path not in allowed: return self.reply(404,{'error':'Not found.'})
         file=ROOT/'static'/allowed[url.path]
         return self.reply(200,file.read_bytes(),(mimetypes.guess_type(str(file))[0] or 'text/plain')+'; charset=utf-8')
@@ -166,6 +182,40 @@ class Handler(BaseHTTPRequestHandler):
                     return self.reply(200,what_if_plan(self.app.bundle,body['settings']))
                 except (ContractError,ValueError,KeyError,TypeError) as exc:
                     return self.reply(400,{'error':str(exc)})
+            if path.startswith('/api/design/'):
+                from datetime import datetime, timezone
+                try:
+                    role=session['profile']['role']
+                    scenario=body.get('scenario','medium');variant=body.get('variant','standard')
+                    current=self.app.design_snapshot(scenario,variant)
+                    if current['input_status']['stale'] or body.get('version')!=current['version']:
+                        return self.reply(409,{'error':'Inputs changed. Refresh the plan before saving.'})
+                    if path=='/api/design/bookings':
+                        if role not in ('manager','reservations'):return self.reply(403,{'error':'Use a reservations or manager account to upload visits.'})
+                        visits=parse_bookings(body.get('csv'))
+                        self.app.store.save_design_state('bookings',{'visits':visits,'updated_at':datetime.now(timezone.utc).isoformat()})
+                    elif path=='/api/design/check':
+                        kind=body.get('kind');key=body.get('key');checked=body.get('checked')
+                        if kind not in ('checks','ramp_checks') or not isinstance(checked,bool):raise ContractError('Invalid checklist update.')
+                        needed=('manager','reservations') if kind=='checks' else ('manager','operations')
+                        if role not in needed:return self.reply(403,{'error':'Use the role responsible for this checklist.'})
+                        valid=([v['id'] for v in current['illustration']['visits']]+[v['id'] for v in current['bookings']['visits']]) if kind=='checks' else ['capacity','access','lighting','reserve','briefing','partner']
+                        if key not in valid:raise ContractError('Unknown checklist item.')
+                        state=self.app.store.design_state(kind,{})
+                        state[current['version']+':'+key]={'checked':checked,'reviewer':session['profile']['name'],'time':datetime.now(timezone.utc).isoformat()}
+                        self.app.store.save_design_state(kind,state)
+                    elif path=='/api/design/review':
+                        if role!='manager':return self.reply(403,{'error':'Use the manager account to review the preparation plan.'})
+                        rid=body.get('recommendation_id');decision=body.get('decision');note=body.get('note','');checks=body.get('checks',{})
+                        if rid not in [r['id'] for r in current['actions']]:raise ContractError('This action is not part of the current plan.')
+                        if decision not in ('approved','changes_requested','rejected'):raise ContractError('Invalid review decision.')
+                        if not isinstance(note,str) or not 5<=len(note.strip())<=600:raise ContractError('Add a review note of 5–600 characters.')
+                        if not isinstance(checks,dict) or set(checks)-{'assumptions','availability','cost'}:raise ContractError('Invalid review checks.')
+                        if decision=='approved' and any(checks.get(k) is not True for k in ('assumptions','availability','cost')):raise ContractError('Confirm assumptions, availability and costs before approval.')
+                        self.app.store.add(current['version'],scenario,variant,rid,decision,note.strip(),session['profile']['name']+' (demo)',checks)
+                    else:return self.reply(404,{'error':'Unknown design action.'})
+                    return self.reply(200,self.app.design_snapshot(scenario,variant))
+                except (ContractError,ValueError,KeyError,TypeError) as exc:return self.reply(400,{'error':str(exc)})
             if session['profile']['role']!='manager': return self.reply(403,{'error':'The manager demo role is required for reviews or data changes.'})
             try:
                 if path in ('/api/source','/api/import'):
