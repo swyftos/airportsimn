@@ -29,7 +29,7 @@ figure should be attributed to LAX from this source.
 
 | ID | Source and date | What it supports | Reliability and limitation |
 |---|---|---|---|
-| ALAN-S01 | FAA Airport Master Record (5010), printed 2026-10-23, effective 2026-10-01, via https://www.faa.gov/air_traffic/flight_info/aeronav/aero_data/ (retrieved through ADIP) | Ownership, acreage, elevation, all 4 runway specs (length/width/surface/PCN), control tower status | High for everything populated. Based-aircraft block (fields 90-96) is blank in the source itself — not a reliability issue, a genuine data gap. |
+| ALAN-S01 | FAA Airport Master Record (5010), printed 2026-10-23, effective 2026-10-01, via https://adip.faa.gov/agis/public/#/simpleAirportMap/LAX (ADIP's LAX map page; the 5010 record itself must be downloaded from there as the "Airport Master Record" / AMR report, it is not shown inline on the map page) | Ownership, acreage, elevation, all 4 runway specs (length/width/surface/PCN), control tower status | High for everything populated. Based-aircraft block (fields 90-96) is blank in the source itself — not a reliability issue, a genuine data gap. |
 | ALAN-S02 | AirNav LAX page, https://www.airnav.com/airport/LAX, retrieved 2026-10-23 | Cross-check of runway specs (exact match); confirms no based-aircraft count published | Secondary aggregator of FAA 5010 data, not a primary source. Used only as a corroboration check, not cited independently for any number not already in ALAN-S01. |
 
 Local copies: `../data/raw/alan_5010/LAX_5010_master_record.pdf` (the printed
