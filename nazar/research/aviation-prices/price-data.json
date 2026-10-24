@@ -1,0 +1,1993 @@
+{
+  "retrieved_date": "2026-10-23",
+  "excluded_years": [
+    2020,
+    2021,
+    2022
+  ],
+  "commercial_source": "https://data.transportation.gov/Aviation/Consumer-Airfare-Report-Table-1a-All-U-S-Airport-P/tfrh-tu9e",
+  "commercial_definition": "Directionless airport-pair average each-way fare, nominal USD per passenger, all ticket classes; includes taxes/airport fees, excludes ancillary charges. Quarterly historical observations, not Super Bowl week quotes.",
+  "commercial_quarterly": [
+    {
+      "year": 2016,
+      "quarter": 1,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 126.5643032,
+      "passengers_per_day": 3014.395604,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201611288912892LASLAX"
+    },
+    {
+      "year": 2016,
+      "quarter": 1,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 349.2165139,
+      "passengers_per_day": 2805.494505,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201611289211618LAXEWR"
+    },
+    {
+      "year": 2016,
+      "quarter": 1,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 391.3571845,
+      "passengers_per_day": 6288.681319,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201611289212478LAXJFK"
+    },
+    {
+      "year": 2016,
+      "quarter": 1,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 269.6628614,
+      "passengers_per_day": 1980.10989,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201611289213303LAXMIA"
+    },
+    {
+      "year": 2016,
+      "quarter": 2,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 115.7680651,
+      "passengers_per_day": 3564.945055,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201621288912892LASLAX"
+    },
+    {
+      "year": 2016,
+      "quarter": 2,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 323.7756349,
+      "passengers_per_day": 3915.714286,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201621289211618LAXEWR"
+    },
+    {
+      "year": 2016,
+      "quarter": 2,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 381.7997808,
+      "passengers_per_day": 7468.681319,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201621289212478LAXJFK"
+    },
+    {
+      "year": 2016,
+      "quarter": 2,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 244.7090847,
+      "passengers_per_day": 2084.175824,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201621289213303LAXMIA"
+    },
+    {
+      "year": 2016,
+      "quarter": 3,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 121.9883362,
+      "passengers_per_day": 3262.608696,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201631288912892LASLAX"
+    },
+    {
+      "year": 2016,
+      "quarter": 3,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 332.1935373,
+      "passengers_per_day": 3922.173913,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201631289211618LAXEWR"
+    },
+    {
+      "year": 2016,
+      "quarter": 3,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 383.0030902,
+      "passengers_per_day": 7277.608696,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201631289212478LAXJFK"
+    },
+    {
+      "year": 2016,
+      "quarter": 3,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 276.2236854,
+      "passengers_per_day": 1750.76087,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201631289213303LAXMIA"
+    },
+    {
+      "year": 2016,
+      "quarter": 4,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 119.2707556,
+      "passengers_per_day": 2888.695652,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201641288912892LASLAX"
+    },
+    {
+      "year": 2016,
+      "quarter": 4,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 342.7791427,
+      "passengers_per_day": 3730.326087,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201641289211618LAXEWR"
+    },
+    {
+      "year": 2016,
+      "quarter": 4,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 408.7001941,
+      "passengers_per_day": 7056.956522,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201641289212478LAXJFK"
+    },
+    {
+      "year": 2016,
+      "quarter": 4,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 316.3771681,
+      "passengers_per_day": 1719.565217,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201641289213303LAXMIA"
+    },
+    {
+      "year": 2017,
+      "quarter": 1,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 119.981949,
+      "passengers_per_day": 3143.555556,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201711288912892LASLAX"
+    },
+    {
+      "year": 2017,
+      "quarter": 1,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 338.5520864,
+      "passengers_per_day": 3126.0,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201711289211618LAXEWR"
+    },
+    {
+      "year": 2017,
+      "quarter": 1,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 385.4015317,
+      "passengers_per_day": 6579.333333,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201711289212478LAXJFK"
+    },
+    {
+      "year": 2017,
+      "quarter": 1,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 308.9481002,
+      "passengers_per_day": 1801.333333,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201711289213303LAXMIA"
+    },
+    {
+      "year": 2017,
+      "quarter": 2,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 112.357589,
+      "passengers_per_day": 3388.351648,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201721288912892LASLAX"
+    },
+    {
+      "year": 2017,
+      "quarter": 2,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 362.7475721,
+      "passengers_per_day": 3702.417582,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201721289211618LAXEWR"
+    },
+    {
+      "year": 2017,
+      "quarter": 2,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 422.7844044,
+      "passengers_per_day": 7552.857143,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201721289212478LAXJFK"
+    },
+    {
+      "year": 2017,
+      "quarter": 2,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 302.2238734,
+      "passengers_per_day": 1770.32967,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201721289213303LAXMIA"
+    },
+    {
+      "year": 2017,
+      "quarter": 3,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 108.7108491,
+      "passengers_per_day": 3521.630435,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201731288912892LASLAX"
+    },
+    {
+      "year": 2017,
+      "quarter": 3,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 344.6735432,
+      "passengers_per_day": 3525.434783,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201731289211618LAXEWR"
+    },
+    {
+      "year": 2017,
+      "quarter": 3,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 400.4903712,
+      "passengers_per_day": 7276.630435,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201731289212478LAXJFK"
+    },
+    {
+      "year": 2017,
+      "quarter": 3,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 292.1845183,
+      "passengers_per_day": 1490.543478,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201731289213303LAXMIA"
+    },
+    {
+      "year": 2017,
+      "quarter": 4,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 112.2666653,
+      "passengers_per_day": 2751.73913,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201741288912892LASLAX"
+    },
+    {
+      "year": 2017,
+      "quarter": 4,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 353.2903113,
+      "passengers_per_day": 3610.217391,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201741289211618LAXEWR"
+    },
+    {
+      "year": 2017,
+      "quarter": 4,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 414.6454286,
+      "passengers_per_day": 7661.086957,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201741289212478LAXJFK"
+    },
+    {
+      "year": 2017,
+      "quarter": 4,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 304.9806529,
+      "passengers_per_day": 1624.782609,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201741289213303LAXMIA"
+    },
+    {
+      "year": 2018,
+      "quarter": 1,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 122.414443,
+      "passengers_per_day": 3028.0,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201811288912892LASLAX"
+    },
+    {
+      "year": 2018,
+      "quarter": 1,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 354.2009525,
+      "passengers_per_day": 3079.666667,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201811289211618LAXEWR"
+    },
+    {
+      "year": 2018,
+      "quarter": 1,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 385.7346684,
+      "passengers_per_day": 7154.444444,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201811289212478LAXJFK"
+    },
+    {
+      "year": 2018,
+      "quarter": 1,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 315.0974675,
+      "passengers_per_day": 1667.222222,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201811289213303LAXMIA"
+    },
+    {
+      "year": 2018,
+      "quarter": 2,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 113.9583471,
+      "passengers_per_day": 3600.659341,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201821288912892LASLAX"
+    },
+    {
+      "year": 2018,
+      "quarter": 2,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 338.8304836,
+      "passengers_per_day": 3960.32967,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201821289211618LAXEWR"
+    },
+    {
+      "year": 2018,
+      "quarter": 2,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 398.7443382,
+      "passengers_per_day": 8022.747253,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201821289212478LAXJFK"
+    },
+    {
+      "year": 2018,
+      "quarter": 2,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 295.7784884,
+      "passengers_per_day": 1805.824176,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201821289213303LAXMIA"
+    },
+    {
+      "year": 2018,
+      "quarter": 3,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 109.3438475,
+      "passengers_per_day": 3908.804348,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201831288912892LASLAX"
+    },
+    {
+      "year": 2018,
+      "quarter": 3,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 340.3984897,
+      "passengers_per_day": 3879.130435,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201831289211618LAXEWR"
+    },
+    {
+      "year": 2018,
+      "quarter": 3,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 401.6415376,
+      "passengers_per_day": 7390.108696,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201831289212478LAXJFK"
+    },
+    {
+      "year": 2018,
+      "quarter": 3,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 277.4847026,
+      "passengers_per_day": 1715.978261,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201831289213303LAXMIA"
+    },
+    {
+      "year": 2018,
+      "quarter": 4,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 111.1035246,
+      "passengers_per_day": 3413.913043,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201841288912892LASLAX"
+    },
+    {
+      "year": 2018,
+      "quarter": 4,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 337.2723212,
+      "passengers_per_day": 4105.326087,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201841289211618LAXEWR"
+    },
+    {
+      "year": 2018,
+      "quarter": 4,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 420.3744951,
+      "passengers_per_day": 7718.043478,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201841289212478LAXJFK"
+    },
+    {
+      "year": 2018,
+      "quarter": 4,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 352.3864405,
+      "passengers_per_day": 1665.76087,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201841289213303LAXMIA"
+    },
+    {
+      "year": 2019,
+      "quarter": 1,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 114.4436281,
+      "passengers_per_day": 3219.888889,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201911288912892LASLAX"
+    },
+    {
+      "year": 2019,
+      "quarter": 1,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 299.285411,
+      "passengers_per_day": 3328.222222,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201911289211618LAXEWR"
+    },
+    {
+      "year": 2019,
+      "quarter": 1,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 360.0545276,
+      "passengers_per_day": 7302.111111,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201911289212478LAXJFK"
+    },
+    {
+      "year": 2019,
+      "quarter": 1,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 353.1047115,
+      "passengers_per_day": 1679.111111,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201911289213303LAXMIA"
+    },
+    {
+      "year": 2019,
+      "quarter": 2,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 113.422296,
+      "passengers_per_day": 3674.835165,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201921288912892LASLAX"
+    },
+    {
+      "year": 2019,
+      "quarter": 2,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 339.0415909,
+      "passengers_per_day": 4254.945055,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201921289211618LAXEWR"
+    },
+    {
+      "year": 2019,
+      "quarter": 2,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 407.2207834,
+      "passengers_per_day": 8301.208791,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201921289212478LAXJFK"
+    },
+    {
+      "year": 2019,
+      "quarter": 2,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 338.6681777,
+      "passengers_per_day": 1709.010989,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201921289213303LAXMIA"
+    },
+    {
+      "year": 2019,
+      "quarter": 3,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 111.030046,
+      "passengers_per_day": 3760.543478,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201931288912892LASLAX"
+    },
+    {
+      "year": 2019,
+      "quarter": 3,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 329.715132,
+      "passengers_per_day": 4025.434783,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201931289211618LAXEWR"
+    },
+    {
+      "year": 2019,
+      "quarter": 3,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 401.8750951,
+      "passengers_per_day": 7857.282609,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201931289212478LAXJFK"
+    },
+    {
+      "year": 2019,
+      "quarter": 3,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 315.5198428,
+      "passengers_per_day": 1521.195652,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201931289213303LAXMIA"
+    },
+    {
+      "year": 2019,
+      "quarter": 4,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 112.906034,
+      "passengers_per_day": 3343.369565,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201941288912892LASLAX"
+    },
+    {
+      "year": 2019,
+      "quarter": 4,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 342.4122779,
+      "passengers_per_day": 4146.73913,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201941289211618LAXEWR"
+    },
+    {
+      "year": 2019,
+      "quarter": 4,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 420.9488725,
+      "passengers_per_day": 8102.934783,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201941289212478LAXJFK"
+    },
+    {
+      "year": 2019,
+      "quarter": 4,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 357.318431,
+      "passengers_per_day": 1725.0,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "201941289213303LAXMIA"
+    },
+    {
+      "year": 2020,
+      "quarter": 1,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 114.9746985,
+      "passengers_per_day": 2304.945055,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202011288912892LASLAX"
+    },
+    {
+      "year": 2020,
+      "quarter": 1,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 316.9146114,
+      "passengers_per_day": 2487.142857,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202011289211618LAXEWR"
+    },
+    {
+      "year": 2020,
+      "quarter": 1,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 377.710115,
+      "passengers_per_day": 5496.153846,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202011289212478LAXJFK"
+    },
+    {
+      "year": 2020,
+      "quarter": 1,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 345.9817311,
+      "passengers_per_day": 1387.692308,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202011289213303LAXMIA"
+    },
+    {
+      "year": 2020,
+      "quarter": 2,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 98.65654297,
+      "passengers_per_day": 225.0549451,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202021288912892LASLAX"
+    },
+    {
+      "year": 2020,
+      "quarter": 2,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 326.6721446,
+      "passengers_per_day": 361.7582418,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202021289211618LAXEWR"
+    },
+    {
+      "year": 2020,
+      "quarter": 2,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 334.762379,
+      "passengers_per_day": 601.4285714,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202021289212478LAXJFK"
+    },
+    {
+      "year": 2020,
+      "quarter": 2,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 242.0752617,
+      "passengers_per_day": 346.4835165,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202021289213303LAXMIA"
+    },
+    {
+      "year": 2020,
+      "quarter": 3,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 94.05725485,
+      "passengers_per_day": 873.4782609,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202031288912892LASLAX"
+    },
+    {
+      "year": 2020,
+      "quarter": 3,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 232.4233719,
+      "passengers_per_day": 1173.369565,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202031289211618LAXEWR"
+    },
+    {
+      "year": 2020,
+      "quarter": 3,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 341.0639937,
+      "passengers_per_day": 1238.913043,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202031289212478LAXJFK"
+    },
+    {
+      "year": 2020,
+      "quarter": 3,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 204.9732343,
+      "passengers_per_day": 797.173913,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202031289213303LAXMIA"
+    },
+    {
+      "year": 2020,
+      "quarter": 4,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 106.1909366,
+      "passengers_per_day": 790.326087,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202041288912892LASLAX"
+    },
+    {
+      "year": 2020,
+      "quarter": 4,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 234.0894725,
+      "passengers_per_day": 1465.108696,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202041289211618LAXEWR"
+    },
+    {
+      "year": 2020,
+      "quarter": 4,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 298.3691196,
+      "passengers_per_day": 1617.391304,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202041289212478LAXJFK"
+    },
+    {
+      "year": 2020,
+      "quarter": 4,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 191.6656131,
+      "passengers_per_day": 1200.217391,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202041289213303LAXMIA"
+    },
+    {
+      "year": 2021,
+      "quarter": 1,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 103.1392775,
+      "passengers_per_day": 679.7777778,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202111288912892LASLAX"
+    },
+    {
+      "year": 2021,
+      "quarter": 1,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 220.8486052,
+      "passengers_per_day": 1183.0,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202111289211618LAXEWR"
+    },
+    {
+      "year": 2021,
+      "quarter": 1,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 243.3239535,
+      "passengers_per_day": 1786.333333,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202111289212478LAXJFK"
+    },
+    {
+      "year": 2021,
+      "quarter": 1,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 205.497264,
+      "passengers_per_day": 1137.111111,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202111289213303LAXMIA"
+    },
+    {
+      "year": 2021,
+      "quarter": 2,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 115.1094616,
+      "passengers_per_day": 1891.978022,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202121288912892LASLAX"
+    },
+    {
+      "year": 2021,
+      "quarter": 2,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 307.0988563,
+      "passengers_per_day": 2171.428571,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202121289211618LAXEWR"
+    },
+    {
+      "year": 2021,
+      "quarter": 2,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 351.3701103,
+      "passengers_per_day": 4821.758242,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202121289212478LAXJFK"
+    },
+    {
+      "year": 2021,
+      "quarter": 2,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 240.1380365,
+      "passengers_per_day": 2084.175824,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202121289213303LAXMIA"
+    },
+    {
+      "year": 2021,
+      "quarter": 3,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 110.1396378,
+      "passengers_per_day": 2713.152174,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202131288912892LASLAX"
+    },
+    {
+      "year": 2021,
+      "quarter": 3,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 334.9872798,
+      "passengers_per_day": 3090.76087,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202131289211618LAXEWR"
+    },
+    {
+      "year": 2021,
+      "quarter": 3,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 380.7780373,
+      "passengers_per_day": 6175.0,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202131289212478LAXJFK"
+    },
+    {
+      "year": 2021,
+      "quarter": 3,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 241.7883207,
+      "passengers_per_day": 2072.608696,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202131289213303LAXMIA"
+    },
+    {
+      "year": 2021,
+      "quarter": 4,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 125.9753223,
+      "passengers_per_day": 2251.195652,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202141288912892LASLAX"
+    },
+    {
+      "year": 2021,
+      "quarter": 4,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 318.2989253,
+      "passengers_per_day": 3671.304348,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202141289211618LAXEWR"
+    },
+    {
+      "year": 2021,
+      "quarter": 4,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 377.8348338,
+      "passengers_per_day": 6244.565217,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202141289212478LAXJFK"
+    },
+    {
+      "year": 2021,
+      "quarter": 4,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 290.2690779,
+      "passengers_per_day": 2438.804348,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202141289213303LAXMIA"
+    },
+    {
+      "year": 2022,
+      "quarter": 1,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 116.550308,
+      "passengers_per_day": 2182.777778,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202211288912892LASLAX"
+    },
+    {
+      "year": 2022,
+      "quarter": 1,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 289.7183152,
+      "passengers_per_day": 3036.333333,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202211289211618LAXEWR"
+    },
+    {
+      "year": 2022,
+      "quarter": 1,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 349.4762369,
+      "passengers_per_day": 5039.555556,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202211289212478LAXJFK"
+    },
+    {
+      "year": 2022,
+      "quarter": 1,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 310.0067602,
+      "passengers_per_day": 2240.222222,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202211289213303LAXMIA"
+    },
+    {
+      "year": 2022,
+      "quarter": 2,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 126.0591146,
+      "passengers_per_day": 3015.934066,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202221288912892LASLAX"
+    },
+    {
+      "year": 2022,
+      "quarter": 2,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 403.1698169,
+      "passengers_per_day": 4470.879121,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202221289211618LAXEWR"
+    },
+    {
+      "year": 2022,
+      "quarter": 2,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 514.2467251,
+      "passengers_per_day": 6439.340659,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202221289212478LAXJFK"
+    },
+    {
+      "year": 2022,
+      "quarter": 2,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 387.4755001,
+      "passengers_per_day": 2252.087912,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202221289213303LAXMIA"
+    },
+    {
+      "year": 2022,
+      "quarter": 3,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 111.4292124,
+      "passengers_per_day": 3246.086957,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202231288912892LASLAX"
+    },
+    {
+      "year": 2022,
+      "quarter": 3,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 387.8960838,
+      "passengers_per_day": 4418.695652,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202231289211618LAXEWR"
+    },
+    {
+      "year": 2022,
+      "quarter": 3,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 481.9886994,
+      "passengers_per_day": 6049.130435,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202231289212478LAXJFK"
+    },
+    {
+      "year": 2022,
+      "quarter": 3,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 354.7468658,
+      "passengers_per_day": 1987.173913,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202231289213303LAXMIA"
+    },
+    {
+      "year": 2022,
+      "quarter": 4,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 125.8470457,
+      "passengers_per_day": 2884.565217,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202241288912892LASLAX"
+    },
+    {
+      "year": 2022,
+      "quarter": 4,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 395.2927876,
+      "passengers_per_day": 4430.76087,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202241289211618LAXEWR"
+    },
+    {
+      "year": 2022,
+      "quarter": 4,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 513.8859687,
+      "passengers_per_day": 6127.608696,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202241289212478LAXJFK"
+    },
+    {
+      "year": 2022,
+      "quarter": 4,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 385.7698681,
+      "passengers_per_day": 2282.717391,
+      "included_in_analysis": false,
+      "exclusion_reason": "Assumed COVID exclusion window",
+      "source_record_id": "202241289213303LAXMIA"
+    },
+    {
+      "year": 2023,
+      "quarter": 1,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 127.2341933,
+      "passengers_per_day": 2756.222222,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202311288912892LASLAX"
+    },
+    {
+      "year": 2023,
+      "quarter": 1,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 327.5445121,
+      "passengers_per_day": 4177.888889,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202311289211618LAXEWR"
+    },
+    {
+      "year": 2023,
+      "quarter": 1,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 442.426841,
+      "passengers_per_day": 5320.222222,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202311289212478LAXJFK"
+    },
+    {
+      "year": 2023,
+      "quarter": 1,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 367.1110156,
+      "passengers_per_day": 2235.222222,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202311289213303LAXMIA"
+    },
+    {
+      "year": 2023,
+      "quarter": 2,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 121.7642953,
+      "passengers_per_day": 3179.010989,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202321288912892LASLAX"
+    },
+    {
+      "year": 2023,
+      "quarter": 2,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 358.3500031,
+      "passengers_per_day": 5312.857143,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202321289211618LAXEWR"
+    },
+    {
+      "year": 2023,
+      "quarter": 2,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 478.517227,
+      "passengers_per_day": 6553.736264,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202321289212478LAXJFK"
+    },
+    {
+      "year": 2023,
+      "quarter": 2,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 347.6399503,
+      "passengers_per_day": 2346.043956,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202321289213303LAXMIA"
+    },
+    {
+      "year": 2023,
+      "quarter": 3,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 120.0611778,
+      "passengers_per_day": 3243.043478,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202331288912892LASLAX"
+    },
+    {
+      "year": 2023,
+      "quarter": 3,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 327.2078314,
+      "passengers_per_day": 5072.934783,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202331289211618LAXEWR"
+    },
+    {
+      "year": 2023,
+      "quarter": 3,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 442.6209901,
+      "passengers_per_day": 6218.26087,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202331289212478LAXJFK"
+    },
+    {
+      "year": 2023,
+      "quarter": 3,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 293.6657377,
+      "passengers_per_day": 2145.217391,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202331289213303LAXMIA"
+    },
+    {
+      "year": 2023,
+      "quarter": 4,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 133.5382741,
+      "passengers_per_day": 3068.26087,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202341288912892LASLAX"
+    },
+    {
+      "year": 2023,
+      "quarter": 4,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 369.4577317,
+      "passengers_per_day": 4973.152174,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202341289211618LAXEWR"
+    },
+    {
+      "year": 2023,
+      "quarter": 4,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 504.0392374,
+      "passengers_per_day": 5963.695652,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202341289212478LAXJFK"
+    },
+    {
+      "year": 2023,
+      "quarter": 4,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 344.2397825,
+      "passengers_per_day": 2388.804348,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202341289213303LAXMIA"
+    },
+    {
+      "year": 2024,
+      "quarter": 1,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 142.9880123,
+      "passengers_per_day": 2884.835165,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202411288912892LASLAX"
+    },
+    {
+      "year": 2024,
+      "quarter": 1,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 358.1311499,
+      "passengers_per_day": 4048.131868,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202411289211618LAXEWR"
+    },
+    {
+      "year": 2024,
+      "quarter": 1,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 476.1265455,
+      "passengers_per_day": 5350.549451,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202411289212478LAXJFK"
+    },
+    {
+      "year": 2024,
+      "quarter": 1,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 333.3240887,
+      "passengers_per_day": 2417.802198,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202411289213303LAXMIA"
+    },
+    {
+      "year": 2024,
+      "quarter": 2,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 127.3846108,
+      "passengers_per_day": 3319.010989,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202421288912892LASLAX"
+    },
+    {
+      "year": 2024,
+      "quarter": 2,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 380.5360834,
+      "passengers_per_day": 5044.175824,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202421289211618LAXEWR"
+    },
+    {
+      "year": 2024,
+      "quarter": 2,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 521.5316757,
+      "passengers_per_day": 6200.549451,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202421289212478LAXJFK"
+    },
+    {
+      "year": 2024,
+      "quarter": 2,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 323.1519154,
+      "passengers_per_day": 2555.934066,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202421289213303LAXMIA"
+    },
+    {
+      "year": 2024,
+      "quarter": 3,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 129.4687679,
+      "passengers_per_day": 3152.065217,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202431288912892LASLAX"
+    },
+    {
+      "year": 2024,
+      "quarter": 3,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 351.0810453,
+      "passengers_per_day": 4949.456522,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202431289211618LAXEWR"
+    },
+    {
+      "year": 2024,
+      "quarter": 3,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 463.9545598,
+      "passengers_per_day": 6286.086957,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202431289212478LAXJFK"
+    },
+    {
+      "year": 2024,
+      "quarter": 3,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 312.5834752,
+      "passengers_per_day": 1902.282609,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202431289213303LAXMIA"
+    },
+    {
+      "year": 2024,
+      "quarter": 4,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 131.5877068,
+      "passengers_per_day": 3231.73913,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202441288912892LASLAX"
+    },
+    {
+      "year": 2024,
+      "quarter": 4,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 396.6529112,
+      "passengers_per_day": 4868.695652,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202441289211618LAXEWR"
+    },
+    {
+      "year": 2024,
+      "quarter": 4,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 511.4657725,
+      "passengers_per_day": 6852.173913,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202441289212478LAXJFK"
+    },
+    {
+      "year": 2024,
+      "quarter": 4,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 407.6987637,
+      "passengers_per_day": 1907.826087,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202441289213303LAXMIA"
+    },
+    {
+      "year": 2025,
+      "quarter": 1,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 128.5519703,
+      "passengers_per_day": 2977.555556,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202511288912892LASLAX"
+    },
+    {
+      "year": 2025,
+      "quarter": 1,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 379.2444177,
+      "passengers_per_day": 3136.888889,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202511289211618LAXEWR"
+    },
+    {
+      "year": 2025,
+      "quarter": 1,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 453.9339123,
+      "passengers_per_day": 5475.555556,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202511289212478LAXJFK"
+    },
+    {
+      "year": 2025,
+      "quarter": 1,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 427.7133675,
+      "passengers_per_day": 1669.888889,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202511289213303LAXMIA"
+    },
+    {
+      "year": 2025,
+      "quarter": 2,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 120.3316684,
+      "passengers_per_day": 2979.010989,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202521288912892LASLAX"
+    },
+    {
+      "year": 2025,
+      "quarter": 2,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 361.1449021,
+      "passengers_per_day": 4287.472527,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202521289211618LAXEWR"
+    },
+    {
+      "year": 2025,
+      "quarter": 2,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 498.5134539,
+      "passengers_per_day": 7069.340659,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202521289212478LAXJFK"
+    },
+    {
+      "year": 2025,
+      "quarter": 2,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 379.9509106,
+      "passengers_per_day": 1798.021978,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202521289213303LAXMIA"
+    },
+    {
+      "year": 2025,
+      "quarter": 3,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 133.7628396,
+      "passengers_per_day": 2755.793478,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202531288912892LASLAX"
+    },
+    {
+      "year": 2025,
+      "quarter": 3,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 338.795062,
+      "passengers_per_day": 4084.532609,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202531289211618LAXEWR"
+    },
+    {
+      "year": 2025,
+      "quarter": 3,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 476.1913997,
+      "passengers_per_day": 6129.956522,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202531289212478LAXJFK"
+    },
+    {
+      "year": 2025,
+      "quarter": 3,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 371.6035661,
+      "passengers_per_day": 1230.782609,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202531289213303LAXMIA"
+    },
+    {
+      "year": 2025,
+      "quarter": 4,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 141.2558433,
+      "passengers_per_day": 2677.25,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202541288912892LASLAX"
+    },
+    {
+      "year": 2025,
+      "quarter": 4,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 394.5990939,
+      "passengers_per_day": 4395.206522,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202541289211618LAXEWR"
+    },
+    {
+      "year": 2025,
+      "quarter": 4,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 534.5426837,
+      "passengers_per_day": 6639.206522,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202541289212478LAXJFK"
+    },
+    {
+      "year": 2025,
+      "quarter": 4,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 436.6297457,
+      "passengers_per_day": 1543.73913,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202541289213303LAXMIA"
+    },
+    {
+      "year": 2026,
+      "quarter": 1,
+      "airport_pair": "LAS-LAX",
+      "other_airport": "LAS",
+      "average_each_way_fare_usd": 143.7674587,
+      "passengers_per_day": 2720.233333,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202611288912892LASLAX"
+    },
+    {
+      "year": 2026,
+      "quarter": 1,
+      "airport_pair": "EWR-LAX",
+      "other_airport": "EWR",
+      "average_each_way_fare_usd": 405.7516804,
+      "passengers_per_day": 3350.7,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202611289211618LAXEWR"
+    },
+    {
+      "year": 2026,
+      "quarter": 1,
+      "airport_pair": "JFK-LAX",
+      "other_airport": "JFK",
+      "average_each_way_fare_usd": 508.3078641,
+      "passengers_per_day": 5780.111111,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202611289212478LAXJFK"
+    },
+    {
+      "year": 2026,
+      "quarter": 1,
+      "airport_pair": "LAX-MIA",
+      "other_airport": "MIA",
+      "average_each_way_fare_usd": 483.4754831,
+      "passengers_per_day": 1618.611111,
+      "included_in_analysis": true,
+      "exclusion_reason": null,
+      "source_record_id": "202611289213303LAXMIA"
+    }
+  ],
+  "commercial_annual_derived": [
+    {
+      "year": 2016,
+      "other_airport": "JFK",
+      "passenger_weighted_average_each_way_fare_usd": 391.03458202996677
+    },
+    {
+      "year": 2016,
+      "other_airport": "EWR",
+      "passenger_weighted_average_each_way_fare_usd": 335.9781691046785
+    },
+    {
+      "year": 2016,
+      "other_airport": "MIA",
+      "passenger_weighted_average_each_way_fare_usd": 275.052665718256
+    },
+    {
+      "year": 2016,
+      "other_airport": "LAS",
+      "passenger_weighted_average_each_way_fare_usd": 120.71334233047082
+    },
+    {
+      "year": 2017,
+      "other_airport": "JFK",
+      "passenger_weighted_average_each_way_fare_usd": 406.6571763244688
+    },
+    {
+      "year": 2017,
+      "other_airport": "EWR",
+      "passenger_weighted_average_each_way_fare_usd": 350.3447110592121
+    },
+    {
+      "year": 2017,
+      "other_airport": "MIA",
+      "passenger_weighted_average_each_way_fare_usd": 302.4296984393403
+    },
+    {
+      "year": 2017,
+      "other_airport": "LAS",
+      "passenger_weighted_average_each_way_fare_usd": 113.17284942001734
+    },
+    {
+      "year": 2018,
+      "other_airport": "JFK",
+      "passenger_weighted_average_each_way_fare_usd": 401.9830570212333
+    },
+    {
+      "year": 2018,
+      "other_airport": "EWR",
+      "passenger_weighted_average_each_way_fare_usd": 341.91424426811255
+    },
+    {
+      "year": 2018,
+      "other_airport": "MIA",
+      "passenger_weighted_average_each_way_fare_usd": 309.66488569820285
+    },
+    {
+      "year": 2018,
+      "other_airport": "LAS",
+      "passenger_weighted_average_each_way_fare_usd": 113.7608327561222
+    },
+    {
+      "year": 2019,
+      "other_airport": "JFK",
+      "passenger_weighted_average_each_way_fare_usd": 398.67234061114266
+    },
+    {
+      "year": 2019,
+      "other_airport": "EWR",
+      "passenger_weighted_average_each_way_fare_usd": 329.25651824110486
+    },
+    {
+      "year": 2019,
+      "other_airport": "MIA",
+      "passenger_weighted_average_each_way_fare_usd": 341.81020006551375
+    },
+    {
+      "year": 2019,
+      "other_airport": "LAS",
+      "passenger_weighted_average_each_way_fare_usd": 112.88191914381939
+    },
+    {
+      "year": 2023,
+      "other_airport": "JFK",
+      "passenger_weighted_average_each_way_fare_usd": 467.67298573538704
+    },
+    {
+      "year": 2023,
+      "other_airport": "EWR",
+      "passenger_weighted_average_each_way_fare_usd": 346.556999400311
+    },
+    {
+      "year": 2023,
+      "other_airport": "MIA",
+      "passenger_weighted_average_each_way_fare_usd": 338.64415656721
+    },
+    {
+      "year": 2023,
+      "other_airport": "LAS",
+      "passenger_weighted_average_each_way_fare_usd": 125.49624236273321
+    },
+    {
+      "year": 2024,
+      "other_airport": "JFK",
+      "passenger_weighted_average_each_way_fare_usd": 494.20651941226265
+    },
+    {
+      "year": 2024,
+      "other_airport": "EWR",
+      "passenger_weighted_average_each_way_fare_usd": 372.18854661121196
+    },
+    {
+      "year": 2024,
+      "other_airport": "MIA",
+      "passenger_weighted_average_each_way_fare_usd": 342.1126964130782
+    },
+    {
+      "year": 2024,
+      "other_airport": "LAS",
+      "passenger_weighted_average_each_way_fare_usd": 132.55038978550186
+    },
+    {
+      "year": 2025,
+      "other_airport": "JFK",
+      "passenger_weighted_average_each_way_fare_usd": 493.08236844719005
+    },
+    {
+      "year": 2025,
+      "other_airport": "EWR",
+      "passenger_weighted_average_each_way_fare_usd": 368.1934289806173
+    },
+    {
+      "year": 2025,
+      "other_airport": "MIA",
+      "passenger_weighted_average_each_way_fare_usd": 405.0451502583713
+    },
+    {
+      "year": 2025,
+      "other_airport": "LAS",
+      "passenger_weighted_average_each_way_fare_usd": 130.69049869132166
+    }
+  ],
+  "annual_method": "Passenger-per-day weighted by days in each quarter; only complete four-quarter years.",
+  "fuel_source": "https://www.eia.gov/dnav/pet/hist/LeafHandler.ashx?n=PET&s=EER_EPJK_PF4_RGC_DPG&f=A",
+  "fuel_definition": "Annual U.S. Gulf Coast kerosene-type jet fuel spot price FOB, nominal USD per US gallon. Wholesale benchmark, not LAX FBO retail or a verified procurement cost.",
+  "fuel_annual": [
+    {
+      "year": 2016,
+      "usd_per_us_gallon": 1.252
+    },
+    {
+      "year": 2017,
+      "usd_per_us_gallon": 1.558
+    },
+    {
+      "year": 2018,
+      "usd_per_us_gallon": 2.027
+    },
+    {
+      "year": 2019,
+      "usd_per_us_gallon": 1.879
+    },
+    {
+      "year": 2023,
+      "usd_per_us_gallon": 2.699
+    },
+    {
+      "year": 2024,
+      "usd_per_us_gallon": 2.338
+    },
+    {
+      "year": 2025,
+      "usd_per_us_gallon": 2.114
+    }
+  ],
+  "private_historical_status": "No verified consistent route-level 2016-present annual series located; missing values must remain unavailable, not zero.",
+  "super_bowl_2027_quotes_status": "Not verified for February 11-15, 2027; published charter benchmarks are not dated quotes."
+}
