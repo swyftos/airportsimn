@@ -61,7 +61,7 @@ This recommendation follows FAA guidance that persistent weather can produce hol
 
 The accompanying [`weather_sensitivity_placeholder.csv`](weather_sensitivity_placeholder.csv) repeats each synthetic weather case for every Feb 11–17, 2027 planning date and Low/Medium/High demand tier. It is a scenario input table, **not** a forecast of which conditions will occur or a fitted estimate of operational impact. It does not alter predicted fleet demand or accepted aircraft counts.
 
-| Synthetic case | Airfield throughput factor | Landing to parking | Parking to takeoff | Added time vs clear |
+| Synthetic case (Feb 11 example) | Airfield throughput factor | Landing to parking | Parking to takeoff | Added time vs clear |
 |---|---:|---:|---:|---:|
 | Clear | 1.00 | 12.7 min | 13.7 min | 0 / 0 min |
 | Rain | 0.85 | 21.7 min | 25.7 min | +9 / +12 min |
