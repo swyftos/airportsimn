@@ -67,3 +67,18 @@ Outputs in `alan/elia_output/data/processed/`: `opsnet_lax_monthly.csv`, `opsnet
 - Daily profile, all six airports: +25 % on Friday, +6 % on Saturday, +11 % on game day, **+33 % on Monday** (departure wave).
 
 Limits: one event, during the post-COVID recovery; tower operations count takeoffs and landings, not parked aircraft; air taxi includes some commuter flights; no split by aircraft size. This is a measured order of magnitude for event calibration, far below the "two to three times normal" business-jet benchmark reported for the Bay Area in 2026, which counts business jets only.
+
+### LAX daily series 2015 to 2025
+
+`python alan/elia_output/scripts/fetch_opsnet.py lax-daily`, then `python alan/elia_output/scripts/analyze_lax_daily.py`.
+
+- `opsnet_lax_daily.csv`: 4,018 days from 2015-01-01 to 2025-12-31, no gaps, same categories as the monthly file, 2020 to 2022 flagged `excluded_covid`. Classification `verified_public`.
+- `opsnet_lax_daily_check.csv`: the daily values add up exactly to the OPSNET monthly totals in all 132 months.
+- `opsnet_lax_weekday_profile.csv`: weekday index of GA plus air-taxi operations, each day divided by its month's mean.
+
+| Window | Mon | Tue | Wed | Thu | Fri | Sat | Sun |
+|---|---|---|---|---|---|---|---|
+| 2023 to 2025 | 1.04 | 0.89 | 0.99 | 1.09 | 1.07 | 0.81 | 1.11 |
+| 2016 to 2019 | 1.04 | 1.02 | 1.05 | 1.09 | 1.04 | 0.80 | 0.96 |
+
+Use for the team: these are observed airport-wide daily counts, so they can replace the illustrative weekday multipliers in `alan/assumptions.csv` (which put Tuesday and Wednesday at 1.12 and Sunday at 0.95) and the equal-share daily allocation in P2's provisional history. They also allow a daily backtest at airport scope, which is the only accuracy figure the team can present as measured. Daily GA plus air-taxi operations over 2023 to 2025 average 93 with a standard deviation of 22 (range 7 to 214), which is the day-to-day noise a forecast has to beat. FBO-level counts still need the agreed capture share, direction split and category mix, which remain assumptions.

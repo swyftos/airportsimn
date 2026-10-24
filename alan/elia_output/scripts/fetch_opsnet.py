@@ -8,6 +8,10 @@ Outputs (alan/elia_output/data/processed/):
   opsnet_daily_superbowl.csv      daily operations at LAX and nearby GA fields around Super Bowl LVI
                                   (13 Feb 2022, SoFi) and the same calendar window in control years
   opsnet_vs_lawa_crosscheck.csv   LAX monthly OPSNET vs LAWA TCOM (from fetch_lawa_tcom.py)
+  opsnet_lax_daily.csv            LAX daily operations by category, 2015-01-01 to 2025-12-31
+
+Usage: python fetch_opsnet.py            # everything
+       python fetch_opsnet.py lax-daily  # only the LAX daily series
 
 Columns follow the ATADS standard report: itinerant air_carrier, air_taxi, general_aviation, military,
 local civil (local_ga), local military, total. One operation = one takeoff or one landing.
@@ -16,6 +20,7 @@ import csv
 import datetime as dt
 import html
 import re
+import sys
 import time
 import urllib.error
 import urllib.parse
@@ -100,10 +105,26 @@ def write(path, header, rows):
         w.writerows(rows)
 
 
-def main():
+def lax_daily(api, retrieved):
+    rows = []
+    for year in range(2015, 2026):  # one year per request
+        for date, loc, *vals in api.query("yyyymmdd,LOCID", f"yyyymmdd>={year}0101 and yyyymmdd<={year}1231 and locid in ('LAX')",
+                                          "r", "yyyymmdd", f"{year}0101", f"{year}1231", ["LAX"]):
+            mm, dd, yy = date.split("/")
+            rows.append([f"{yy}-{mm}-{dd}", loc.strip(), *vals, yy in ("2020", "2021", "2022"),
+                         "verified_public", FORM, retrieved])
+    write(OUT / "opsnet_lax_daily.csv",
+          ["date", "locid", *COLS, "excluded_covid", "data_classification", "source", "retrieved_utc"], rows)
+    return rows
+
+
+def main(what="all"):
     OUT.mkdir(parents=True, exist_ok=True)
     retrieved = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
     api = Opsnet()
+    if what == "lax-daily":
+        print(f"{len(lax_daily(api, retrieved))} LAX daily rows")
+        return
 
     monthly = []
     for year in range(2015, 2026):  # one year per request keeps responses small
@@ -141,8 +162,8 @@ def main():
         write(OUT / "opsnet_vs_lawa_crosscheck.csv",
               ["year", "month", "air_taxi_opsnet", "air_taxi_lawa", "air_taxi_diff",
                "ga_opsnet_itin_plus_local", "ga_lawa", "ga_diff", "total_opsnet", "total_lawa", "total_diff"], cross)
-    print(f"{len(monthly)} monthly rows, {len(daily)} daily rows")
+    print(f"{len(monthly)} monthly rows, {len(daily)} daily rows, {len(lax_daily(api, retrieved))} LAX daily rows")
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1] if len(sys.argv) > 1 else "all")
