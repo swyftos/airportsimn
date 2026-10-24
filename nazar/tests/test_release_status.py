@@ -9,7 +9,7 @@ import unittest
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from readiness.contracts import ContractError
-from readiness.release_status import MANIFEST, RELEASE_FILES, release_review, attach_release_status, alan_reference
+from readiness.release_status import MANIFEST, RELEASE_FILES, EVIDENCE_FILES, EVIDENCE_MANIFEST, release_review, attach_release_status, alan_reference
 
 class ReleaseStatusTests(unittest.TestCase):
     def setUp(self):
@@ -66,3 +66,25 @@ class ReleaseStatusTests(unittest.TestCase):
         with self.assertRaisesRegex(ContractError,'manifest mismatch'):release_review(self.root,self.bundle)
     def test_missing_alan_reference_never_becomes_sample(self):
         self.assertFalse(alan_reference(self.root)['available'])
+    def evidence(self):
+        m=self.manifest();files={}
+        for name in EVIDENCE_FILES:
+            path=self.root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text('evidence fixture '+name)
+            files[name]=hashlib.sha256(path.read_bytes()).hexdigest()
+        (self.root/EVIDENCE_MANIFEST).write_text(json.dumps({'release_run_id':m['run_id'],'files':files}))
+    def test_event_evidence_is_verified_and_tampering_rejected(self):
+        self.evidence()
+        self.assertIn('event_evidence_manifest_sha256',release_review(self.root,self.bundle))
+        (self.root/'marvin/person_2_forecasting/provisional_inputs/event_evidence.json').write_text('changed holiday assumption')
+        with self.assertRaisesRegex(ContractError,'event evidence mismatch'):release_review(self.root,self.bundle)
+    def test_partial_event_release_rejected(self):
+        self.evidence();(self.root/EVIDENCE_MANIFEST).unlink()
+        with self.assertRaisesRegex(ContractError,'evidence manifest'):release_review(self.root,self.bundle)
+    def test_event_evidence_cannot_point_at_other_release_or_arbitrary_file(self):
+        for mutation in ('run','file'):
+            with self.subTest(mutation=mutation):
+                self.evidence();path=self.root/EVIDENCE_MANIFEST;m=json.loads(path.read_text())
+                if mutation=='run':m['release_run_id']='old'
+                else:m['files']['../../secret']='0'*64
+                path.write_text(json.dumps(m))
+                with self.assertRaisesRegex(ContractError,'documented 12'):release_review(self.root,self.bundle)

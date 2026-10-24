@@ -4,7 +4,7 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;',
 const fmt = n => new Intl.NumberFormat('en-US', {maximumFractionDigits:1}).format(n);
 const money = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n);
 const day = (date, options={month:'short',day:'numeric'}) => new Date(date+'T12:00:00-08:00').toLocaleDateString('en-US',{...options,timeZone:'America/Los_Angeles'});
-const names = {low:'Lower',medium:'Expected',high:'Higher'};
+const names = {low:'Low',medium:'Medium',high:'High'};
 const roles = {manager:'FBO manager',reservations:'Reservations coordinator',operations:'Operations supervisor'};
 const decisions = {approved:'Approved for planning',changes_requested:'Changes requested',rejected:'Rejected'};
 const fields = {parking_units:'Parking demand',capacity_units:'On-site capacity',prepared_capacity_units:'Proposed total capacity',staff_required:'Staff required',staff_available:'Staff available',prepared_staff:'Proposed staffing',fuel_gallons:'Fuel demand (gal)',fuel_available_gallons:'Fuel available (gal)',preparation_cost:'Preparation cost ($)',parking_p90:'Parking P90'};
@@ -19,10 +19,11 @@ async function api(path,body){
 }
 async function busy(button,work){const old=button.textContent;button.disabled=true;button.textContent='Working…';try{await work();}finally{button.textContent=old;button.disabled=false;}}
 function showView(view){
- if(!['overview','evidence','history'].includes(view))view='overview';state.view=view;
+ if(!['overview','whatif','evidence','history'].includes(view))view='overview';state.view=view;
  document.querySelectorAll('.view').forEach(el=>el.hidden=el.id!=='view-'+view);
  document.querySelectorAll('[data-view]').forEach(el=>{el.classList.toggle('selected',el.dataset.view===view);el.setAttribute('aria-current',el.dataset.view===view?'page':'false');});
  history.replaceState(null,'','#'+view);
+ if(window.syncWhatIf)window.syncWhatIf();
 }
 async function enter(session){state.profile=session.profile;state.csrf=session.csrf;state.data=await api('/api/dashboard');$('login').hidden=true;$('workspace').hidden=false;render();showView(location.hash.slice(1)||'overview');}
 function currentRows(){return state.data.bundle.resources.filter(r=>r.scenario===state.scenario&&r.variant===state.variant).sort((a,b)=>a.date.localeCompare(b.date));}
@@ -30,7 +31,7 @@ function latestReview(id){return state.data.history.find(r=>!r.stale&&r.scenario
 function render(){
  const {profile,data}=state;const b=data.bundle;const manager=profile.role==='manager';
  $('avatar').textContent=profile.initials;$('employee-name').textContent=profile.name;$('employee-role').textContent=profile.position+' · demo';
- $('greeting').textContent=`${profile.name.split(' ')[0]}, start with the capacity gap. Then review the preparations your team needs.`;
+ $('greeting').textContent=`${profile.name.split(' ')[0]}, check the first parking shortage, then select a day or test a different demand scenario.`;
  $('org-name').textContent=b?.meta.fbo_name||'No valid dataset loaded';
  $('sample-notice').hidden=!b||data.source!=='sample';
  $('use-team-overview').disabled=!manager;
@@ -48,7 +49,7 @@ function render(){
   document.querySelectorAll('[data-scenario]').forEach(el=>{const selected=el.dataset.scenario===state.scenario;el.classList.toggle('selected',selected);el.setAttribute('aria-pressed',selected);});
   renderOverview();
  }
- renderEvidence();renderHistory();renderReleaseStatus();
+ renderEvidence();renderHistory();renderReleaseStatus();if(window.syncWhatIf)window.syncWhatIf();
 }
 function renderReleaseStatus(){
  const b=state.data?.bundle,review=b?.release_review,stale=state.data?.input_status?.stale;
@@ -89,7 +90,7 @@ function renderOverview(){
  $('actions').innerHTML=recs.length?recs.map((r,i)=>{
   const review=latestReview(r.id);
   return `<article class="action"><span class="action-number">${i+1}</span><div><h3>${esc(r.title)}</h3><p>${esc(r.reason)}</p><div class="action-meta"><span>Owner: ${esc(roles[r.owner])}</span><span>Review by ${esc(day(r.due_date))}</span><span>Source: ${esc(r.source)}</span></div><div>${r.evidence.map(e=>`<span class="evidence-chip">${esc(day(e.date))} · ${esc(fields[e.field])}: ${fmt(e.value)}</span>`).join('')}</div></div><div class="action-control"><small>${review?esc(decisions[review.decision]):'Awaiting human review'}</small><button class="secondary" data-review="${esc(r.id)}" ${state.profile.role==='manager'&&!state.data.input_status?.stale?'':'disabled'}>${review?'Review again':'Review action'} →</button></div></article>`;
- }).join(''):'<p class="empty">No recommendations were supplied for this scenario. Ask the resource module owner for preparation advice.</p>';
+ }).join(''):'<p class="empty">No additional preparation actions are proposed in this scenario. Review the uncertainty and confirm existing resources before relying on the plan.</p>';
  $('support-values').innerHTML=`<div class="support-values"><div><strong>${fmt(s.max_staff)}</strong><small>${b.native?'Peak proposed technicians per shift':'Peak people required'}</small></div><div><strong>${fmt(s.total_fuel)}</strong><small>Week’s fuel estimate · gal</small></div></div>`;
  $('uncertainty-copy').textContent=b.meta.interval_description+' '+(b.meta.data_classification==='synthetic'?'These synthetic outputs demonstrate the workflow; they do not establish forecast accuracy.':'Estimated inputs measure assumed traffic, not observed FBO accuracy. Source and model descriptions require review with the model owner.');
 }
@@ -103,7 +104,7 @@ function renderChart(){
  $('chart-caption').textContent=parking?'Parking units · select a day':'Aircraft arrivals per day · select a day';
  $('chart').innerHTML=points.map(r=>{
   const selected=r.date===state.date;
-  return `<button class="day ${selected?'selected':''}" data-day="${r.date}" aria-pressed="${selected}" aria-label="${esc(day(r.date))}: ordinary ${r.ordinary===null?'not supplied':fmt(r.ordinary)}, event ${fmt(r.value)}${parking?', capacity '+fmt(r.capacity)+' parking units':' arrivals'}"><span class="bars">${r.capacity!==null?`<span class="cap-line" style="bottom:${r.capacity/scale*100}%"></span>`:''}${r.ordinary!==null?`<span class="bar" style="height:${r.ordinary/scale*100}%"></span>`:''}<span class="bar event" style="height:${r.value/scale*100}%"><b>${fmt(r.value)}</b></span></span><span class="day-label">${day(r.date,{weekday:'short'})}<strong>${day(r.date)}${r.date==='2027-02-14'?' · Game':''}</strong></span></button>`;
+  return `<button class="day ${selected?'selected':''}" data-day="${r.date}" aria-pressed="${selected}" aria-label="${esc(day(r.date))}: ordinary ${r.ordinary===null?'not supplied':fmt(r.ordinary)}, event ${fmt(r.value)}${parking?', capacity '+fmt(r.capacity)+' parking units':' arrivals'}"><span class="bars">${r.capacity!==null?`<span class="cap-line" style="bottom:${r.capacity/scale*100}%"></span>`:''}${r.ordinary!==null?`<span class="bar" style="height:${r.ordinary/scale*100}%"></span>`:''}<span class="bar event" style="height:${r.value/scale*100}%"><b>${fmt(r.value)}</b></span></span><span class="day-label">${day(r.date,{weekday:'short'})}<strong>${day(r.date)}${r.date==='2027-02-14'?' · Game':r.date==='2027-02-15'?' · Holiday':''}</strong></span></button>`;
  }).join('');
 }
 function renderDay(){

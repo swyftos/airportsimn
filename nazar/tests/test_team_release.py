@@ -63,6 +63,17 @@ class TeamReleaseTests(unittest.TestCase):
         hashes=self.releases();(self.stage/r.OUTPUTS[-1]).unlink()
         with self.assertRaises(FileNotFoundError):r.install(self.repo,self.stage,hashes)
         for name,sha in hashes.items():self.assertEqual(r.digest(self.repo/name),sha)
+    def test_event_evidence_installs_with_main_manifest_last(self):
+        hashes=self.releases()
+        for root in (self.repo,self.stage):self.write(root,r.P2+'build_event_inputs.py','event input builder')
+        for name in r.EVIDENCE_OUTPUTS:
+            self.write(self.repo,name,'previous evidence');self.write(self.stage,name,'new evidence')
+            hashes[name]=r.digest(self.repo/name)
+        order=[];original=r.replace_bytes
+        def record(path,content):order.append(str(path.relative_to(self.repo)));original(path,content)
+        with patch.object(r,'replace_bytes',side_effect=record):r.install(self.repo,self.stage,hashes)
+        self.assertEqual(order[-1],r.MANIFEST)
+        for name in r.EVIDENCE_OUTPUTS:self.assertEqual((self.repo/name).read_text(),'new evidence')
     def test_actual_policy_comparison_reports_both_conflicts(self):
         self.write(self.stage,'alan/assumptions.csv','id,value\nbaseline_training_window,"[2023, 2024, 2025]"\nfbo_market_share,0.2\n')
         self.write(self.stage,r.P2+'provisional_inputs/historical_traffic.csv','date\n2016-01-01\n2023-01-01\n')

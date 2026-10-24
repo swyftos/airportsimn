@@ -1,0 +1,137 @@
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mona+Sans:wdth,wght@75..125,300..800&amp;display=swap">
+<style>
+body{margin:0;background:#FFFFFF;color:#14213D;font-family:'Mona Sans',system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.55;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+a{color:#14213D}
+.w{font-stretch:115%}
+.muted{color:#5D6B82}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid #14213D;outline-offset:3px;border-radius:8px}
+.nav{display:flex;flex-wrap:wrap;gap:2px}
+.nav a{display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border-radius:999px;text-decoration:none;color:#5D6B82;font-weight:500;font-size:15px}
+.nav a:hover{color:#14213D;background:#F7F8FA}
+.nav a.on{color:#14213D;background:#F2F4F7}
+.av{width:36px;height:36px;border-radius:50%;background:#F2F4F7;display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;flex:none}
+.tag{display:inline-flex;align-items:center;font-size:13px;font-weight:500;padding:3px 12px;border-radius:999px;background:#F2F4F7;color:#3B4A66}
+.seg-wrap{display:inline-flex;padding:4px;background:#F2F4F7;border-radius:999px;gap:2px;flex-wrap:wrap}
+.seg{border:0;background:transparent;border-radius:999px;padding:0 18px;min-height:40px;font-size:15px;font-weight:500;color:#5D6B82;cursor:pointer}
+.seg:hover{color:#14213D}
+.seg.on{background:#FFFFFF;color:#14213D;box-shadow:0 1px 2px rgba(20,33,61,.10),0 0 0 1px #E4E7EC}
+.col{flex:1 1 0;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;gap:2px}
+.cn{background:#14213D;border-radius:3px 3px 0 0}
+.co{background:#FF6A2B;border-radius:3px 3px 0 0}
+.col.pk .cn,.col.pk .co{filter:none}
+.capl{position:absolute;left:0;right:0;border-top:1.5px dashed rgba(20,33,61,.45)}
+.tlg{display:grid;grid-template-columns:150px minmax(0,1fr) 190px;gap:24px;align-items:center}
+.trk{position:relative;height:28px;background-image:linear-gradient(90deg,#EAECF0 1px,transparent 1px);background-size:25% 100%}
+.sb{position:absolute;top:50%;transform:translateY(-50%);border-radius:6px;box-sizing:border-box}
+.sb.b{background:#14213D}
+.sb.e{background:#FFFFFF;border:1.5px dashed #14213D}
+.sb.zs{height:8px}.sb.zm{height:13px}.sb.zl{height:20px}
+.sb.l0{border-top-left-radius:0;border-bottom-left-radius:0}
+.sb.r0{border-top-right-radius:0;border-bottom-right-radius:0}
+.btn{display:inline-flex;align-items:center;min-height:44px;padding:0 20px;border-radius:999px;border:1px solid #D0D5DD;background:#FFFFFF;font-weight:600;cursor:pointer}
+.btn:hover{border-color:#14213D}
+@media (max-width: 720px){.tlg{grid-template-columns:96px minmax(0,1fr);gap:12px}.tlg .tm{grid-column:1 / -1}}
+</style>
+
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+
+<header style="border-bottom: 1px solid #EAECF0">
+<div style="max-width: 1120px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px">
+<div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px 28px">
+<a href="#main" class="w" style="font-size: 19px; font-weight: 700; letter-spacing: -0.01em; text-decoration: none">RampReady</a>
+<nav class="nav" aria-label="Main">
+<a href="#main" class="on" aria-current="page">Overview</a>
+<a href="#plan">Plan</a>
+<a href="#bookings">Bookings</a>
+<a href="#ramp">Ramp</a>
+<a href="#numbers">Numbers</a>
+</nav>
+</div>
+<div style="display: flex; align-items: center; gap: 16px; font-size: 15px">
+<span class="muted" style="font-size: 13px; padding: 4px 12px; border-radius: 999px; background: #F2F4F7">{{dataBadge}}</span>
+<a href="#signin" style="display: inline-flex; align-items: center; gap: 10px; text-decoration: none"><span class="av">{{userInitial}}</span>{{userName}}</a>
+</div>
+</div>
+</header>
+
+<main style="flex: 1; width: 100%; max-width: 1120px; margin: 0 auto; padding: 24px 24px 96px; box-sizing: border-box">
+
+<a href="#main" style="display: inline-flex; align-items: center; min-height: 44px; font-weight: 600">Back to the week</a>
+
+<section style="padding: 40px 0 0">
+<div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap">
+<h1 class="w" style="margin: 0; font-size: clamp(38px, 5vw, 64px); line-height: 1.04; font-weight: 600; letter-spacing: -0.025em">{{dayTitle}}</h1>
+<span class="tag">{{dayBadge}}</span>
+</div>
+<p style="margin: 20px 0 0; font-size: clamp(18px, 1.8vw, 21px); max-width: 56ch; color: #3B4A66">{{dayExplanation}}</p>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px 56px; margin-top: 40px">
+<div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{arrivals}}</div><div class="muted" style="margin-top: 8px">planes arriving</div></div>
+<div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{departures}}</div><div class="muted" style="margin-top: 8px">planes leaving</div></div>
+<div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{parked}}</div><div class="muted" style="margin-top: 8px">planes in the hourly illustration</div></div>
+<div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1; color: {{shortageColor}}">{{shortage}}</div><div class="muted" style="margin-top: 8px">model spaces short at the daily peak</div></div>
+</div>
+</section>
+
+<section style="margin-top: 88px">
+<h2 class="w" style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.015em">Spaces in use, hour by hour</h2>
+<p class="muted" style="margin: 6px 0 28px">{{hourNote}}</p><details class="muted" style="margin:-12px 0 28px;font-size:14px"><summary>Timing assumptions</summary><p>{{hourDetails}}</p></details>
+<div style="position: relative; height: 300px; display: flex; gap: 6px; align-items: flex-end" role="img" aria-label="{{hourAria}}">
+<template data-list="{{hours}}" as="h">
+<div class="col">
+<div class="co" style="height: {{h.oh}}"></div>
+<div class="cn" style="height: {{h.nh}}"></div>
+</div>
+</template>
+<div class="capl" style="bottom: {{capPos}}"></div>
+<span class="muted" style="position: absolute; right: 0; bottom: {{capPos}}; transform: translateY(-4px); font-size: 13px; background: #FFFFFF; padding: 0 0 0 8px">Ramp full, {{capacity}}</span>
+</div>
+<div style="display: flex; gap: 6px; margin-top: 10px; font-size: 12px" class="muted">
+<template data-list="{{hours}}" as="h"><span style="flex: 1 1 0; min-width: 0">{{h.lab}}</span></template>
+</div>
+</section>
+
+<section style="margin-top: 88px">
+<div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px 32px; margin-bottom: 20px">
+<div>
+<h2 class="w" style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.015em">Every plane in the illustration</h2>
+<p class="muted" style="margin: 6px 0 0">Generated E-codes with assumed timings. These are not bookings.</p>
+</div>
+<div role="group" aria-label="Show" class="seg-wrap">
+<template data-list="{{filters}}" as="f">
+<button class="seg {{f.cls}}" aria-pressed="{{f.pressed}}" onClick="{{f.pick}}">{{f.label}}</button>
+</template>
+</div>
+</div>
+
+<div class="tlg muted" style="font-size: 13px; padding: 0 0 8px; border-bottom: 1px solid #EAECF0">
+<span>Visit</span>
+<span style="display: flex; justify-content: space-between"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></span>
+<span class="tm">On the ramp</span>
+</div>
+<template data-list="{{rows}}" as="r">
+<div class="tlg" style="padding: 12px 0; border-bottom: 1px solid #F2F4F7">
+<span style="display: flex; flex-direction: column; line-height: 1.35">
+<span style="font-weight: 600">{{r.id}}</span>
+<span class="muted" style="font-size: 13px">{{r.size}}</span>
+</span>
+<span class="trk"><span class="{{r.cls}}" style="left: {{r.left}}; width: {{r.width}}"></span></span>
+<span class="tm muted" style="font-size: 14px">{{r.when}}</span>
+</div>
+</template>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 24px">
+<button class="btn" type="button" onClick="{{showMore}}" disabled="{{allShown}}">Show more planes</button>
+<span class="muted">{{countText}}</span>
+</div>
+</section>
+
+</main>
+
+<footer style="border-top: 1px solid #EAECF0">
+<p class="muted" style="max-width: 1120px; margin: 0 auto; padding: 20px 24px; box-sizing: border-box; font-size: 13px">{{footer}}</p>
+</footer>
+
+</div>

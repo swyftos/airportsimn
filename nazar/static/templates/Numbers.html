@@ -1,0 +1,115 @@
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mona+Sans:wdth,wght@75..125,300..800&amp;display=swap">
+<style>
+body{margin:0;background:#FFFFFF;color:#14213D;font-family:'Mona Sans',system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.55;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+a{color:#14213D}
+.w{font-stretch:115%}
+.muted{color:#5D6B82}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid #14213D;outline-offset:3px;border-radius:8px}
+.nav{display:flex;flex-wrap:wrap;gap:2px}
+.nav a{display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border-radius:999px;text-decoration:none;color:#5D6B82;font-weight:500;font-size:15px}
+.nav a:hover{color:#14213D;background:#F7F8FA}
+.nav a.on{color:#14213D;background:#F2F4F7}
+.av{width:36px;height:36px;border-radius:50%;background:#F2F4F7;display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;flex:none}
+.d{width:16px;height:16px;border-radius:50%;flex:none;box-sizing:border-box}
+.d.b{background:#14213D}
+.d.e{border:1.5px dashed #14213D}
+.rng{width:100%;max-width:420px;accent-color:#14213D;height:32px;cursor:pointer}
+.btn{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid #D0D5DD;background:#FFFFFF;font-weight:600;cursor:pointer;color:#14213D}
+.btn:hover{border-color:#14213D}
+.btn.dark{background:#14213D;border-color:#14213D;color:#FFFFFF}
+.btn.dark:hover{background:#24365C}
+.tag{display:inline-flex;align-items:center;font-size:13px;font-weight:500;padding:3px 12px;border-radius:999px;white-space:nowrap}
+.k-s{background:#F2F4F7;color:#14213D}
+.k-g{background:#FFF1EA;color:#8A2F08}
+.k-p{background:#14213D;color:#FFFFFF}
+.led{width:100%;border-collapse:collapse;min-width:900px}
+.led th{text-align:left;font-weight:500;font-size:14px;color:#5D6B82;padding:0 16px 12px 0;border-bottom:1px solid #EAECF0;white-space:nowrap}
+.led td{padding:18px 16px 18px 0;border-bottom:1px solid #EAECF0;vertical-align:top}
+</style>
+
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+
+<header style="border-bottom: 1px solid #EAECF0">
+<div style="max-width: 1120px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px">
+<div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px 28px">
+<a href="#main" class="w" style="font-size: 19px; font-weight: 700; letter-spacing: -0.01em; text-decoration: none">RampReady</a>
+<nav class="nav" aria-label="Main">
+<a href="#main">Overview</a>
+<a href="#plan">Plan</a>
+<a href="#bookings">Bookings</a>
+<a href="#ramp">Ramp</a>
+<a href="#numbers" class="on" aria-current="page">Numbers</a>
+</nav>
+</div>
+<div style="display: flex; align-items: center; gap: 16px; font-size: 15px">
+<span class="muted" style="font-size: 13px; padding: 4px 12px; border-radius: 999px; background: #F2F4F7">{{dataBadge}}</span>
+<a href="#signin" style="display: inline-flex; align-items: center; gap: 10px; text-decoration: none"><span class="av">{{userInitial}}</span>{{userName}}</a>
+</div>
+</div>
+</header>
+
+<main style="flex: 1; width: 100%; max-width: 1120px; margin: 0 auto; padding: 56px 24px 96px; box-sizing: border-box">
+
+<h1 class="w" style="margin: 0; font-size: clamp(38px, 5.6vw, 72px); line-height: 1.03; font-weight: 600; letter-spacing: -0.025em; max-width: 16ch">{{headline}}</h1>
+<p style="margin: 20px 0 0; font-size: clamp(18px, 1.8vw, 21px); max-width: 58ch; color: #3B4A66">{{explain}}</p>
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 48px; max-width: 760px" role="img" aria-label="{{dotsLabel}}">
+<template data-list="{{dots}}" as="d"><span class="{{d.cls}}"></span></template>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px 28px; margin-top: 16px; font-size: 15px" class="muted">
+<span style="display: inline-flex; align-items: center; gap: 8px"><span class="d b" style="width: 12px; height: 12px"></span>{{booked}} bookings loaded</span>
+<span style="display: inline-flex; align-items: center; gap: 8px"><span class="d e" style="width: 12px; height: 12px"></span>{{est}} modeled arrivals</span>
+</div>
+
+<section style="margin-top: 72px; padding: 32px; border-radius: 20px; background: #F7F8FA">
+<label for="share" style="display: block; font-weight: 600; font-size: 18px">How many bookings are usually in by now?</label>
+<p class="muted" style="margin: 4px 0 20px; max-width: 60ch">The current model does not use a booking-completion curve. This control stays disabled until a supported booking model is supplied.</p>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px">
+<input id="share" class="rng" type="range" min="50" max="95" step="5" value="50" disabled aria-label="Booking share unavailable">
+<span class="w" style="font-size: 32px; font-weight: 600; min-width: 80px">{{shareLabel}}</span>
+</div>
+<template data-if="{{changed}}">
+<div role="status" style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #EAECF0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px">
+<span style="max-width: 60ch">Saving this changes the forecast and makes plan version 3 out of date. Everyone's approvals will need to be given again.</span>
+<span style="display: flex; gap: 8px">
+<button class="btn" type="button" onClick="{{undo}}">Undo</button>
+<button class="btn dark" type="button">Save and update the plan</button>
+</span>
+</div>
+</template>
+</section>
+
+<section style="margin-top: 112px">
+<h2 class="w" style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.015em">Every number we use</h2>
+<p class="muted" style="margin: 6px 0 24px">What it is, where it came from and how sure we are.</p>
+<p class="mobile-table-hint muted">Swipe the table sideways for all columns.</p><div style="overflow-x: auto">
+<table class="led">
+<thead><tr><th>Number</th><th>Value</th><th>Type</th><th>Source</th><th>How sure</th></tr></thead>
+<tbody><template data-list="{{ledger}}" as="r"><tr><td style="font-weight:600">{{r.label}}</td><td>{{r.value}}</td><td><span class="tag k-s">{{r.type}}</span></td><td>{{r.source}}</td><td class="muted">{{r.note}}</td></tr></template></tbody>
+</table>
+</div>
+</section>
+
+<section style="margin-top: 112px; display: flex; flex-wrap: wrap; gap: 48px">
+<div style="flex: 1 1 420px; min-width: 0">
+<h2 class="w" style="margin: 0 0 12px; font-size: 26px; font-weight: 600; letter-spacing: -0.015em">Quiet, Expected and Busy</h2>
+<p style="margin: 0; color: #3B4A66; max-width: 52ch">Expected, Quiet and Busy use the model’s Medium, Low and High outputs. The day-late switch loads the separately modeled delay case. These are planning scenarios, not a promise about the real week.</p>
+</div>
+<div style="flex: 1 1 420px; min-width: 0">
+<h2 class="w" style="margin: 0 0 12px; font-size: 26px; font-weight: 600; letter-spacing: -0.015em">What changed today</h2>
+<ul style="list-style: none; margin: 0; padding: 0">
+<li style="padding:12px 0;border-top:1px solid #EAECF0">{{changesNote}}</li>
+</ul>
+</div>
+</section>
+
+<section class="advanced-panel" id="planning-tools"><h2 class="w">Data and planning tools</h2><p class="muted">{{releaseNote}}</p><div class="tool-row"><button class="btn" data-refresh>Refresh model outputs</button><a class="btn" href="/api/export?scenario={{scenario}}&amp;variant={{variant}}">Export model plan</a><button class="btn" data-export-review>Export reviewed plan</button></div><p class="muted">{{scopeNote}}</p><details><summary>Forecast diagnostics and source assumptions</summary><pre class="diagnostics">{{diagnostics}}</pre></details><details><summary>Weather and Presidents Day</summary><p>Departures running a day late is the existing model’s disruption test. It is not a weather forecast. Test an additional holiday uplift in the daily what-if tool; no measured holiday effect is implied.</p></details></section></main>
+
+<footer style="border-top: 1px solid #EAECF0">
+<p class="muted" style="max-width: 1120px; margin: 0 auto; padding: 20px 24px; box-sizing: border-box; font-size: 13px">{{footer}}</p>
+</footer>
+
+</div>

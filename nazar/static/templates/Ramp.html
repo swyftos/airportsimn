@@ -1,0 +1,138 @@
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mona+Sans:wdth,wght@75..125,300..800&amp;display=swap">
+<style>
+body{margin:0;background:#FFFFFF;color:#14213D;font-family:'Mona Sans',system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.55;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+a{color:#14213D}
+.w{font-stretch:115%}
+.muted{color:#5D6B82}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid #14213D;outline-offset:3px;border-radius:8px}
+.nav{display:flex;flex-wrap:wrap;gap:2px}
+.nav a{display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border-radius:999px;text-decoration:none;color:#5D6B82;font-weight:500;font-size:15px}
+.nav a:hover{color:#14213D;background:#F7F8FA}
+.nav a.on{color:#14213D;background:#F2F4F7}
+.av{width:36px;height:36px;border-radius:50%;background:#F2F4F7;display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;flex:none}
+.seg1{background-color:#14213D;background-image:linear-gradient(90deg,transparent calc(100% - 1px),rgba(255,255,255,.22) 0);background-size:calc(100% / 44) 100%;border-radius:10px 0 0 10px}
+.seg2{background-color:#3F5480;background-image:linear-gradient(90deg,transparent calc(100% - 1px),rgba(255,255,255,.25) 0);background-size:5% 100%}
+.seg3{background-color:#F2F4F7;background-image:repeating-linear-gradient(135deg,rgba(20,33,61,.18) 0 2px,transparent 2px 7px);border-radius:0 10px 10px 0}
+.pl{fill:#14213D}
+.stl{height:44px;border:1.5px solid #14213D;border-radius:6px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px}
+.tag{display:inline-flex;align-items:center;font-size:13px;font-weight:600;padding:4px 12px;border-radius:999px;background:#F2F4F7;color:#3B4A66;white-space:nowrap}
+.item{display:flex;align-items:center;gap:16px;padding:18px 0;border-top:1px solid #EAECF0;cursor:pointer}
+.box{position:relative;flex:none;width:26px;height:26px;border-radius:8px;border:1.5px solid #98A2B3;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF}
+.item input{position:absolute;opacity:0;width:26px;height:26px;margin:0;cursor:pointer}
+.item input:checked + .box{background:#14213D;border-color:#14213D}
+.item input:focus-visible + .box{outline:2px solid #14213D;outline-offset:3px}
+.ck{fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.done-t{text-decoration:line-through;color:#5D6B82}
+.btn{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid #D0D5DD;background:#FFFFFF;font-weight:600;cursor:pointer;text-decoration:none;color:#14213D}
+.btn:hover{border-color:#14213D}
+</style>
+
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+
+<header style="border-bottom: 1px solid #EAECF0">
+<div style="max-width: 1120px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px">
+<div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px 28px">
+<a href="#main" class="w" style="font-size: 19px; font-weight: 700; letter-spacing: -0.01em; text-decoration: none">RampReady</a>
+<nav class="nav" aria-label="Main">
+<a href="#main">Overview</a>
+<a href="#plan">Plan</a>
+<a href="#bookings">Bookings</a>
+<a href="#ramp" class="on" aria-current="page">Ramp</a>
+<a href="#numbers">Numbers</a>
+</nav>
+</div>
+<div style="display: flex; align-items: center; gap: 16px; font-size: 15px">
+<span class="muted" style="font-size: 13px; padding: 4px 12px; border-radius: 999px; background: #F2F4F7">{{dataBadge}}</span>
+<a href="#signin" style="display: inline-flex; align-items: center; gap: 10px; text-decoration: none"><span class="av">{{userInitial}}</span>{{userName}}</a>
+</div>
+</div>
+</header>
+
+<main style="flex: 1; width: 100%; max-width: 1120px; margin: 0 auto; padding: 56px 24px 96px; box-sizing: border-box">
+
+<h1 class="w" style="margin: 0; font-size: clamp(38px, 5.6vw, 72px); line-height: 1.03; font-weight: 600; letter-spacing: -0.025em; max-width: 15ch">We plan with {{capacity}} spaces.</h1>
+<p style="margin: 20px 0 0; font-size: clamp(18px, 1.8vw, 21px); max-width: 56ch; color: #3B4A66">{{rampExplanation}}</p>
+
+<div style="margin-top: 56px">
+<div style="display: flex; gap: 4px; height: 72px" role="img" aria-label="{{rampAria}}">
+<div class="seg1" style="width: {{mainWidth}}"></div>
+<div class="seg2" style="width: {{overflowWidth}}"></div>
+<div class="seg3" style="width: {{reserveWidth}}"></div>
+</div>
+<div style="display: flex; gap: 4px; margin-top: 14px">
+<div style="width: {{mainWidth}}; min-width: 0"><div class="w" style="font-size: 24px; font-weight: 600">{{capacity}}</div><div class="muted" style="font-size: 15px">main ramp</div></div>
+<div style="width: {{overflowWidth}}; min-width: 0"><div class="w" style="font-size: 24px; font-weight: 600">{{overflow}}</div><div class="muted" style="font-size: 15px">possible overflow</div></div>
+<div style="width: {{reserveWidth}}; min-width: 72px"><div class="w" style="font-size: 24px; font-weight: 600">{{reserve}}</div><div class="muted" style="font-size: 15px">reserve not quantified</div></div>
+</div>
+</div>
+
+<section style="margin-top: 112px">
+<h2 class="w" style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.015em">How much space each plane takes</h2>
+<p class="muted" style="margin: 6px 0 32px">Bigger jets need wider spots and more room to turn, so they count as more than one space.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 24px">
+<div style="flex: 1 1 280px; padding: 28px; border-radius: 20px; background: #F7F8FA; display: flex; flex-direction: column; gap: 20px">
+<svg viewBox="0 0 40 40" width="56" height="56" class="pl" aria-hidden="true"><path d="M20 2c1.6 0 2.2 2.2 2.2 4.2V15l14.8 7v3l-14.8-4v10l4.8 4v2L20 35l-7 2v-2l4.8-4V21L3 25v-3l14.8-7V6.2C17.8 4.2 18.4 2 20 2z"></path></svg>
+<div><div style="font-weight: 600; font-size: 18px">Small jet</div><div class="muted">Light jets and turboprops</div></div>
+<div class="stl" style="width: 30%">{{weightLight}}</div>
+</div>
+<div style="flex: 1 1 280px; padding: 28px; border-radius: 20px; background: #F7F8FA; display: flex; flex-direction: column; gap: 20px">
+<svg viewBox="0 0 40 40" width="76" height="76" class="pl" aria-hidden="true" style="margin-top: -10px; margin-bottom: -10px"><path d="M20 2c1.6 0 2.2 2.2 2.2 4.2V15l14.8 7v3l-14.8-4v10l4.8 4v2L20 35l-7 2v-2l4.8-4V21L3 25v-3l14.8-7V6.2C17.8 4.2 18.4 2 20 2z"></path></svg>
+<div><div style="font-weight: 600; font-size: 18px">Midsize jet</div><div class="muted">Most charter and corporate jets</div></div>
+<div class="stl" style="width: 45%">{{weightMid}}</div>
+</div>
+<div style="flex: 1 1 280px; padding: 28px; border-radius: 20px; background: #F7F8FA; display: flex; flex-direction: column; gap: 20px">
+<svg viewBox="0 0 40 40" width="104" height="104" class="pl" aria-hidden="true" style="margin-top: -24px; margin-bottom: -24px"><path d="M20 2c1.6 0 2.2 2.2 2.2 4.2V15l14.8 7v3l-14.8-4v10l4.8 4v2L20 35l-7 2v-2l4.8-4V21L3 25v-3l14.8-7V6.2C17.8 4.2 18.4 2 20 2z"></path></svg>
+<div><div style="font-weight: 600; font-size: 18px">Large jet</div><div class="muted">Long-range business jets</div></div>
+<div class="stl" style="width: 75%">{{weightLarge}}</div>
+</div>
+</div>
+</section>
+
+<section style="margin-top: 112px">
+<div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 32px">
+<div>
+<h2 class="w" style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.015em">Ready for the weekend</h2>
+<p class="muted" style="margin: 6px 0 0">Verify these checks before the planning week. Saved checks are tied to the current model and scenario.</p>
+</div>
+<span style="font-weight: 600">{{progress}}</span>
+</div>
+<div style="height: 6px; border-radius: 999px; background: #F2F4F7; margin: 20px 0 8px; overflow: hidden"><div style="height: 100%; background: #14213D; border-radius: 999px; width: {{pct}}"></div></div>
+<div>
+<template data-list="{{items}}" as="it">
+<label class="item">
+<input type="checkbox" checked="{{it.on}}" onChange="{{it.toggle}}">
+<span class="box" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14"><path class="ck" d="M3 8.5l3.2 3.2L13 4.8"></path></svg></span>
+<span style="flex: 1 1 auto; min-width: 0">
+<span class="{{it.tcls}}" style="display: block; font-size: 17px; font-weight: 500">{{it.t}}</span>
+<span class="muted" style="font-size: 14px">{{it.meta}}</span>
+</span>
+</label>
+</template>
+</div>
+</section>
+
+<section style="margin-top: 112px; padding: 32px; border-radius: 20px; border: 1px solid #EAECF0">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px">
+<h2 class="w" style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.015em">Partner space</h2>
+<span class="tag">Not arranged</span>
+</div>
+<p style="margin: 12px 0 0; max-width: 64ch; color: #3B4A66">{{partnerExplanation}}</p>
+<div style="display: flex; flex-wrap: wrap; gap: 24px 56px; margin-top: 28px">
+<div><div class="w" style="font-size: 32px; font-weight: 600; line-height: 1">{{partnerNeeded}}</div><div class="muted" style="margin-top: 8px">additional units modeled</div></div>
+<div><div class="w" style="font-size: 32px; font-weight: 600; line-height: 1">{{confirmed}}</div><div class="muted" style="margin-top: 8px">confirmed so far</div></div>
+<div><div class="w" style="font-size: 32px; font-weight: 600; line-height: 1">None</div><div class="muted" style="margin-top: 8px">price quoted</div></div>
+</div>
+</section>
+
+<p class="muted" style="margin: 40px 0 0; max-width: 70ch">Need to inspect capacity assumptions? Open the <a href="#numbers" style="font-weight: 600">Numbers</a> page. Refresh a coherent producer release after a model change; previous reviews then need checking again.</p>
+
+</main>
+
+<footer style="border-top: 1px solid #EAECF0">
+<p class="muted" style="max-width: 1120px; margin: 0 auto; padding: 20px 24px; box-sizing: border-box; font-size: 13px">{{footer}}</p>
+</footer>
+
+</div>
