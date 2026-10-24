@@ -87,4 +87,4 @@ class ReleaseStatusTests(unittest.TestCase):
                 if mutation=='run':m['release_run_id']='old'
                 else:m['files']['../../secret']='0'*64
                 path.write_text(json.dumps(m))
-                with self.assertRaisesRegex(ContractError,'documented 12'):release_review(self.root,self.bundle)
+                with self.assertRaisesRegex(ContractError,'documented 16'):release_review(self.root,self.bundle)
