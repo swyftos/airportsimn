@@ -1,0 +1,31 @@
+{
+  "status": "ESTIMATED_FROM_FAA_COUNTS",
+  "scope": "Part 91 (FAA GA) and Part 135 (FAA air taxi); Part 121 and military excluded",
+  "history": "Observed FAA daily LAX counts 2023-2025; 2020-2022 excluded",
+  "event_uplift": {
+    "low": 0.031,
+    "medium": 0.155,
+    "high": 0.31
+  },
+  "reservations": "None supplied; floors disabled",
+  "fbo_capture_share": 0.2,
+  "private_eligible_share": {
+    "part91": 0.5,
+    "part135": 0.5
+  },
+  "aircraft_size_mix": {
+    "light_jet": 0.47,
+    "midsize_jet": 0.33,
+    "large_jet": 0.2
+  },
+  "presidents_day": "Learned factor applied to baseline; see presidents_day_effect.csv",
+  "fbo_ppr_capacity_su": 75.0,
+  "assumed_su_per_aircraft": 1.465,
+  "opening_ground": 5.34,
+  "departure_before_arrival_peak": 0.5,
+  "same_day_share": 0.4,
+  "evaluation": "Chronological holdout on observed daily airport counts; not observed FBO accuracy",
+  "uncertainty": "90% nominal baseline prediction intervals; event-adjusted planning ranges are not calibrated",
+  "synthetic_layers": "Hourly curve, service times, parking prices and VIP pause remain synthetic placeholders",
+  "runway": "No verified residual LAX slot allocation; capacity plan flags overflow for manager review and makes no accept/refuse decisions"
+}

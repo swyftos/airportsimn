@@ -1,0 +1,18 @@
+{
+  "model": "month_weekday_shrinkage_mean",
+  "prior_days": 14,
+  "excluded_years": [
+    2020,
+    2021,
+    2022
+  ],
+  "seed": null,
+  "history_file": "historical_traffic.csv",
+  "planning_file": "planning_inputs.csv",
+  "historical_data_classes": [
+    "estimated"
+  ],
+  "nominal_baseline_coverage": 0.9,
+  "uncertainty": "Baseline split-conformal intervals scaled by assumed multipliers; event coverage not validated",
+  "caution": "History: observed FAA daily LAX counts 2023-2025 (GA for Part 91, air taxi for Part 135) x placeholder 50% eligibility x 20% capture. Not observed FBO counts. Holdout metrics measure the daily airport pattern. Event scenarios from FAA LVI excess; event ranges unvalidated. No bookings supplied."
+}

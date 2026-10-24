@@ -1,0 +1,10 @@
+date,scenario,hypothetical_pause_start_local,hypothetical_full_pause_hours,expected_private_movements_in_window,approximate_movements_to_reschedule,president_visit_known,actual_TFR_duration_known,airport_closure_required,classification,note
+2027-02-14,Low,12:00,0,0,0,no,no,not_established,synthetic_stress_test_only,A VIP TFR is not automatically an airport-wide closure; use actual FAA notice and airport coordination.
+2027-02-14,Low,12:00,2,1.13,1.13,no,no,not_established,synthetic_stress_test_only,A VIP TFR is not automatically an airport-wide closure; use actual FAA notice and airport coordination.
+2027-02-14,Low,12:00,4,1.95,1.95,no,no,not_established,synthetic_stress_test_only,A VIP TFR is not automatically an airport-wide closure; use actual FAA notice and airport coordination.
+2027-02-14,Medium,12:00,0,0,0,no,no,not_established,synthetic_stress_test_only,A VIP TFR is not automatically an airport-wide closure; use actual FAA notice and airport coordination.
+2027-02-14,Medium,12:00,2,1.21,1.21,no,no,not_established,synthetic_stress_test_only,A VIP TFR is not automatically an airport-wide closure; use actual FAA notice and airport coordination.
+2027-02-14,Medium,12:00,4,2.09,2.09,no,no,not_established,synthetic_stress_test_only,A VIP TFR is not automatically an airport-wide closure; use actual FAA notice and airport coordination.
+2027-02-14,High,12:00,0,0,0,no,no,not_established,synthetic_stress_test_only,A VIP TFR is not automatically an airport-wide closure; use actual FAA notice and airport coordination.
+2027-02-14,High,12:00,2,1.31,1.31,no,no,not_established,synthetic_stress_test_only,A VIP TFR is not automatically an airport-wide closure; use actual FAA notice and airport coordination.
+2027-02-14,High,12:00,4,2.27,2.27,no,no,not_established,synthetic_stress_test_only,A VIP TFR is not automatically an airport-wide closure; use actual FAA notice and airport coordination.

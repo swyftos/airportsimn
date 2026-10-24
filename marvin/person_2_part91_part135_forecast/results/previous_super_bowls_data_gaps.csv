@@ -1,0 +1,6 @@
+super_bowl,year,host_region,faa_lax_excess_measured,note
+LVI,2022,Los Angeles,yes,Only LVI was hosted in Los Angeles; other host airports could be pulled from FAA OPSNET for comparison.
+LVII,2023,Phoenix,not_host_city_for_LAX,Only LVI was hosted in Los Angeles; other host airports could be pulled from FAA OPSNET for comparison.
+LVIII,2024,Las Vegas,not_host_city_for_LAX,Only LVI was hosted in Los Angeles; other host airports could be pulled from FAA OPSNET for comparison.
+LIX,2025,New Orleans,not_host_city_for_LAX,Only LVI was hosted in Los Angeles; other host airports could be pulled from FAA OPSNET for comparison.
+LX,2026,Santa Clara,not_host_city_for_LAX,Only LVI was hosted in Los Angeles; other host airports could be pulled from FAA OPSNET for comparison.

@@ -1,0 +1,5 @@
+operation_part,target,learned_factor,training_holidays,applied_to,classification
+part91,arrivals,1.0525,"2023-02-20, 2024-02-19",2027-02-15 baseline,estimated_from_FAA_counts
+part91,departures,1.0525,"2023-02-20, 2024-02-19",2027-02-15 baseline,estimated_from_FAA_counts
+part135,arrivals,1.2926,"2023-02-20, 2024-02-19",2027-02-15 baseline,estimated_from_FAA_counts
+part135,departures,1.2926,"2023-02-20, 2024-02-19",2027-02-15 baseline,estimated_from_FAA_counts
