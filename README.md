@@ -4,19 +4,6 @@ A seven-day parking preparation desk for a fictional FBO at LAX during Super Bow
 
 ## Run the shared app
 
-The redesigned Streamlit planning desk is now available at **`wt-int/app.py`**.
-It includes hourly stays, lower/expected/higher cases, daily what-if inputs,
-weather disruption tests, preparation impact, local human reviews and exports.
-Choose the labeled busy-week rehearsal or Marvin's merged private-only daily
-arrival source. [Setup, data boundaries and demo steps](wt-int/README.md).
-
-```sh
-python3 -m pip install -r wt-int/requirements.txt
-python3 -m streamlit run wt-int/app.py
-```
-
-The existing seven-file-contract dashboard is also preserved:
-
 Python 3.10 or newer is enough for the dashboard. From the repository root:
 
 ```sh
