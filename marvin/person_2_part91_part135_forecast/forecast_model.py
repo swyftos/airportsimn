@@ -1,5 +1,5 @@
-"""Explainable FBO forecasting. Python 3.10+; standard library only."""
-import argparse, csv, json, math, random
+"""Explainable FBO forecasting from observed FAA daily counts, Part 91 and Part 135. Python 3.10+; standard library only."""
+import argparse, csv, json, math
 from collections import defaultdict
 from datetime import date, timedelta
 from pathlib import Path
@@ -7,10 +7,26 @@ from pathlib import Path
 TARGETS = ('arrivals', 'departures')
 SCENARIOS = ('Low', 'Medium', 'High')
 EXCLUDED = {2020, 2021, 2022}
-FBO_CAPTURE_SHARE = 0.20  # Applied only after an assumed selected-fleet eligibility filter.
-PART_SHARES = {'part91': 0.70, 'part135': 0.30}  # Synthetic split, not observed fleet activity.
-AIR_TAXI_EVENT_EXCESS = 0.155  # Observed LAX airport-category five-day 2022 excess; transfer is assumed.
+ROOT = Path(__file__).resolve().parents[2]
+FAA_DAILY = ROOT/'alan/elia_output/data/processed/opsnet_lax_daily.csv'
+SURGE = ROOT/'alan/elia_output/data/processed/superbowl_lvi_surge.csv'
+SURGE_PROFILE = ROOT/'alan/elia_output/data/processed/superbowl_lvi_daily_profile.csv'
+# Observed FAA tower categories: general aviation for Part 91, air taxi for Part 135. Air taxi also holds
+# cargo feeders and small commuter flights, GA holds training and positioning, hence the eligibility filter.
+PART_COLUMNS = {'part91': 'general_aviation', 'part135': 'air_taxi'}
+PRIVATE_ELIGIBLE = {'part91': 0.50, 'part135': 0.50}  # Placeholders, not measured; Part 91 value is Alan's.
+FBO_CAPTURE_SHARE = 0.20  # Team assumption; 0.50 x 0.20 = fbo_market_share 0.10 in alan/assumptions.csv.
+ARRIVAL_SHARE = 0.5
+# Five-day operations excess around Super Bowl LVI, control-adjusted (FAA): Low = LAX GA, Medium = LAX air
+# taxi, High = twice Medium. Same scenarios as the main forecast (marvin/person_2_forecasting).
+EVENT_EXCESS = {'low': ('general_aviation', 1), 'medium': ('air_taxi', 1), 'high': ('air_taxi', 2)}
 AIRCRAFT_MIX = {'light_jet': 0.47, 'midsize_jet': 0.33, 'large_jet': 0.20}
+
+def presidents_day(year):
+    d = date(year, 2, 15)  # third Monday of February
+    return d + timedelta(days=-d.weekday() % 7)
+
+HOLIDAYS = {'presidents_day': presidents_day}
 
 
 def read_csv(path):
@@ -38,7 +54,7 @@ def load_history(path):
         if not 2016 <= d.year <= 2025:
             raise ValueError('History must be within 2016-2025')
         part = r.get('operation_part')
-        if part not in PART_SHARES:
+        if part not in PART_COLUMNS:
             raise ValueError('History must identify part91 or part135; part121 is excluded')
         key = (d, r['aircraft_category'], part)
         if key in seen or r['aircraft_category'] not in AIRCRAFT_MIX:
@@ -65,11 +81,20 @@ class SeasonalModel:
             d = r['date']
             self.weekday[d.weekday()].append(r[target])
             self.seasonal[d.month, d.weekday()].append(r[target])
-    def predict(self, d):
+        # Holiday effect learned from training days: observed / ordinary prediction.
+        self.holiday = {}
+        for name, rule in HOLIDAYS.items():
+            ratios = [r[target] / self.ordinary(r['date']) for r in rows
+                      if r['date'] == rule(r['date'].year) and self.ordinary(r['date']) > 0]
+            self.holiday[name] = sum(ratios) / len(ratios) if ratios else 1.0
+    def ordinary(self, d):
         w = self.weekday[d.weekday()]
         parent = sum(w) / len(w) if w else self.mean
         v = self.seasonal[d.month, d.weekday()]
         return (sum(v) + 14 * parent) / (len(v) + 14)
+    def predict(self, d):
+        factor = next((self.holiday[n] for n, rule in HOLIDAYS.items() if d == rule(d.year)), 1.0)
+        return self.ordinary(d) * factor
 
 def conformal_radius(residuals, coverage):
     rank = math.ceil((len(residuals) + 1) * coverage)
@@ -115,7 +140,7 @@ def forecast_parts(history, planning, coverage=.9):
     fitted, metrics = fit_and_evaluate(history, coverage)
     part_predictions, predictions, uncertainty, seen = [], [], [], set()
     categories = {k[0] for k in fitted}
-    parts = set(PART_SHARES)
+    parts = set(PART_COLUMNS)
     dates = {date(2027,2,11)+timedelta(days=i) for i in range(7)}
     for r in planning:
         d, c, part = date.fromisoformat(r['date']), r['aircraft_category'], r.get('operation_part')
@@ -183,87 +208,66 @@ def forecast(history, planning, coverage=.9):
     predictions, uncertainty, metrics, _ = forecast_parts(history, planning, coverage)
     return predictions, uncertainty, metrics
 
-def make_demo(folder, seed=42):
-    """Generate a synthetic selected-fleet Part 91/135 pool, then capture 20%."""
-    rng = random.Random(seed)
-    history, planning, eligible_pool = [], [], []
-    d = date(2016,1,1)
-    while d <= date(2025,12,31):
-        season = 1 + .15*math.cos(2*math.pi*(d.month-2)/12)
-        weekday = 1.2 if d.weekday() in (0,4,6) else .85
-        eligible = {(part,t): max(0, round(rng.gauss(33*share*season*weekday,
-                    math.sqrt(33*share)))) for part,share in PART_SHARES.items() for t in TARGETS}
-        totals = {t:sum(eligible[part,t] for part in PART_SHARES) for t in TARGETS}
-        pool = dict(date=str(d), airport_pool_scope='PLACEHOLDER_selected_fleets_part91_part135',
-            eligible_part91_arrivals=eligible['part91','arrivals'],
-            eligible_part91_departures=eligible['part91','departures'],
-            eligible_part135_arrivals=eligible['part135','arrivals'],
-            eligible_part135_departures=eligible['part135','departures'],
-            eligible_total_arrivals=totals['arrivals'], eligible_total_departures=totals['departures'],
-            fbo_capture_share=FBO_CAPTURE_SHARE,
-            fbo_total_arrivals=round(totals['arrivals']*FBO_CAPTURE_SHARE,4),
-            fbo_total_departures=round(totals['departures']*FBO_CAPTURE_SHARE,4),
-            excluded_part121='yes_not_in_pool', excluded_outside_fleets='yes_not_in_pool',
-            data_class='synthetic', source=f'PLACEHOLDER_eligible_selected_private_fleet_pool_seed_{seed}')
-        eligible_pool.append(pool)
-        for part in PART_SHARES:
+def build_faa_inputs(folder):
+    """History from observed FAA daily counts x assumed shares; planning multipliers from measured LVI excess."""
+    history = []
+    for day in read_csv(FAA_DAILY):
+        if not 2023 <= int(day['date'][:4]) <= 2025:
+            continue
+        for part, column in PART_COLUMNS.items():
+            fbo = float(day[column]) * PRIVATE_ELIGIBLE[part] * FBO_CAPTURE_SHARE
             for c, mix in AIRCRAFT_MIX.items():
-                r = dict(date=str(d), aircraft_category=c, operation_part=part, scope='fbo', data_class='synthetic',
-                    source=f'PLACEHOLDER_selected_fleet_{part}_pool_x_0.20_capture_x_{mix}_mix_seed_{seed}')
+                r = dict(date=day['date'], aircraft_category=c, operation_part=part, scope='fbo', data_class='estimated',
+                         source=f"{day['source']};metric={column};x{PRIVATE_ELIGIBLE[part]}_eligible_x{FBO_CAPTURE_SHARE}_capture_x{mix}_mix")
                 for t in TARGETS:
-                    r[t] = round(eligible[part,t]*FBO_CAPTURE_SHARE*mix,4)
+                    r[t] = round(fbo * (ARRIVAL_SHARE if t == 'arrivals' else 1-ARRIVAL_SHARE) * mix, 6)
                 history.append(r)
-        d += timedelta(days=1)
-    ap = [round(rng.uniform(lo,hi),3) for lo,hi in [(1.1,1.4),(1.4,1.8),(1.8,2.4),(1.4,2.0),(1,1.2),(1,1.1),(1,1.1)]]
-    dp = [round(rng.uniform(lo,hi),3) for lo,hi in [(1,1.1),(1,1.1),(1,1.2),(1.1,1.4),(2,2.8),(1.5,2.1),(1.1,1.4)]]
-    for i in range(7):
-        day = str(date(2027,2,11)+timedelta(days=i))
-        # Bookings are already FBO-specific; do not apply the capture share twice.
-        reserved_totals = {(part,t):rng.randint(0,math.ceil(7*PART_SHARES[part]*profile[i]))
-                           for part in PART_SHARES for t,profile in (('arrivals',ap),('departures',dp))}
-        show_rate = round(rng.uniform(.75,.95),3)
-        for part in PART_SHARES:
-            for c,mix in AIRCRAFT_MIX.items():
-                r = dict(date=day, aircraft_category=c, operation_part=part, event_indicator=1,
-                    reserved_arrivals=round(reserved_totals[part,'arrivals']*mix,4),
-                    reserved_departures=round(reserved_totals[part,'departures']*mix,4),
-                    reservation_show_rate=show_rate, reservation_class='synthetic',
-                    assumption_source=(f'PLACEHOLDER_seed_{seed}; selected fleet {part}; 20pct FBO capture; '
-                        '47/33/20 size mix; reservations invented; '
-                        + ('LAX_2022_air_taxi_15.5pct_five_day_proxy_transferred_by_assumption'
-                           if part == 'part135' else 'part91_event_profile_invented')))
-                for t,profile in [('arrivals',ap),('departures',dp)]:
-                    for scenario,scale in [('low',.5),('medium',1),('high',1.6)]:
-                        if part == 'part135':
-                            # FAA air taxi is broader than selected-fleet Part 135 and has no direction split.
-                            # Applying its five-day excess to Fri-Tue is an explicit transfer assumption.
-                            uplift = AIR_TAXI_EVENT_EXCESS if 1 <= i <= 5 else 0
-                            factor = {'low': 0, 'medium': 1, 'high': 2}[scenario]
-                            r[f'{t}_multiplier_{scenario}'] = round(1+uplift*factor,3)
-                        else:
-                            r[f'{t}_multiplier_{scenario}'] = round(1+(profile[i]-1)*scale,3)
+    write_csv(folder/'historical_traffic.csv', history)
+    fitted, _ = fit_and_evaluate(load_history(folder/'historical_traffic.csv'), .9)
+    days = [date(2027,2,11)+timedelta(days=i) for i in range(7)]
+    base = {t: [sum(fitted[k][0].predict(d) for k in fitted if k[2] == t) for d in days] for t in TARGETS}
+    lax = {r['metric']: float(r['excess_2022']) for r in read_csv(SURGE) if r['locid'] == 'LAX'}
+    excess = {s: lax[metric]*k for s, (metric, k) in EVENT_EXCESS.items()}
+    profile = {int(r['offset']): r for r in read_csv(SURGE_PROFILE)}
+    # Regional air-taxi daily shape Thu-Mon, scaled so five-day movements rise by the scenario excess.
+    # Aircraft conservation: extra arrivals Thu-Sat and half of game day, the same extra departures after.
+    shape = [max(0, float(profile[i-3]['air_taxi'])/float(profile[i-3]['baseline'])-1) for i in range(5)]
+    total = [base['arrivals'][i]+base['departures'][i] for i in range(5)]
+    extra = [total[i]*shape[i]*sum(total)/sum(t*w for t, w in zip(total, shape)) for i in range(5)]
+    timing = {'arrivals': {0: extra[0], 1: extra[1], 2: extra[2], 3: extra[3]/2},
+              'departures': {3: extra[3]/2, 4: extra[4]}}
+    unit = {t: [timing[t].get(i, 0)/sum(timing[t].values())*sum(extra)/2/base[t][i] for i in range(7)]
+            for t in TARGETS}  # multiplier - 1 per unit of excess
+    planning = []
+    for i, d in enumerate(days):
+        for part in PART_COLUMNS:
+            for c in AIRCRAFT_MIX:
+                r = dict(date=str(d), aircraft_category=c, operation_part=part, event_indicator=int(i < 5),
+                         reserved_arrivals=0, reserved_departures=0, reservation_show_rate=0,
+                         reservation_class='synthetic',
+                         assumption_source='FAA ATADS/OPSNET Super Bowl LVI excess (Low LAX GA, Medium LAX air taxi, High 2x); no bookings supplied')
+                for t in TARGETS:
+                    for s, e in excess.items():
+                        r[f'{t}_multiplier_{s}'] = round(1 + e*unit[t][i], 6)
                 planning.append(r)
-    write_csv(folder/'demo_eligible_private_airport_pool.csv',eligible_pool)
-    write_csv(folder/'demo_historical_traffic.csv',history)
-    write_csv(folder/'demo_planning_inputs.csv',planning)
-    return folder/'demo_historical_traffic.csv', folder/'demo_planning_inputs.csv'
+    write_csv(folder/'planning_inputs.csv', planning)
+    return folder/'historical_traffic.csv', folder/'planning_inputs.csv'
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--demo', action='store_true')
-    p.add_argument('--seed', type=int, default=42, help='Seed for random PLACEHOLDER generation')
+    p.add_argument('--faa', action='store_true', help='Build history and planning inputs from the FAA files')
     p.add_argument('--history',type=Path)
     p.add_argument('--planning',type=Path)
     p.add_argument('--output-dir',type=Path,default=Path('.'))
     p.add_argument('--coverage',type=float,default=.9)
     args = p.parse_args()
-    if args.demo and (args.history or args.planning):
-        p.error('Do not combine --demo with supplied inputs')
-    if not args.demo and not (args.history and args.planning):
-        p.error('Provide --history and --planning, or explicitly choose --demo')
+    if args.faa and (args.history or args.planning):
+        p.error('Do not combine --faa with supplied inputs')
+    if not args.faa and not (args.history and args.planning):
+        p.error('Provide --history and --planning, or choose --faa')
     args.output_dir.mkdir(parents=True,exist_ok=True)
-    if args.demo:
-        args.history,args.planning = make_demo(args.output_dir,args.seed)
+    if args.faa:
+        args.history,args.planning = build_faa_inputs(args.output_dir)
     history = load_history(args.history)
     forecasts,intervals,metrics,part_forecasts = forecast_parts(history,read_csv(args.planning),args.coverage)
     for name, rows in [('demand_predictions.csv',forecasts),('uncertainty_results.csv',intervals),('evaluation_metrics.csv',metrics)]:
@@ -280,12 +284,12 @@ def main():
             totals.append(r)
     write_csv(args.output_dir/'daily_totals.csv',totals)
     metadata = dict(model='month_weekday_shrinkage_mean',prior_days=14,excluded_years=sorted(EXCLUDED),
-        seed=args.seed if args.demo else None,history_file=str(args.history),planning_file=str(args.planning),
+        seed=None,history_file=args.history.name,planning_file=args.planning.name,
         historical_data_classes=sorted({r['data_class'] for r in history}),nominal_baseline_coverage=args.coverage,
         uncertainty='Baseline split-conformal intervals scaled by assumed multipliers; event coverage not validated',
-        caution='PLACEHOLDER DEMO: history and reservations are synthetic. The Part 135 event factor transfers an observed airport Air Taxi excess by assumption; it is not an observed selected-fleet effect. Synthetic holdout metrics are not real-world accuracy. Event ranges are unvalidated.')
+        caution='History: observed FAA daily LAX counts 2023-2025 (GA for Part 91, air taxi for Part 135) x placeholder 50% eligibility x 20% capture. Not observed FBO counts. Holdout metrics measure the daily airport pattern. Event scenarios from FAA LVI excess; event ranges unvalidated. No bookings supplied.')
     (args.output_dir/'run_metadata.json').write_text(json.dumps(metadata,indent=2),encoding='utf-8')
-    print(f'PLACEHOLDER DEMO: wrote {len(forecasts)} scenario/category forecasts to {args.output_dir}')
+    print(f'Wrote {len(forecasts)} scenario/category forecasts from FAA history to {args.output_dir}')
 
 if __name__ == '__main__':
     main()
