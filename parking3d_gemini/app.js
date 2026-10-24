@@ -371,6 +371,12 @@ class FBOApp {
     const normalCap = this.data.capacity.ramp_su;
     document.querySelectorAll('.js-ramp-su').forEach(e => { e.textContent = normalCap.toFixed(1); });
     document.querySelectorAll('.js-ramp-derivation').forEach(e => { e.textContent = this.data.capacity.derivation; });
+    const cap = this.data.capacity, ac = this.data.aircraft, pct = x => `${Math.round(x * 100)}%`;
+    const fill = (sel, text) => document.querySelectorAll(sel).forEach(e => { e.textContent = text; });
+    fill('.js-tow-gain', `+${pct(cap.tow_packing_gain)} (+${(normalCap * cap.tow_packing_gain).toFixed(1)} su)`);
+    fill('.js-packed-su', (normalCap * (1 + cap.tow_packing_gain)).toFixed(1));
+    fill('.js-size-mix', Object.entries(ac.sizes).map(([k, v]) => `${k} ${v.su} su, ${pct(v.share)}, e.g. ${v.example.split(' (')[0]}`).join(' • ') + '.');
+    fill('.js-stay-mix', `Average dwell: ${ac.stays.average_days} days (same-day ${pct(ac.stays.same_day)}, overnight ${pct(ac.stays.overnight)}, multi-day ${pct(ac.stays.multi_day_3)}).`);
 
     // Find first day over capacity (prob > 50%)
     const overDays = week.filter(d => d.probOverNormal >= 0.5);
@@ -603,6 +609,20 @@ class FBOApp {
       payoffEl.textContent = `${(plan.prob_plan_pays_off * 100).toFixed(1)}% chance plan pays off`;
     }
 
+    // Action cards follow the selected plan (the lease size and cost change with the situation and scenario)
+    for (const id of ['tow_packing', 'overflow_apron']) {
+      const a = plan.actions.find(x => x.id === id);
+      const set = (attr, html) => document.querySelectorAll(`[${attr}="${id}"]`).forEach(e => { e.innerHTML = html; });
+      if (!a) {
+        set('data-action-meta', 'Not in the model plan for this scenario and situation.');
+        set('data-action-desc', '');
+        continue;
+      }
+      set('data-action-title', escapeHtml(a.action));
+      set('data-action-meta', `Cost: <strong>$${a.cost_usd.toLocaleString()}</strong> &bull; ${a.dates.length} day(s)`);
+      set('data-action-desc', `${escapeHtml(a.rationale)}. Approver: <strong>${escapeHtml(a.approver)}</strong>`);
+    }
+
     const unaccEl = document.getElementById('plan-unaccommodated-display');
     if (unaccEl) {
       unaccEl.textContent = `${plan.aircraft_not_accommodated_mean.no_plan} jets without plan → ${plan.aircraft_not_accommodated_mean.with_plan} with plan`;
@@ -744,3 +764,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const app = new FBOApp();
   app.init();
 });
+
+function escapeHtml(v) {
+  return String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}

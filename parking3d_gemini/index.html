@@ -159,11 +159,11 @@
                 <span class="switch-slider"></span>
               </label>
               <div>
-                <strong>Switch to tight tow-in packing on Main Ramp</strong>
-                <div class="action-meta">Gain: <strong>+10% ramp capacity (+1.5 su &rarr; 16.5 su)</strong> &bull; Cost: <strong>$0</strong></div>
+                <strong data-action-title="tow_packing">Switch to tight tow-in packing</strong>
+                <div class="action-meta" data-action-meta="tow_packing"></div>
               </div>
             </div>
-            <div class="action-desc">Allows tight positioning for multi-night stays. Approver: <strong>Line Service Manager</strong></div>
+            <div class="action-desc" data-action-desc="tow_packing"></div>
             <div class="action-notes-row">
               <input type="text" id="notes-tow-packing" class="control-input" placeholder="Manager notes (stored locally)...">
             </div>
@@ -177,11 +177,11 @@
                 <span class="switch-slider"></span>
               </label>
               <div>
-                <strong>Lease Remote Overflow Apron (5 su)</strong>
-                <div class="action-meta">Capacity: <strong>+5.0 su</strong> &bull; Cost: <strong>$3,500 ($100/su-day &times; 7 days)</strong></div>
+                <strong data-action-title="overflow_apron">Lease remote overflow apron</strong>
+                <div class="action-meta" data-action-meta="overflow_apron"></div>
               </div>
             </div>
-            <div class="action-desc">Leases remote apron positions to prevent staging holds. Approver: <strong>FBO General Manager</strong></div>
+            <div class="action-desc" data-action-desc="overflow_apron"></div>
             <div class="action-notes-row">
               <input type="text" id="notes-overflow-lease" class="control-input" placeholder="General manager authorization notes...">
             </div>
@@ -323,23 +323,22 @@
               <strong>Main Ramp Capacity: <span class="js-ramp-su">–</span> su</strong>
               <span class="badge-provenance estimated">estimated</span><br>
               Derived from Atlantic Aviation LAX reference ramp (AIN 2008):<br>
-              <code class="js-ramp-derivation"></code>.
-              <em>Estimated, not a measured stand count.</em>
+              <code class="js-ramp-derivation"></code>
             </li>
             <li>
-              <strong>Tow-Packing Gain: +10% (+1.5 su)</strong>
+              <strong>Tow-Packing Gain: <span class="js-tow-gain">–</span></strong>
               <span class="badge-provenance assumed">assumed</span><br>
-              Tight tow-in packing for multi-night stays brings ramp capacity to <strong>16.5 su</strong> at zero cash cost.
+              Tight tow-in packing for multi-night stays brings ramp capacity to <strong><span class="js-packed-su">–</span> su</strong> at zero cash cost.
             </li>
             <li>
               <strong>Aircraft Size Mix:</strong>
               <span class="badge-provenance assumed">assumed</span><br>
-              Light Jet (1.0 su, 47%, e.g. Citation CJ3) &bull; Midsize Jet (1.5 su, 33%, e.g. Challenger 350) &bull; Large Jet (2.5 su, 20%, e.g. Gulfstream G650).
+              <span class="js-size-mix"></span>
             </li>
             <li>
               <strong>Hourly Profile & Stay Mix:</strong>
               <span class="badge-provenance placeholder">placeholder / assumed</span><br>
-              Hour-of-day shares are a placeholder curve, not observed data. Average dwell: 1.1 days (same-day 40%, overnight 45%, multi-day 15%).
+              Hour-of-day shares are a placeholder curve, not observed data. <span class="js-stay-mix"></span>
             </li>
           </ul>
         </div>
