@@ -32,7 +32,11 @@ def run():
             _, forecasts = read(HERE/'demand_predictions.csv')
             first = min(r['date'] for r in forecasts)
             baseline = sum(float(r['baseline_arrivals']) for r in forecasts if r['date']==first and r['scenario']=='Medium')
+            share = float(next(r['value'] for r in read(ROOT/'alan/assumptions.csv')[1] if r['id']=='fbo_market_share'))
+            value = {r['parameter']: r['value'] for r in assumptions}
             for r in assumptions:
+                if r['parameter']=='ramp_capacity_su':
+                    r['value'] = str(round(float(value['reference_ramp_su'])*share/float(value['reference_traffic_share'])))
                 if r['parameter']=='initial_transient_aircraft':
                     r['value'] = str(round(baseline*dwell, 1))
                     r['source_or_rationale'] = f'P2 ordinary arrivals {baseline:.3f} x opening_dwell_days {dwell}; derived estimate refreshed with this release, not observed inventory.'
@@ -104,5 +108,15 @@ def run():
     audit={'release_run_id':manifest['run_id'],
            'files':{str(p.relative_to(ROOT)).replace(chr(92),'/'):digest(p) for p in evidence_paths}}
     (HERE/'event_evidence_manifest.json').write_text(json.dumps(audit,indent=2),encoding='utf-8')
+    # The dashboard validates exactly these 16 evidence files (nazar/readiness/release_status.py); newer inputs and
+    # outputs get their own sidecar.
+    extra_paths=[HERE/'provisional_inputs/holiday_history.csv',HERE/'backtest_metrics.csv',
+                 ROOT/'marvin/person_2_part91_part135_forecast/results/weather_effect_measured.csv',
+                 P3/'resource_requirements_heavy_rain.csv',P3/'scenario_recommendations_heavy_rain.json',
+                 P3/'slot_advisor.csv',P3/'slot_recommendations.json',
+                 P3/'sensitivity_tornado.csv',P3/'capacity_stress.csv',P3/'sensitivity_share_robustness.csv']
+    extra={'release_run_id':manifest['run_id'],
+           'files':{str(p.relative_to(ROOT)).replace(chr(92),'/'):digest(p) for p in extra_paths}}
+    (HERE/'extended_evidence_manifest.json').write_text(json.dumps(extra,indent=2),encoding='utf-8')
     print('Verified schema stability, provenance, monthly conservation, forecast/range consistency and source preservation.')
 if __name__=='__main__': run()

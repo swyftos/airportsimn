@@ -285,6 +285,35 @@ def run_capacity_stress(
     return df, thresholds
 
 
+def run_share_robustness(demand: pd.DataFrame = None, a_base: dict = None, mc_runs: int = MC_RUNS) -> pd.DataFrame:
+    """FBO share 5 / 10 / 15 % with the ramp sized to the share (ramp_capacity_su x share / 10 %).
+
+    Demand, opening inventory and ramp scale together, so ramp use should barely move: the share guess no longer
+    drives the parking risk. Returns one row per share and scenario."""
+    if demand is None:
+        demand = po.load_demand()
+    if a_base is None:
+        a_base = po.load_assumptions()
+    rows = []
+    for share in (0.05, 0.10, 0.15):
+        scale = share / 0.10
+        d = demand.copy()
+        for col in ["expected_movements", "lower90_prediction", "upper90_prediction"]:
+            d[col] = d[col] * scale
+        a = dict(a_base, mc_runs=mc_runs, initial_transient_aircraft=a_base["initial_transient_aircraft"] * scale,
+                 ramp_capacity_su=a_base["ramp_capacity_su"] * scale)
+        t, r = po.run(d, a, variant="standard")
+        for scen in ("Low", "Medium", "High"):
+            sub = t[t["scenario"] == scen]
+            rows.append({"fbo_share": share, "ramp_capacity_su": round(a["ramp_capacity_su"], 1), "scenario": scen,
+                         "peak_parking_demand_su_p50": r[scen]["summary"]["peak_parking_demand_su_p50"],
+                         "max_utilization_p50": float(sub["utilization_normal_p50"].max()),
+                         "max_prob_over_normal_capacity": float(sub["prob_over_normal_capacity"].max()),
+                         "no_preparation_unaccommodated_mean": r[scen]["impact"]["no_preparation"]["unaccommodated_aircraft"]["mean"],
+                         "note": CSV_NOTE_BASE})
+    return pd.DataFrame(rows)
+
+
 def main():
     print("=" * 70)
     print("P3 Parking Model - Sensitivity Analysis & Capacity Stress Test")
@@ -315,6 +344,11 @@ def main():
     for (var, scen), cap in thresholds.items():
         print(f"  {var:20} scenario {scen:6}: {cap if cap is not None else 'above all tested'} su")
     print("=" * 70)
+
+    robust = run_share_robustness()
+    robust.to_csv(HERE / "sensitivity_share_robustness.csv", index=False, lineterminator="\n")
+    print("\nShare robustness (ramp sized to the share): max utilization P50 by share")
+    print(robust.pivot(index="scenario", columns="fbo_share", values="max_utilization_p50").to_string())
 
 
 if __name__ == "__main__":

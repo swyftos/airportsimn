@@ -1,0 +1,15 @@
+{
+  "release_run_id": "7ad42d985a7d91ff2213c4e21d4acbda3c345c08f759b5cd8ffd93e509595d53",
+  "files": {
+    "marvin/person_2_forecasting/provisional_inputs/holiday_history.csv": "88b4398ce1315c42da956efc008b29d5739c4c03fdbfe5d60f5b6497fd0195b5",
+    "marvin/person_2_forecasting/backtest_metrics.csv": "57277c83a2f31af9586a934e940f0453ccc343f88190def98e19e7816860e71f",
+    "marvin/person_2_part91_part135_forecast/results/weather_effect_measured.csv": "092b40a663d222786958ba41c2d3703d964dd9b3b1978dd6ac534de82b29934f",
+    "elia/resource_requirements_heavy_rain.csv": "c735ae704cac1081df86571d701f6954b8e8db2976061b29474ad85f3b43b879",
+    "elia/scenario_recommendations_heavy_rain.json": "849e751c96bb0b0724bc398f1aaf659f1cf0ff765f9bdc2a46606f225594d57c",
+    "elia/slot_advisor.csv": "0f3ad8527b130ae6ff86b412e2b372a5279d5462f62dbf5ab2cdd1d3d35a9145",
+    "elia/slot_recommendations.json": "fb2fb0dc25be12ef87ea240ecf6737fa5067c285a964f05b259f0221bb9affd1",
+    "elia/sensitivity_tornado.csv": "709ee8411a6195f9a692ec8d1295347aa29c57b24d235926f007834eb77abb11",
+    "elia/capacity_stress.csv": "9478fc3e209ea34d3aa0a3add6a11262c7a970d28f4cb830e7e6170cd5945fd9",
+    "elia/sensitivity_share_robustness.csv": "59dfd7d30924ed1afdbd6a42d0429f9aef10689c6aec220cedc71f2c68117648"
+  }
+}

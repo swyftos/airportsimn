@@ -240,13 +240,14 @@ def plan_scenario(dates, need_su, movements_p50, gallons_p50, a, profile):
     over_packed = np.flatnonzero(need_su > packed)
     if over_packed.size:
         lo, hi = max(0, over_packed[0] - 1), over_packed[-1]  # open one day early to stage cones and staff
-        capacity[lo:hi + 1] = total
+        lease = min(a["overflow_capacity_su"], math.ceil(need_su.max() - packed))  # only the shortfall
+        capacity[lo:hi + 1] = packed + lease
         actions.append({
             "id": "overflow_apron", "category": "parking",
-            "action": f"Lease the remote overflow apron (+{a['overflow_capacity_su']:.0f} su)",
+            "action": f"Lease {lease:.0f} su of the remote overflow apron",
             "dates": dates[lo:hi + 1],
             "rationale": f"P{q} parking demand exceeds packed ramp ({packed:.0f} su) on {over_packed.size} day(s)",
-            "cost_usd": a["overflow_cost_per_day_usd"] * (hi + 1 - lo),
+            "cost_usd": a["overflow_cost_per_su_day_usd"] * lease * (hi + 1 - lo),
             "requires_human_approval": True, "approver": "FBO general manager"})
     over_total = np.flatnonzero(need_su > total)
     if over_total.size:

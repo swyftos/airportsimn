@@ -67,9 +67,13 @@ def test_ordinary_week_uses_p2_baseline():
     assert carry["opening_aircraft"] == A["initial_transient_aircraft"]
 
 
-def test_ramp_capacity_matches_area_derivation():
+def test_ramp_capacity_matches_area_and_share_derivation():
+    import csv
     derived = A["ramp_area_m2"] * A["usable_parking_share"] / A["m2_per_su"]
-    assert round(derived) == A["ramp_capacity_su"]
+    assert round(derived) == A["reference_ramp_su"]
+    share = float(next(r["value"] for r in csv.DictReader(open(po.HERE.parent / "alan" / "assumptions.csv"))
+                       if r["id"] == "fbo_market_share"))
+    assert round(A["reference_ramp_su"] * share / A["reference_traffic_share"]) == A["ramp_capacity_su"]
 
 
 def test_opening_inventory_follows_p2_baseline():

@@ -17,21 +17,62 @@
         "peak_day": "2027-02-15",
         "peak_parking_demand_su_p50": 14.2,
         "peak_parking_demand_su_p90": 18.4,
-        "normal_capacity_su": 75.0,
-        "max_prepared_capacity_su": 75.0,
-        "risk_days": [],
-        "overall_risk": "Low"
+        "normal_capacity_su": 15.0,
+        "max_prepared_capacity_su": 18.5,
+        "risk_days": [
+          "2027-02-11",
+          "2027-02-12",
+          "2027-02-14",
+          "2027-02-15",
+          "2027-02-17"
+        ],
+        "overall_risk": "Medium"
       },
-      "actions": [],
-      "preparation_cost_usd": 0,
+      "actions": [
+        {
+          "id": "tow_packing",
+          "category": "parking",
+          "action": "Switch to tight tow-in packing on the main ramp for multi-night stays",
+          "dates": [
+            "2027-02-11",
+            "2027-02-12",
+            "2027-02-13",
+            "2027-02-14",
+            "2027-02-15",
+            "2027-02-16",
+            "2027-02-17"
+          ],
+          "rationale": "P90 parking demand peaks at 18 su vs 15 su ramp",
+          "cost_usd": 0,
+          "requires_human_approval": true,
+          "approver": "Line service manager"
+        },
+        {
+          "id": "overflow_apron",
+          "category": "parking",
+          "action": "Lease 2 su of the remote overflow apron",
+          "dates": [
+            "2027-02-13",
+            "2027-02-14",
+            "2027-02-15",
+            "2027-02-16",
+            "2027-02-17"
+          ],
+          "rationale": "P90 parking demand exceeds packed ramp (16 su) on 4 day(s)",
+          "cost_usd": 1000.0,
+          "requires_human_approval": true,
+          "approver": "FBO general manager"
+        }
+      ],
+      "preparation_cost_usd": 1000.0,
       "impact": {
         "runs": 10000,
         "no_preparation": {
           "unaccommodated_aircraft": {
-            "mean": 0.0,
+            "mean": 1.0,
             "p10": 0.0,
             "p50": 0.0,
-            "p90": 0.0
+            "p90": 3.1
           },
           "delayed_turns": {
             "mean": 0.0,
@@ -40,19 +81,19 @@
             "p90": 0.0
           },
           "total_cost_usd": {
-            "mean": 0.0,
+            "mean": 2404.7,
             "p10": 0.0,
             "p50": 0.0,
-            "p90": 0.0
+            "p90": 7453.0
           },
-          "prob_any_unaccommodated": 0.0
+          "prob_any_unaccommodated": 0.394
         },
         "ai_preparation": {
           "unaccommodated_aircraft": {
-            "mean": 0.0,
+            "mean": 0.3,
             "p10": 0.0,
             "p50": 0.0,
-            "p90": 0.0
+            "p90": 0.8
           },
           "delayed_turns": {
             "mean": 0.0,
@@ -61,20 +102,20 @@
             "p90": 0.0
           },
           "total_cost_usd": {
-            "mean": 0.0,
-            "p10": 0.0,
-            "p50": 0.0,
-            "p90": 0.0
+            "mean": 1661.2,
+            "p10": 1000.0,
+            "p50": 1000.0,
+            "p90": 2907.7
           },
-          "prob_any_unaccommodated": 0.0
+          "prob_any_unaccommodated": 0.125
         },
         "net_benefit_usd": {
-          "mean": 0.0,
-          "p10": 0.0,
-          "p50": 0.0,
-          "p90": 0.0
+          "mean": 743.5,
+          "p10": -1000.0,
+          "p50": -1000.0,
+          "p90": 4642.7
         },
-        "prob_preparation_pays_off": 0.0
+        "prob_preparation_pays_off": 0.409
       }
     },
     "Medium": {
@@ -82,21 +123,65 @@
         "peak_day": "2027-02-14",
         "peak_parking_demand_su_p50": 17.4,
         "peak_parking_demand_su_p90": 21.3,
-        "normal_capacity_su": 75.0,
-        "max_prepared_capacity_su": 75.0,
-        "risk_days": [],
-        "overall_risk": "Low"
+        "normal_capacity_su": 15.0,
+        "max_prepared_capacity_su": 21.5,
+        "risk_days": [
+          "2027-02-11",
+          "2027-02-12",
+          "2027-02-13",
+          "2027-02-14",
+          "2027-02-15",
+          "2027-02-17"
+        ],
+        "overall_risk": "High"
       },
-      "actions": [],
-      "preparation_cost_usd": 0,
+      "actions": [
+        {
+          "id": "tow_packing",
+          "category": "parking",
+          "action": "Switch to tight tow-in packing on the main ramp for multi-night stays",
+          "dates": [
+            "2027-02-11",
+            "2027-02-12",
+            "2027-02-13",
+            "2027-02-14",
+            "2027-02-15",
+            "2027-02-16",
+            "2027-02-17"
+          ],
+          "rationale": "P90 parking demand peaks at 21 su vs 15 su ramp",
+          "cost_usd": 0,
+          "requires_human_approval": true,
+          "approver": "Line service manager"
+        },
+        {
+          "id": "overflow_apron",
+          "category": "parking",
+          "action": "Lease 5 su of the remote overflow apron",
+          "dates": [
+            "2027-02-11",
+            "2027-02-12",
+            "2027-02-13",
+            "2027-02-14",
+            "2027-02-15",
+            "2027-02-16",
+            "2027-02-17"
+          ],
+          "rationale": "P90 parking demand exceeds packed ramp (16 su) on 5 day(s)",
+          "cost_usd": 3500.0,
+          "requires_human_approval": true,
+          "approver": "FBO general manager"
+        }
+      ],
+      "preparation_cost_usd": 3500.0,
       "impact": {
         "runs": 10000,
         "no_preparation": {
           "unaccommodated_aircraft": {
-            "mean": 0.0,
+            "mean": 2.3,
             "p10": 0.0,
-            "p50": 0.0,
-            "p90": 0.0
+            "p50": 2.0,
+            "p90": 4.7
           },
           "delayed_turns": {
             "mean": 0.0,
@@ -105,19 +190,19 @@
             "p90": 0.0
           },
           "total_cost_usd": {
-            "mean": 0.0,
+            "mean": 5488.6,
             "p10": 0.0,
-            "p50": 0.0,
-            "p90": 0.0
+            "p50": 4822.7,
+            "p90": 11265.1
           },
-          "prob_any_unaccommodated": 0.0
+          "prob_any_unaccommodated": 0.821
         },
         "ai_preparation": {
           "unaccommodated_aircraft": {
-            "mean": 0.0,
+            "mean": 0.1,
             "p10": 0.0,
             "p50": 0.0,
-            "p90": 0.0
+            "p90": 0.1
           },
           "delayed_turns": {
             "mean": 0.0,
@@ -126,20 +211,20 @@
             "p90": 0.0
           },
           "total_cost_usd": {
-            "mean": 0.0,
-            "p10": 0.0,
-            "p50": 0.0,
-            "p90": 0.0
+            "mean": 3786.9,
+            "p10": 3500.0,
+            "p50": 3500.0,
+            "p90": 3642.7
           },
-          "prob_any_unaccommodated": 0.0
+          "prob_any_unaccommodated": 0.069
         },
         "net_benefit_usd": {
-          "mean": 0.0,
-          "p10": 0.0,
-          "p50": 0.0,
-          "p90": 0.0
+          "mean": 1701.6,
+          "p10": -3500.0,
+          "p50": 1322.7,
+          "p90": 6966.7
         },
-        "prob_preparation_pays_off": 0.0
+        "prob_preparation_pays_off": 0.62
       }
     },
     "High": {
@@ -147,21 +232,65 @@
         "peak_day": "2027-02-14",
         "peak_parking_demand_su_p50": 23.0,
         "peak_parking_demand_su_p90": 28.5,
-        "normal_capacity_su": 75.0,
-        "max_prepared_capacity_su": 75.0,
-        "risk_days": [],
-        "overall_risk": "Low"
+        "normal_capacity_su": 15.0,
+        "max_prepared_capacity_su": 29.5,
+        "risk_days": [
+          "2027-02-11",
+          "2027-02-12",
+          "2027-02-13",
+          "2027-02-14",
+          "2027-02-15",
+          "2027-02-17"
+        ],
+        "overall_risk": "High"
       },
-      "actions": [],
-      "preparation_cost_usd": 0,
+      "actions": [
+        {
+          "id": "tow_packing",
+          "category": "parking",
+          "action": "Switch to tight tow-in packing on the main ramp for multi-night stays",
+          "dates": [
+            "2027-02-11",
+            "2027-02-12",
+            "2027-02-13",
+            "2027-02-14",
+            "2027-02-15",
+            "2027-02-16",
+            "2027-02-17"
+          ],
+          "rationale": "P90 parking demand peaks at 29 su vs 15 su ramp",
+          "cost_usd": 0,
+          "requires_human_approval": true,
+          "approver": "Line service manager"
+        },
+        {
+          "id": "overflow_apron",
+          "category": "parking",
+          "action": "Lease 13 su of the remote overflow apron",
+          "dates": [
+            "2027-02-11",
+            "2027-02-12",
+            "2027-02-13",
+            "2027-02-14",
+            "2027-02-15",
+            "2027-02-16",
+            "2027-02-17"
+          ],
+          "rationale": "P90 parking demand exceeds packed ramp (16 su) on 7 day(s)",
+          "cost_usd": 9100.0,
+          "requires_human_approval": true,
+          "approver": "FBO general manager"
+        }
+      ],
+      "preparation_cost_usd": 9100.0,
       "impact": {
         "runs": 10000,
         "no_preparation": {
           "unaccommodated_aircraft": {
-            "mean": 0.0,
-            "p10": 0.0,
-            "p50": 0.0,
-            "p90": 0.0
+            "mean": 6.0,
+            "p10": 2.7,
+            "p50": 5.7,
+            "p90": 9.5
           },
           "delayed_turns": {
             "mean": 0.0,
@@ -170,16 +299,16 @@
             "p90": 0.0
           },
           "total_cost_usd": {
-            "mean": 0.0,
-            "p10": 0.0,
-            "p50": 0.0,
-            "p90": 0.0
+            "mean": 14470.8,
+            "p10": 6540.6,
+            "p50": 13668.9,
+            "p90": 22782.4
           },
-          "prob_any_unaccommodated": 0.0
+          "prob_any_unaccommodated": 0.995
         },
         "ai_preparation": {
           "unaccommodated_aircraft": {
-            "mean": 0.0,
+            "mean": 0.1,
             "p10": 0.0,
             "p50": 0.0,
             "p90": 0.0
@@ -191,20 +320,20 @@
             "p90": 0.0
           },
           "total_cost_usd": {
-            "mean": 0.0,
-            "p10": 0.0,
-            "p50": 0.0,
-            "p90": 0.0
+            "mean": 9383.4,
+            "p10": 9100.0,
+            "p50": 9100.0,
+            "p90": 9100.0
           },
-          "prob_any_unaccommodated": 0.0
+          "prob_any_unaccommodated": 0.055
         },
         "net_benefit_usd": {
-          "mean": 0.0,
-          "p10": 0.0,
-          "p50": 0.0,
-          "p90": 0.0
+          "mean": 5087.5,
+          "p10": -2559.4,
+          "p50": 4568.9,
+          "p90": 13539.7
         },
-        "prob_preparation_pays_off": 0.0
+        "prob_preparation_pays_off": 0.782
       }
     }
   }

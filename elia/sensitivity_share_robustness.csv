@@ -1,0 +1,10 @@
+fbo_share,ramp_capacity_su,scenario,peak_parking_demand_su_p50,max_utilization_p50,max_prob_over_normal_capacity,no_preparation_unaccommodated_mean,note
+0.05,7.5,Low,7.1,0.943,0.391,0.5,mc_runs=2000
+0.05,7.5,Medium,8.7,1.158,0.807,1.2,mc_runs=2000
+0.05,7.5,High,11.5,1.538,0.997,3.0,mc_runs=2000
+0.1,15.0,Low,14.1,0.943,0.391,0.9,mc_runs=2000
+0.1,15.0,Medium,17.4,1.158,0.807,2.3,mc_runs=2000
+0.1,15.0,High,23.1,1.538,0.997,6.1,mc_runs=2000
+0.15,22.5,Low,21.2,0.943,0.391,1.4,mc_runs=2000
+0.15,22.5,Medium,26.0,1.158,0.807,3.5,mc_runs=2000
+0.15,22.5,High,34.6,1.538,0.997,9.1,mc_runs=2000
