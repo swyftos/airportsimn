@@ -63,10 +63,16 @@ def game_day_shares(profile, start, end, release_hours):
 
 def main():
     totals = {(r["date"], r["scenario"]): r for r in rows(P2 / "daily_totals.csv")}
-    ranges = defaultdict(lambda: {"arrivals": [0, 0], "departures": [0, 0]})
+    # Aggregate 90% range. The three size categories are fixed shares of one daily series, so their errors are
+    # perfectly correlated and the total radius is the sum of the category radii (summing the rounded category
+    # bounds would inflate it). Range = [max(0, ordinary - R) x m, (ordinary + R) x m], m = expected / ordinary.
+    radius = defaultdict(float)
     for r in rows(P2 / "uncertainty_results.csv"):
-        ranges[r["date"], r["scenario"]][r["target"]][0] += float(r["lower"])
-        ranges[r["date"], r["scenario"]][r["target"]][1] += float(r["upper"])
+        radius[r["date"], r["scenario"], r["target"]] += float(r["baseline_radius"])
+    def total_range(t, d, s):
+        base, exp = float(totals[d, s][f"baseline_{t}"]), float(totals[d, s][f"expected_{t}"])
+        m, R = (exp / base if base else 1.0), radius[d, s, t]
+        return [round(max(0.0, base - R) * m, 2), round((base + R) * m, 2)]
     parts = defaultdict(dict)
     for r in rows(PKG / "part_daily_totals.csv"):
         parts[r["date"], r["scenario"]][r["operation_part"]] = float(r["expected_arrivals"]) + float(r["expected_departures"])
@@ -88,7 +94,7 @@ def main():
             day["scenarios"][s] = {
                 "ordinary_arrivals": r3(t["baseline_arrivals"]), "ordinary_departures": r3(t["baseline_departures"]),
                 "expected_arrivals": r3(t["expected_arrivals"]), "expected_departures": r3(t["expected_departures"]),
-                "arrivals_range90": ranges[d, s]["arrivals"], "departures_range90": ranges[d, s]["departures"],
+                "arrivals_range90": total_range("arrivals", d, s), "departures_range90": total_range("departures", d, s),
                 "share_part91": round(p["part91"] / total, 4), "share_part135": round(p["part135"] / total, 4),
                 "parking_su_p50": float(pk["parking_demand_su_p50"]), "parking_su_p90": float(pk["parking_demand_su_p90"]),
                 "ramp_capacity_su": float(pk["capacity_normal_su"]), "prob_ramp_full": float(pk["prob_over_normal_capacity"])}
@@ -132,6 +138,8 @@ def main():
                     "rule": "On a bad-weather day, completed movements change by the measured effect, weighted by the day's Part 91 / Part 135 split; the movements that did not happen happen the next day.",
                     "definitions": {"rain": "at least 0.10 in of rain", "heavy_rain": "at least 0.50 in of rain", "heavy_fog": "NOAA heavy-fog flag (low visibility)"},
                     "source": "NOAA GHCN-Daily LAX x FAA daily operations, 2016-2019 and 2023-2025, vs dry days of the same weekday and month"},
+        "range_note": ("90% ranges come from the model's held-out errors on real airport days (rolling 2025 backtest: 87.9% "
+                       "of days inside; frozen 2026 test: 98.5%). Super Bowl scaling of the range is not validated."),
         "accuracy": {"rolling_backtest_2025_wape": {r["model"]: r3(r["wape"]) for r in backtest},
                      "coverage_90": r3(next(r["coverage_90"] for r in backtest if r["model"] == "model")),
                      "note": "Every Monday of 2025: fit on earlier days only, forecast the next 7 days. WAPE = average daily error as a share of actual traffic."},
