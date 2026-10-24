@@ -1,0 +1,392 @@
+[
+  {
+    "id": "verify_bookings",
+    "scenario": "low",
+    "variant": "standard",
+    "action_type": "verify_bookings",
+    "reason": "Check arrival and departure estimates, especially aircraft staying through the game. These are sample estimates, not confirmed bookings.",
+    "owner": "reservations",
+    "due_date": "2027-02-11",
+    "affected_dates": [
+      "2027-02-14"
+    ],
+    "source": "Synthetic preparation fixture; not AI-generated",
+    "evidence": [
+      {
+        "date": "2027-02-14",
+        "field": "parking_units",
+        "value": 62
+      }
+    ]
+  },
+  {
+    "id": "monitor_capacity",
+    "scenario": "low",
+    "variant": "standard",
+    "action_type": "monitor_capacity",
+    "reason": "Monitor booking and departure updates. This supplied scenario fits existing capacity; recheck if demand or usable space changes.",
+    "owner": "manager",
+    "due_date": "2027-02-11",
+    "affected_dates": [
+      "2027-02-14"
+    ],
+    "source": "Synthetic preparation fixture; not AI-generated",
+    "evidence": [
+      {
+        "date": "2027-02-14",
+        "field": "parking_units",
+        "value": 62
+      }
+    ]
+  },
+  {
+    "id": "staffing_review",
+    "scenario": "low",
+    "variant": "standard",
+    "action_type": "staffing_review",
+    "reason": "Review the supporting shift estimate against qualifications and actual duties. The dashboard does not assign staff.",
+    "owner": "operations",
+    "due_date": "2027-02-11",
+    "affected_dates": [
+      "2027-02-14"
+    ],
+    "source": "Synthetic preparation fixture; not AI-generated",
+    "evidence": [
+      {
+        "date": "2027-02-14",
+        "field": "parking_units",
+        "value": 62
+      }
+    ]
+  },
+  {
+    "id": "verify_bookings",
+    "scenario": "low",
+    "variant": "departure_delay_24h",
+    "action_type": "verify_bookings",
+    "reason": "Check arrival and departure estimates, especially aircraft staying through the game. These are sample estimates, not confirmed bookings.",
+    "owner": "reservations",
+    "due_date": "2027-02-14",
+    "affected_dates": [
+      "2027-02-15"
+    ],
+    "source": "Synthetic preparation fixture; not AI-generated",
+    "evidence": [
+      {
+        "date": "2027-02-15",
+        "field": "parking_units",
+        "value": 69
+      }
+    ]
+  },
+  {
+    "id": "confirm_overflow",
+    "scenario": "low",
+    "variant": "departure_delay_24h",
+    "action_type": "confirm_overflow",
+    "reason": "Investigate 6 additional parking units on the affected dates. Verify aircraft suitability, availability and the actual quote. The modeled comparison assumes this capacity can be secured.",
+    "owner": "manager",
+    "due_date": "2027-02-14",
+    "affected_dates": [
+      "2027-02-15"
+    ],
+    "source": "Synthetic preparation fixture; not AI-generated",
+    "evidence": [
+      {
+        "date": "2027-02-15",
+        "field": "parking_units",
+        "value": 69
+      }
+    ]
+  },
+  {
+    "id": "staffing_review",
+    "scenario": "low",
+    "variant": "departure_delay_24h",
+    "action_type": "staffing_review",
+    "reason": "Review the supporting shift estimate against qualifications and actual duties. The dashboard does not assign staff.",
+    "owner": "operations",
+    "due_date": "2027-02-14",
+    "affected_dates": [
+      "2027-02-15"
+    ],
+    "source": "Synthetic preparation fixture; not AI-generated",
+    "evidence": [
+      {
+        "date": "2027-02-15",
+        "field": "parking_units",
+        "value": 69
+      }
+    ]
+  },
+  {
+    "id": "verify_bookings",
+    "scenario": "medium",
+    "variant": "standard",
+    "action_type": "verify_bookings",
+    "reason": "Check arrival and departure estimates, especially aircraft staying through the game. These are sample estimates, not confirmed bookings.",
+    "owner": "reservations",
+    "due_date": "2027-02-12",
+    "affected_dates": [
+      "2027-02-13",
+      "2027-02-14",
+      "2027-02-15"
+    ],
+    "source": "Synthetic preparation fixture; not AI-generated",
+    "evidence": [
+      {
+        "date": "2027-02-14",
+        "field": "parking_units",
+        "value": 92
+      }
+    ]
+  },
+  {
+    "id": "confirm_overflow",
+    "scenario": "medium",
+    "variant": "standard",
+    "action_type": "confirm_overflow",
+    "reason": "Investigate 28 additional parking units on the affected dates. Verify aircraft suitability, availability and the actual quote. The modeled comparison assumes this capacity can be secured.",
+    "owner": "manager",
+    "due_date": "2027-02-12",
+    "affected_dates": [
+      "2027-02-13",
+      "2027-02-14",
+      "2027-02-15"
+    ],
+    "source": "Synthetic preparation fixture; not AI-generated",
+    "evidence": [
+      {
+        "date": "2027-02-14",
+        "field": "parking_units",
+        "value": 92
+      }
+    ]
+  },
+  {
+    "id": "staffing_review",
+    "scenario": "medium",
+    "variant": "standard",
+    "action_type": "staffing_review",
+    "reason": "Review the supporting shift estimate against qualifications and actual duties. The dashboard does not assign staff.",
+    "owner": "operations",
+    "due_date": "2027-02-12",
+    "affected_dates": [
+      "2027-02-13",
+      "2027-02-14",
+      "2027-02-15"
+    ],
+    "source": "Synthetic preparation fixture; not AI-generated",
+    "evidence": [
+      {
+        "date": "2027-02-14",
+        "field": "parking_units",
+        "value": 92
+      }
+    ]
+  },
+  {
+    "id": "verify_bookings",
+    "scenario": "medium",
+    "variant": "departure_delay_24h",
+    "action_type": "verify_bookings",
+    "reason": "Check arrival and departure estimates, especially aircraft staying through the game. These are sample estimates, not confirmed bookings.",
+    "owner": "reservations",
+    "due_date": "2027-02-12",
+    "affected_dates": [
+      "2027-02-13",
+      "2027-02-14",
+      "2027-02-15",
+      "2027-02-16"
+    ],
+    "source": "Synthetic preparation fixture; not AI-generated",
+    "evidence": [
+      {
+        "date": "2027-02-15",
+        "field": "parking_units",
+        "value": 98
+      }
+    ]
+  },
+  {
+    "id": "confirm_overflow",
+    "scenario": "medium",
+    "variant": "departure_delay_24h",
+    "action_type": "confirm_overflow",
+    "reason": "Investigate 34 additional parking units on the affected dates. Verify aircraft suitability, availability and the actual quote. The modeled comparison assumes this capacity can be secured.",
+    "owner": "manager",
+    "due_date": "2027-02-12",
+    "affected_dates": [
+      "2027-02-13",
+      "2027-02-14",
+      "2027-02-15",
+      "2027-02-16"
+    ],
+    "source": "Synthetic preparation fixture; not AI-generated",
+    "evidence": [
+      {
+        "date": "2027-02-15",
+        "field": "parking_units",
+        "value": 98
+      }
+    ]
+  },
+  {
+    "id": "staffing_review",
+    "scenario": "medium",
+    "variant": "departure_delay_24h",
+    "action_type": "staffing_review",
+    "reason": "Review the supporting shift estimate against qualifications and actual duties. The dashboard does not assign staff.",
+    "owner": "operations",
+    "due_date": "2027-02-12",
+    "affected_dates": [
+      "2027-02-13",
+      "2027-02-14",
+      "2027-02-15",
+      "2027-02-16"
+    ],
+    "source": "Synthetic preparation fixture; not AI-generated",
+    "evidence": [
+      {
+        "date": "2027-02-15",
+        "field": "parking_units",
+        "value": 98
+      }
+    ]
+  },
+  {
+    "id": "verify_bookings",
+    "scenario": "high",
+    "variant": "standard",
+    "action_type": "verify_bookings",
+    "reason": "Check arrival and departure estimates, especially aircraft staying through the game. These are sample estimates, not confirmed bookings.",
+    "owner": "reservations",
+    "due_date": "2027-02-12",
+    "affected_dates": [
+      "2027-02-13",
+      "2027-02-14",
+      "2027-02-15"
+    ],
+    "source": "Synthetic preparation fixture; not AI-generated",
+    "evidence": [
+      {
+        "date": "2027-02-14",
+        "field": "parking_units",
+        "value": 118
+      }
+    ]
+  },
+  {
+    "id": "confirm_overflow",
+    "scenario": "high",
+    "variant": "standard",
+    "action_type": "confirm_overflow",
+    "reason": "Investigate 40 additional parking units on the affected dates. Verify aircraft suitability, availability and the actual quote. Some demand remains uncovered; escalate the gap.",
+    "owner": "manager",
+    "due_date": "2027-02-12",
+    "affected_dates": [
+      "2027-02-13",
+      "2027-02-14",
+      "2027-02-15"
+    ],
+    "source": "Synthetic preparation fixture; not AI-generated",
+    "evidence": [
+      {
+        "date": "2027-02-14",
+        "field": "parking_units",
+        "value": 118
+      }
+    ]
+  },
+  {
+    "id": "staffing_review",
+    "scenario": "high",
+    "variant": "standard",
+    "action_type": "staffing_review",
+    "reason": "Review the supporting shift estimate against qualifications and actual duties. The dashboard does not assign staff.",
+    "owner": "operations",
+    "due_date": "2027-02-12",
+    "affected_dates": [
+      "2027-02-13",
+      "2027-02-14",
+      "2027-02-15"
+    ],
+    "source": "Synthetic preparation fixture; not AI-generated",
+    "evidence": [
+      {
+        "date": "2027-02-14",
+        "field": "parking_units",
+        "value": 118
+      }
+    ]
+  },
+  {
+    "id": "verify_bookings",
+    "scenario": "high",
+    "variant": "departure_delay_24h",
+    "action_type": "verify_bookings",
+    "reason": "Check arrival and departure estimates, especially aircraft staying through the game. These are sample estimates, not confirmed bookings.",
+    "owner": "reservations",
+    "due_date": "2027-02-12",
+    "affected_dates": [
+      "2027-02-13",
+      "2027-02-14",
+      "2027-02-15",
+      "2027-02-16"
+    ],
+    "source": "Synthetic preparation fixture; not AI-generated",
+    "evidence": [
+      {
+        "date": "2027-02-15",
+        "field": "parking_units",
+        "value": 131
+      }
+    ]
+  },
+  {
+    "id": "confirm_overflow",
+    "scenario": "high",
+    "variant": "departure_delay_24h",
+    "action_type": "confirm_overflow",
+    "reason": "Investigate 40 additional parking units on the affected dates. Verify aircraft suitability, availability and the actual quote. Some demand remains uncovered; escalate the gap.",
+    "owner": "manager",
+    "due_date": "2027-02-12",
+    "affected_dates": [
+      "2027-02-13",
+      "2027-02-14",
+      "2027-02-15",
+      "2027-02-16"
+    ],
+    "source": "Synthetic preparation fixture; not AI-generated",
+    "evidence": [
+      {
+        "date": "2027-02-15",
+        "field": "parking_units",
+        "value": 131
+      }
+    ]
+  },
+  {
+    "id": "staffing_review",
+    "scenario": "high",
+    "variant": "departure_delay_24h",
+    "action_type": "staffing_review",
+    "reason": "Review the supporting shift estimate against qualifications and actual duties. The dashboard does not assign staff.",
+    "owner": "operations",
+    "due_date": "2027-02-12",
+    "affected_dates": [
+      "2027-02-13",
+      "2027-02-14",
+      "2027-02-15",
+      "2027-02-16"
+    ],
+    "source": "Synthetic preparation fixture; not AI-generated",
+    "evidence": [
+      {
+        "date": "2027-02-15",
+        "field": "parking_units",
+        "value": 131
+      }
+    ]
+  }
+]
