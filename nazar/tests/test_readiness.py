@@ -252,7 +252,7 @@ class NativeAdapterTests(unittest.TestCase):
         with self.assertRaisesRegex(ContractError,'reconcile'):load_native(raw)
     def test_changed_input_changes_review_version(self):
         from readiness.team_adapter import load_native
-        f=self.native_files();old=load_native(f)['version'];j=json.loads(f['p2_report']);j['seed']+=1;f['p2_report']=json.dumps(j)
+        f=self.native_files();old=load_native(f)['version'];j=json.loads(f['p2_report']);j['seed']=(j.get('seed') or 0)+1;f['p2_report']=json.dumps(j)
         self.assertNotEqual(old,load_native(f)['version'])
 
 class ParkingVariantTests(unittest.TestCase):
@@ -295,7 +295,9 @@ class ParkingVariantTests(unittest.TestCase):
             with self.assertRaisesRegex(ContractError,'duplicate or missing'):load_native(raw)
     def test_delay_metadata_and_provenance_rejected(self):
         from readiness.team_adapter import load_native
-        for field,value in [('variant','standard'),('demand_provenance',['estimated'])]:
+        provenance=json.loads(self.files()['p2_report'])['historical_data_classes']
+        different=['synthetic'] if provenance != ['synthetic'] else ['estimated']
+        for field,value in [('variant','standard'),('demand_provenance',different)]:
             raw=self.files();doc=json.loads(raw['p3_delay_recommendations']);doc['meta'][field]=value
             raw['p3_delay_recommendations']=json.dumps(doc)
             with self.assertRaises(ContractError):load_native(raw)

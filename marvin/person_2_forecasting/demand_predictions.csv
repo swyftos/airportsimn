@@ -1,64 +1,64 @@
 date,scenario,aircraft_category,forecast_scope,event_indicator,reservation_class,assumption_source,baseline_arrivals,expected_arrivals,incremental_arrivals,arrivals_multiplier,arrivals_reservation_floor,arrivals_reservation_adjustment,arrivals_lower,arrivals_upper,historical_data_class,baseline_departures,expected_departures,incremental_departures,departures_multiplier,departures_reservation_floor,departures_reservation_adjustment,departures_lower,departures_upper
-2027-02-11,Low,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.101,6.864,0.763,1.125,6.3,0.0,1,12,synthetic,6.372,6.372,0.0,1.0,5.4,0.0,2,11
-2027-02-11,Medium,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.101,7.627,1.525,1.25,6.3,0.0,2,14,synthetic,6.372,6.372,0.0,1.0,5.4,0.0,2,11
-2027-02-11,High,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.101,8.542,2.441,1.4,6.3,0.0,2,15,synthetic,6.372,6.372,0.0,1.0,5.4,0.0,2,11
-2027-02-11,Low,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,5.049,5.68,0.631,1.125,4.5,0.0,1,11,synthetic,5.016,5.016,0.0,1.0,3.6,0.0,1,9
-2027-02-11,Medium,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,5.049,6.311,1.262,1.25,4.5,0.0,1,12,synthetic,5.016,5.016,0.0,1.0,3.6,0.0,1,9
-2027-02-11,High,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,5.049,7.068,2.019,1.4,4.5,0.0,1,13,synthetic,5.016,5.016,0.0,1.0,3.6,0.0,1,9
-2027-02-11,Low,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,2.827,3.18,0.353,1.125,2.7,0.0,0,7,synthetic,3.018,3.018,0.0,1.0,1.8,0.0,0,6
-2027-02-11,Medium,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,2.827,3.534,0.707,1.25,2.7,0.0,0,7,synthetic,3.018,3.018,0.0,1.0,1.8,0.0,0,6
-2027-02-11,High,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,2.827,3.958,1.131,1.4,2.7,0.0,0,8,synthetic,3.018,3.018,0.0,1.0,1.8,0.0,0,6
-2027-02-12,Low,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,9.503,12.354,2.851,1.3,8.1,0.0,6,19,synthetic,9.045,9.045,0.0,1.0,5.4,0.0,4,14
-2027-02-12,Medium,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,9.503,15.205,5.702,1.6,8.1,0.0,8,23,synthetic,9.045,9.045,0.0,1.0,5.4,0.0,4,14
-2027-02-12,High,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,9.503,18.626,9.123,1.96,8.1,0.0,9,28,synthetic,9.045,9.045,0.0,1.0,5.4,0.0,4,14
-2027-02-12,Low,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.685,8.69,2.005,1.3,5.4,0.0,3,14,synthetic,6.831,6.831,0.0,1.0,3.6,0.0,2,11
-2027-02-12,Medium,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.685,10.695,4.011,1.6,5.4,0.0,4,18,synthetic,6.831,6.831,0.0,1.0,3.6,0.0,2,11
-2027-02-12,High,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.685,13.102,6.417,1.96,5.4,0.0,5,21,synthetic,6.831,6.831,0.0,1.0,3.6,0.0,2,11
-2027-02-12,Low,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,3.936,5.117,1.181,1.3,3.6,0.0,1,9,synthetic,3.836,3.836,0.0,1.0,1.8,0.0,1,7
-2027-02-12,Medium,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,3.936,6.298,2.362,1.6,3.6,0.0,1,11,synthetic,3.836,3.836,0.0,1.0,1.8,0.0,1,7
-2027-02-12,High,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,3.936,7.715,3.779,1.96,3.6,0.0,2,14,synthetic,3.836,3.836,0.0,1.0,1.8,0.0,1,7
-2027-02-13,Low,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.736,10.8,4.064,1.6,10.8,0.022,3,18,synthetic,7.009,7.36,0.35,1.05,5.4,0.0,2,12
-2027-02-13,Medium,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.736,14.819,8.083,2.2,10.8,0.0,5,25,synthetic,7.009,7.71,0.701,1.1,5.4,0.0,2,13
-2027-02-13,High,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.736,19.669,12.933,2.92,10.8,0.0,6,33,synthetic,7.009,8.131,1.122,1.16,5.4,0.0,3,14
-2027-02-13,Low,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,4.486,8.1,3.614,1.6,8.1,0.923,0,15,synthetic,4.576,4.805,0.229,1.05,3.6,0.0,0,9
-2027-02-13,Medium,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,4.486,9.869,5.383,2.2,8.1,0.0,1,19,synthetic,4.576,5.033,0.458,1.1,3.6,0.0,0,10
-2027-02-13,High,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,4.486,13.098,8.613,2.92,8.1,0.0,1,25,synthetic,4.576,5.308,0.732,1.16,3.6,0.0,0,10
-2027-02-13,Low,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,2.698,4.5,1.802,1.6,4.5,0.183,0,9,synthetic,2.866,3.009,0.143,1.05,2.7,0.0,0,6
-2027-02-13,Medium,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,2.698,5.936,3.238,2.2,4.5,0.0,0,12,synthetic,2.866,3.152,0.287,1.1,2.7,0.0,0,7
-2027-02-13,High,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,2.698,7.878,5.18,2.92,4.5,0.0,0,16,synthetic,2.866,3.324,0.459,1.16,2.7,0.0,0,7
-2027-02-14,Low,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,9.183,12.856,3.673,1.4,9.0,0.0,6,20,synthetic,8.935,10.275,1.34,1.15,6.3,0.0,5,16
-2027-02-14,Medium,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,9.183,16.53,7.347,1.8,9.0,0.0,8,25,synthetic,8.935,11.615,2.68,1.3,6.3,0.0,6,18
-2027-02-14,High,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,9.183,20.938,11.754,2.28,9.0,0.0,10,32,synthetic,8.935,13.223,4.289,1.48,6.3,0.0,6,20
-2027-02-14,Low,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.633,9.286,2.653,1.4,6.3,0.0,3,15,synthetic,6.26,7.199,0.939,1.15,4.5,0.0,2,12
-2027-02-14,Medium,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.633,11.94,5.307,1.8,6.3,0.0,4,20,synthetic,6.26,8.138,1.878,1.3,4.5,0.0,2,14
-2027-02-14,High,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.633,15.124,8.49,2.28,6.3,0.0,6,25,synthetic,6.26,9.265,3.005,1.48,4.5,0.0,3,16
-2027-02-14,Low,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,3.845,5.383,1.538,1.4,3.6,0.0,1,10,synthetic,3.58,4.117,0.537,1.15,2.7,0.0,1,8
-2027-02-14,Medium,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,3.845,6.92,3.076,1.8,3.6,0.0,2,12,synthetic,3.58,4.654,1.074,1.3,2.7,0.0,1,9
-2027-02-14,High,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,3.845,8.766,4.921,2.28,3.6,0.0,2,15,synthetic,3.58,5.298,1.718,1.48,2.7,0.0,1,10
-2027-02-15,Low,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,9.736,10.223,0.487,1.05,5.4,0.0,5,15,synthetic,8.862,15.509,6.647,1.75,12.6,0.0,7,24
-2027-02-15,Medium,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,9.736,10.71,0.974,1.1,5.4,0.0,5,16,synthetic,8.862,22.155,13.293,2.5,12.6,0.0,11,33
-2027-02-15,High,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,9.736,11.294,1.558,1.16,5.4,0.0,6,17,synthetic,8.862,30.131,21.269,3.4,12.6,0.0,15,45
-2027-02-15,Low,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.276,6.589,0.314,1.05,3.6,0.0,2,11,synthetic,6.414,11.225,4.811,1.75,9.0,0.0,4,19
-2027-02-15,Medium,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.276,6.903,0.628,1.1,3.6,0.0,2,12,synthetic,6.414,16.035,9.621,2.5,9.0,0.0,6,26
-2027-02-15,High,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.276,7.28,1.004,1.16,3.6,0.0,2,12,synthetic,6.414,21.808,15.394,3.4,9.0,0.0,8,36
-2027-02-15,Low,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,4.061,4.264,0.203,1.05,2.7,0.0,1,8,synthetic,3.622,6.339,2.717,1.75,5.4,0.0,1,12
-2027-02-15,Medium,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,4.061,4.467,0.406,1.1,2.7,0.0,1,8,synthetic,3.622,9.056,5.434,2.5,5.4,0.0,2,16
-2027-02-15,High,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,4.061,4.711,0.65,1.16,2.7,0.0,1,8,synthetic,3.622,12.316,8.694,3.4,5.4,0.0,3,22
-2027-02-16,Low,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.377,6.377,0.0,1.0,5.4,0.0,1,11,synthetic,6.89,9.646,2.756,1.4,9.0,0.0,3,16
-2027-02-16,Medium,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.377,6.377,0.0,1.0,5.4,0.0,1,11,synthetic,6.89,12.402,5.512,1.8,9.0,0.0,4,21
-2027-02-16,High,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.377,6.377,0.0,1.0,5.4,0.0,1,11,synthetic,6.89,15.709,8.819,2.28,9.0,0.0,5,26
-2027-02-16,Low,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,4.941,4.941,0.0,1.0,3.6,0.0,0,9,synthetic,4.712,6.597,1.885,1.4,6.3,0.0,1,13
-2027-02-16,Medium,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,4.941,4.941,0.0,1.0,3.6,0.0,0,9,synthetic,4.712,8.482,3.77,1.8,6.3,0.0,1,16
-2027-02-16,High,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,4.941,4.941,0.0,1.0,3.6,0.0,0,9,synthetic,4.712,10.744,6.032,2.28,6.3,0.0,1,20
-2027-02-16,Low,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,2.579,2.579,0.0,1.0,1.8,0.0,0,6,synthetic,2.832,3.965,1.133,1.4,3.6,0.0,0,8
-2027-02-16,Medium,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,2.579,2.579,0.0,1.0,1.8,0.0,0,6,synthetic,2.832,5.098,2.266,1.8,3.6,0.0,0,10
-2027-02-16,High,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,2.579,2.579,0.0,1.0,1.8,0.0,0,6,synthetic,2.832,6.457,3.625,2.28,3.6,0.0,0,13
-2027-02-17,Low,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.257,6.257,0.0,1.0,5.4,0.0,1,11,synthetic,5.927,6.52,0.593,1.1,6.3,0.0,1,12
-2027-02-17,Medium,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.257,6.257,0.0,1.0,5.4,0.0,1,11,synthetic,5.927,7.113,1.185,1.2,6.3,0.0,1,13
-2027-02-17,High,light_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,6.257,6.257,0.0,1.0,5.4,0.0,1,11,synthetic,5.927,7.824,1.897,1.32,6.3,0.0,2,14
-2027-02-17,Low,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,4.388,4.388,0.0,1.0,3.6,0.0,0,9,synthetic,5.104,5.614,0.51,1.1,4.5,0.0,1,10
-2027-02-17,Medium,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,4.388,4.388,0.0,1.0,3.6,0.0,0,9,synthetic,5.104,6.124,1.021,1.2,4.5,0.0,1,11
-2027-02-17,High,midsize_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,4.388,4.388,0.0,1.0,3.6,0.0,0,9,synthetic,5.104,6.737,1.633,1.32,4.5,0.0,1,12
-2027-02-17,Low,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,2.739,2.739,0.0,1.0,1.8,0.0,0,6,synthetic,2.746,3.021,0.275,1.1,2.7,0.0,0,6
-2027-02-17,Medium,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,2.739,2.739,0.0,1.0,1.8,0.0,0,6,synthetic,2.746,3.296,0.549,1.2,2.7,0.0,0,7
-2027-02-17,High,large_jet,fictional_fbo,1,synthetic,illustrative_not_empirical_event_uplift,2.739,2.739,0.0,1.0,1.8,0.0,0,6,synthetic,2.746,3.625,0.879,1.32,2.7,0.0,0,8
+2027-02-11,Low,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.465,10.648,1.183,1.125,6.3,0.0,4,17,estimated,9.465,9.465,0.0,1.0,5.4,0.0,3,15
+2027-02-11,Medium,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.465,11.832,2.366,1.25,6.3,0.0,4,19,estimated,9.465,9.465,0.0,1.0,5.4,0.0,3,15
+2027-02-11,High,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.465,13.251,3.786,1.4,6.3,0.0,5,21,estimated,9.465,9.465,0.0,1.0,5.4,0.0,3,15
+2027-02-11,Low,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.646,7.477,0.831,1.125,4.5,0.0,3,12,estimated,6.646,6.646,0.0,1.0,3.6,0.0,2,11
+2027-02-11,Medium,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.646,8.307,1.661,1.25,4.5,0.0,3,14,estimated,6.646,6.646,0.0,1.0,3.6,0.0,2,11
+2027-02-11,High,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.646,9.304,2.658,1.4,4.5,0.0,3,15,estimated,6.646,6.646,0.0,1.0,3.6,0.0,2,11
+2027-02-11,Low,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.028,4.531,0.503,1.125,2.7,0.0,1,8,estimated,4.028,4.028,0.0,1.0,1.8,0.0,1,7
+2027-02-11,Medium,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.028,5.035,1.007,1.25,2.7,0.0,2,8,estimated,4.028,4.028,0.0,1.0,1.8,0.0,1,7
+2027-02-11,High,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.028,5.639,1.611,1.4,2.7,0.0,2,9,estimated,4.028,4.028,0.0,1.0,1.8,0.0,1,7
+2027-02-12,Low,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.469,12.309,2.841,1.3,8.1,0.0,5,20,estimated,9.469,9.469,0.0,1.0,5.4,0.0,3,15
+2027-02-12,Medium,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.469,15.15,5.681,1.6,8.1,0.0,6,24,estimated,9.469,9.469,0.0,1.0,5.4,0.0,3,15
+2027-02-12,High,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.469,18.558,9.09,1.96,8.1,0.0,7,30,estimated,9.469,9.469,0.0,1.0,5.4,0.0,3,15
+2027-02-12,Low,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.648,8.643,1.994,1.3,5.4,0.0,3,14,estimated,6.648,6.648,0.0,1.0,3.6,0.0,2,11
+2027-02-12,Medium,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.648,10.637,3.989,1.6,5.4,0.0,4,17,estimated,6.648,6.648,0.0,1.0,3.6,0.0,2,11
+2027-02-12,High,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.648,13.03,6.382,1.96,5.4,0.0,5,21,estimated,6.648,6.648,0.0,1.0,3.6,0.0,2,11
+2027-02-12,Low,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.029,5.238,1.209,1.3,3.6,0.0,2,9,estimated,4.029,4.029,0.0,1.0,1.8,0.0,1,7
+2027-02-12,Medium,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.029,6.447,2.418,1.6,3.6,0.0,2,11,estimated,4.029,4.029,0.0,1.0,1.8,0.0,1,7
+2027-02-12,High,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.029,7.897,3.868,1.96,3.6,0.0,3,13,estimated,4.029,4.029,0.0,1.0,1.8,0.0,1,7
+2027-02-13,Low,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.468,15.148,5.681,1.6,10.8,0.0,6,24,estimated,9.468,9.941,0.473,1.05,5.4,0.0,4,16
+2027-02-13,Medium,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.468,20.829,11.361,2.2,10.8,0.0,8,33,estimated,9.468,10.414,0.947,1.1,5.4,0.0,4,17
+2027-02-13,High,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.468,27.645,18.178,2.92,10.8,0.0,11,44,estimated,9.468,10.982,1.515,1.16,5.4,0.0,4,18
+2027-02-13,Low,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.647,10.636,3.988,1.6,8.1,0.0,4,17,estimated,6.647,6.98,0.332,1.05,3.6,0.0,2,12
+2027-02-13,Medium,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.647,14.624,7.977,2.2,8.1,0.0,6,24,estimated,6.647,7.312,0.665,1.1,3.6,0.0,3,12
+2027-02-13,High,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.647,19.41,12.763,2.92,8.1,0.0,8,31,estimated,6.647,7.711,1.064,1.16,3.6,0.0,3,13
+2027-02-13,Low,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.029,6.446,2.417,1.6,4.5,0.0,2,11,estimated,4.029,4.23,0.201,1.05,2.7,0.0,1,7
+2027-02-13,Medium,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.029,8.863,4.834,2.2,4.5,0.0,3,15,estimated,4.029,4.432,0.403,1.1,2.7,0.0,1,8
+2027-02-13,High,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.029,11.764,7.735,2.92,4.5,0.0,4,19,estimated,4.029,4.673,0.645,1.16,2.7,0.0,1,8
+2027-02-14,Low,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.465,13.251,3.786,1.4,9.0,0.0,5,21,estimated,9.465,10.885,1.42,1.15,6.3,0.0,4,18
+2027-02-14,Medium,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.465,17.038,7.572,1.8,9.0,0.0,7,27,estimated,9.465,12.305,2.84,1.3,6.3,0.0,5,20
+2027-02-14,High,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.465,21.581,12.116,2.28,9.0,0.0,8,35,estimated,9.465,14.009,4.543,1.48,6.3,0.0,5,23
+2027-02-14,Low,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.646,9.304,2.658,1.4,6.3,0.0,3,15,estimated,6.646,7.643,0.997,1.15,4.5,0.0,3,13
+2027-02-14,Medium,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.646,11.963,5.317,1.8,6.3,0.0,4,19,estimated,6.646,8.64,1.994,1.3,4.5,0.0,3,14
+2027-02-14,High,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.646,15.153,8.507,2.28,6.3,0.0,6,25,estimated,6.646,9.836,3.19,1.48,4.5,0.0,4,16
+2027-02-14,Low,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.028,5.639,1.611,1.4,3.6,0.0,2,9,estimated,4.028,4.632,0.604,1.15,2.7,0.0,1,8
+2027-02-14,Medium,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.028,7.25,3.222,1.8,3.6,0.0,3,12,estimated,4.028,5.236,1.208,1.3,2.7,0.0,2,9
+2027-02-14,High,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.028,9.183,5.156,2.28,3.6,0.0,3,15,estimated,4.028,5.961,1.933,1.48,2.7,0.0,2,10
+2027-02-15,Low,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.518,9.994,0.476,1.05,5.4,0.0,4,16,estimated,9.518,16.657,7.139,1.75,12.6,0.0,6,27
+2027-02-15,Medium,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.518,10.47,0.952,1.1,5.4,0.0,4,17,estimated,9.518,23.796,14.277,2.5,12.6,0.0,9,38
+2027-02-15,High,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.518,11.041,1.523,1.16,5.4,0.0,4,18,estimated,9.518,32.362,22.844,3.4,12.6,0.0,13,52
+2027-02-15,Low,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.683,7.017,0.334,1.05,3.6,0.0,2,12,estimated,6.683,11.695,5.012,1.75,9.0,0.0,4,19
+2027-02-15,Medium,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.683,7.351,0.668,1.1,3.6,0.0,3,12,estimated,6.683,16.708,10.025,2.5,9.0,0.0,7,27
+2027-02-15,High,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.683,7.752,1.069,1.16,3.6,0.0,3,13,estimated,6.683,22.722,16.039,3.4,9.0,0.0,9,36
+2027-02-15,Low,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.05,4.253,0.203,1.05,2.7,0.0,1,7,estimated,4.05,7.088,3.038,1.75,5.4,0.0,2,12
+2027-02-15,Medium,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.05,4.455,0.405,1.1,2.7,0.0,1,8,estimated,4.05,10.126,6.076,2.5,5.4,0.0,4,17
+2027-02-15,High,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.05,4.698,0.648,1.16,2.7,0.0,1,8,estimated,4.05,13.771,9.721,3.4,5.4,0.0,5,22
+2027-02-16,Low,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.486,9.486,0.0,1.0,5.4,0.0,3,16,estimated,9.486,13.28,3.794,1.4,9.0,0.0,5,22
+2027-02-16,Medium,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.486,9.486,0.0,1.0,5.4,0.0,3,16,estimated,9.486,17.075,7.589,1.8,9.0,0.0,7,28
+2027-02-16,High,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.486,9.486,0.0,1.0,5.4,0.0,3,16,estimated,9.486,21.628,12.142,2.28,9.0,0.0,9,35
+2027-02-16,Low,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.66,6.66,0.0,1.0,3.6,0.0,2,11,estimated,6.66,9.325,2.664,1.4,6.3,0.0,3,15
+2027-02-16,Medium,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.66,6.66,0.0,1.0,3.6,0.0,2,11,estimated,6.66,11.989,5.328,1.8,6.3,0.0,5,19
+2027-02-16,High,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.66,6.66,0.0,1.0,3.6,0.0,2,11,estimated,6.66,15.186,8.525,2.28,6.3,0.0,6,25
+2027-02-16,Low,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.037,4.037,0.0,1.0,1.8,0.0,1,7,estimated,4.037,5.651,1.615,1.4,3.6,0.0,2,9
+2027-02-16,Medium,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.037,4.037,0.0,1.0,1.8,0.0,1,7,estimated,4.037,7.266,3.229,1.8,3.6,0.0,3,12
+2027-02-16,High,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.037,4.037,0.0,1.0,1.8,0.0,1,7,estimated,4.037,9.203,5.167,2.28,3.6,0.0,3,15
+2027-02-17,Low,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.494,9.494,0.0,1.0,5.4,0.0,3,16,estimated,9.494,10.443,0.949,1.1,6.3,0.0,4,17
+2027-02-17,Medium,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.494,9.494,0.0,1.0,5.4,0.0,3,16,estimated,9.494,11.393,1.899,1.2,6.3,0.0,4,19
+2027-02-17,High,light_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,9.494,9.494,0.0,1.0,5.4,0.0,3,16,estimated,9.494,12.532,3.038,1.32,6.3,0.0,5,20
+2027-02-17,Low,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.666,6.666,0.0,1.0,3.6,0.0,2,11,estimated,6.666,7.333,0.667,1.1,4.5,0.0,3,12
+2027-02-17,Medium,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.666,6.666,0.0,1.0,3.6,0.0,2,11,estimated,6.666,7.999,1.333,1.2,4.5,0.0,3,13
+2027-02-17,High,midsize_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,6.666,6.666,0.0,1.0,3.6,0.0,2,11,estimated,6.666,8.799,2.133,1.32,4.5,0.0,3,14
+2027-02-17,Low,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.04,4.04,0.0,1.0,1.8,0.0,1,7,estimated,4.04,4.444,0.404,1.1,2.7,0.0,1,8
+2027-02-17,Medium,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.04,4.04,0.0,1.0,1.8,0.0,1,7,estimated,4.04,4.848,0.808,1.2,2.7,0.0,2,8
+2027-02-17,High,large_jet,fictional_fbo,1,synthetic,PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated,4.04,4.04,0.0,1.0,1.8,0.0,1,7,estimated,4.04,5.333,1.293,1.32,2.7,0.0,2,9

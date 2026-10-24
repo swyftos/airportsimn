@@ -209,7 +209,7 @@ def main():
         seed=42 if args.demo else None,history_file=str(args.history),planning_file=str(args.planning),
         historical_data_classes=sorted({r['data_class'] for r in history}),nominal_baseline_coverage=args.coverage,
         uncertainty='Baseline split-conformal intervals scaled by assumed multipliers; event coverage not validated',
-        caution='Synthetic results are not real forecast accuracy. Human review required.')
+        caution='Estimated or synthetic inputs do not establish observed FBO accuracy. Human review required.')
     (args.output_dir/'run_metadata.json').write_text(json.dumps(metadata,indent=2),encoding='utf-8')
     print(f'Wrote {len(forecasts)} scenario/category forecasts to {args.output_dir}')
 

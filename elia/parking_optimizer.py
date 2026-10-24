@@ -54,9 +54,29 @@ def load_demand(p2_dir=None) -> pd.DataFrame:
     if unknown:
         raise ValueError(f"unknown aircraft categories from P2: {sorted(unknown)}")
     df.attrs["source"] = str(p2_dir)
+    df.attrs["baseline_first_day_arrivals"] = baseline_first_day_arrivals(p2_dir)
     prov = next((c for c in ("historical_data_class", "input_provenance") if c in df), None)
     df.attrs["provenance"] = sorted(df[prov].unique()) if prov else []
     return df
+
+
+def baseline_first_day_arrivals(p2_dir: Path):
+    """Sum over categories of P2's ordinary-forecast arrivals on the first planning date, or None."""
+    path = p2_dir / "demand_predictions.csv"
+    if not path.exists():
+        return None
+    d = pd.read_csv(path)
+    if "baseline_arrivals" not in d:
+        return None
+    first = d[d["date"] == d["date"].min()]
+    return float(first.groupby("aircraft_category")["baseline_arrivals"].max().sum())
+
+
+def implied_opening_inventory(demand: pd.DataFrame, a: dict):
+    """Opening inventory implied by Little's law: P2 baseline arrivals on day one x opening_dwell_days.
+    initial_transient_aircraft in the ledger must be kept equal to this (checked by the tests)."""
+    base = demand.attrs.get("baseline_first_day_arrivals")
+    return None if base is None else base * a["opening_dwell_days"]
 
 
 def scenario_arrays(sdf: pd.DataFrame):
@@ -223,7 +243,7 @@ def carryover_row(end, pushed, a):
     """Aircraft still parked after the planning window, end [run, category], pushed [run, category]."""
     su = np.array([a[f"su_{c}"] for c in CATS])
     left = end.sum(1)
-    return {"opening_aircraft": a["initial_transient_aircraft"],
+    return {"opening_aircraft": round(float(a["initial_transient_aircraft"]), 1),
             "aircraft_remaining_p10": round(float(np.percentile(left, 10)), 1),
             "aircraft_remaining_p50": round(float(np.percentile(left, 50)), 1),
             "aircraft_remaining_p90": round(float(np.percentile(left, 90)), 1),
@@ -323,6 +343,7 @@ def load_ordinary_demand(p2_dir=None) -> pd.DataFrame:
     df = pd.concat(parts).assign(scenario="ordinary")
     df["aircraft_category"] = df["aircraft_category"].replace(CATEGORY_ALIASES)
     df.attrs["source"] = str(p2_dir)
+    df.attrs["baseline_first_day_arrivals"] = baseline_first_day_arrivals(p2_dir)
     return df
 
 
@@ -363,8 +384,9 @@ def implied_dwell_days(table: pd.DataFrame, a: dict) -> float:
 
 
 def recommendations_json(demand, a, recs, variant):
-    method = (f"{int(a['mc_runs'])} Monte Carlo demand paths per scenario drawn from P2 point forecasts and 90 % "
-              "prediction ranges, with a shared event shock. Parking prepared for the planning quantile, "
+    method = (f"{int(a['mc_runs'])} Monte Carlo demand paths per scenario drawn from P2 point forecasts and assumed "
+              "planning ranges mapped to 5th/95th percentiles, with a shared event shock. P2 expected counts are treated "
+              "as medians. Parking prepared for the planning quantile, "
               "staffing and fuel for P50 plus buffer. Impact compares normal plan vs prepared plan on the same paths.")
     if variant == "departure_delay_24h":
         method += (f" Variant: from day index {int(a['delay_24h_first_day'])} (0 = first planning date), "
@@ -372,7 +394,9 @@ def recommendations_json(demand, a, recs, variant):
     meta = {
         "demand_source": demand.attrs["source"], "demand_provenance": demand.attrs["provenance"],
         "assumptions_file": "assumptions_p3.csv", "method": method,
-        "limitations": "P2 demand is synthetic demo data, so all results are illustrative, not observed performance. "
+        "limitations": "P2 historical input provenance: " + ", ".join(demand.attrs["provenance"]) + ". "
+                       "FBO allocation, reservations and event assumptions are provisional; results are conditional "
+                       "simulations, not observed FBO performance. "
                        "P2 event-week ranges are not validated against observed Super Bowl outcomes.",
         "human_in_command": "Recommendations only. Every action needs approval by the named role. The system never "
                             "accepts, rejects or cancels an individual aircraft reservation."}
