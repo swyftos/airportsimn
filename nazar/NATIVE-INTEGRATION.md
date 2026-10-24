@@ -69,13 +69,15 @@ The displayed due date is the earliest supplied action date, used as a review-by
 
 All native evidence chips are copied from validated resource rows. Producer narrative numbers and cost assumptions still need human review. Source text is not treated as an instruction by the application.
 
-## Remaining team work
+## Release integrity and remaining team work
 
-1. **Alan + Marvin:** connect documented real/estimated inputs with correct provenance; never relabel synthetic model validation as observed accuracy.
-2. **Elia + Alan:** align baseline capture share, flow assumptions, opening inventory and dwell interpretation; the dashboard uses P3’s ordinary daily peaks for a consistent comparison.
-3. **Elia:** regenerate ordinary, standard, delayed and carryover outputs together whenever P2 changes.
-4. **Marvin + Elia:** add an upstream input hash/run ID to prove P3 used the current P2 output set.
-5. **All:** verify prepared capacity and physical layout assumptions, cost components and event uncertainty before using the model beyond the demo.
-6. **Nazar:** extend the adapter to those new outputs when available, run the complete demo and keep the UI labels aligned with actual model semantics.
+The native loader verifies the 20-file `marvin/person_2_forecasting/release_manifest.json` against exact file bytes and its run ID. All four comparison artifacts are included. A mismatched manifest fails loading; no manifest is labelled unreviewed. A matching manifest establishes file identity, not numerical coherence, approved assumptions, observed forecast accuracy or safe ramp geometry. Run the independent pipeline verifier after producer changes.
 
-The standard seven-file import format in `INTEGRATION.md` is an alternative, not a demand that the current team rewrite its models. Coordinate changes with Nazar before changing native filenames or columns.
+The release status participates in the dashboard version. Reviews and exports are rejected if current source files no longer match the displayed snapshot. The UI checks every 30 seconds while visible; review/export endpoints check immediately. Refresh accepts only a valid complete release. Existing reviews remain tied to their old dataset/scenario/variant.
+
+Alan’s committed baseline and assumptions appear as a separate reference. Their parking field estimates aircraft via arrivals × dwell; it never replaces P3 ordinary parking in space units. The alternate seven-file contract is optional and currently incomplete; use the native path for the demo.
+
+1. Alan + Marvin: agree on the training window, capture share and event multipliers; the current release remains provisional. Historical holdout scores against allocated estimates are not observed FBO accuracy.
+2. Elia: recompute opening inventory and regenerate all parking variants after the agreed forecast changes.
+3. All: review capacity, geometry, costs and uncertainty. Scalar space units cannot authorize an aircraft movement or prove a safe layout.
+4. Nazar: pull the coherent release, refresh, run the tests/verifier and repeat the walkthrough in `DEMO.md`. The dashboard supports these updates without rewriting the UI as long as contracts remain stable.

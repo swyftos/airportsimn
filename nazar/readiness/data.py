@@ -47,7 +47,13 @@ def native_paths(repo_root):
 
 def native_bundle(repo_root):
     from .team_adapter import load_native
-    return load_native(read_paths(native_paths(repo_root)))
+    from .release_status import attach_release_status
+    paths=native_paths(repo_root)
+    raw=read_paths(paths)
+    bundle=attach_release_status(repo_root,load_native(raw))
+    if raw!=read_paths(paths):
+        raise ContractError('Inputs changed during loading; retry with a complete, stable release.')
+    return bundle
 
 
 def native_status(repo_root):

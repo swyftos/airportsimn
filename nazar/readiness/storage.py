@@ -35,7 +35,7 @@ class ReviewStore:
     def source(self):
         with self.connect() as db:
             values=dict(db.execute('SELECT key,value FROM settings').fetchall())
-        return values.get('source','sample'),json.loads(values.get('files','null'))
+        return values.get('source','team-native'),json.loads(values.get('files','null'))
     def add(self, version, scenario, variant, recommendation_id, decision, note, reviewer, checks):
         with self.connect() as db:
             cur=db.execute('INSERT INTO reviews (version,scenario,variant,recommendation_id,decision,note,reviewer,reviewed_at,checks) VALUES (?,?,?,?,?,?,?,?,?)',

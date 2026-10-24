@@ -2,7 +2,7 @@
 
 A working local readiness desk for a fictional **Pacific Executive FBO at LAX**. It helps a manager see parking pressure during February 11–17, 2027, compare preparations, inspect assumptions, and record a human planning review.
 
-**Owner: Nazar Meniailo / z1ppyyy — Person 4.** Everything in this contribution lives in `nazar/`. The dashboard connects directly to Marvin’s and Elia’s committed outputs through a native adapter. Their forecasting and parking logic remain their responsibility; Alan’s real-data work is still pending in the current checkout.
+**Owner: Nazar Meniailo / z1ppyyy — Person 4.** Everything in this contribution lives in `nazar/`. The dashboard connects directly to Marvin’s and Elia’s committed outputs through a native adapter. Their forecasting and parking logic remain their responsibility; Alan’s source work and estimated baseline are merged. His baseline appears separately in Data & assumptions because its parked-aircraft counts differ from P3’s size-weighted space units.
 
 ## Run it
 
@@ -12,7 +12,7 @@ From the shared repository root, with Python **3.10 or newer**:
 python3 nazar/app.py
 ```
 
-Open **http://127.0.0.1:4180**, choose the manager demo account, and click **Open readiness desk**. On Windows, `py -3 nazar/app.py` is an alternative. No packages, API key, build step or internet connection are required. If the port is taken, use `--port 4181` and open that port. Stop with Ctrl+C.
+Open **http://127.0.0.1:4180**, choose the manager demo account, and click **Open readiness desk**. On Windows, `py -3 nazar/app.py` is an alternative. No packages, API key, build step or internet connection are required to run the dashboard. A fresh install opens the current team outputs; an existing installation preserves its previously selected source. If it shows samples, use **Use current team outputs** on the overview. Missing or invalid team files produce an error, never a silent switch to sample data. If the port is taken, use `--port 4181` and open that port. Stop with Ctrl+C.
 
 Do not open `static/index.html` directly: the app needs its local Python server. Each teammate runs their own local copy. Sharing the repository shares code and input files, not a central live database.
 
@@ -25,18 +25,28 @@ Do not open `static/index.html` directly: the app needs its local Python server.
 - Manager review: approve for planning, request changes, or reject; approvals require three checks and a note.
 - Persistent SQLite review log tied to dataset version, scenario and variant. Changed inputs make earlier reviews visibly stale.
 - Explicit sample / team / imported data sources. Invalid data never silently becomes sample data.
-- Source and assumption ledger; JSON plan export.
+- Source and assumption ledger, plus Alan’s separate estimated baseline; JSON plan export including release status.
+- Prominent provisional-review status with SHA-256 verification of the supplied 20-file release manifest. Matching hashes do not approve assumptions or establish forecast accuracy.
+- Live source checks every 30 seconds while visible, and on every review/export. Changed, missing or mismatched files block review/export until a coherent release is loaded; the old snapshot stays visible with a warning.
 - Three demo employee views with server-enforced role checks for writes. **These are selectable, unverified demo identities, not real authentication.**
 
 ## Connect the current team code — works now
 
 The native adapter reads the existing P2/P3 formats without requiring teammates to rename their files. Open **Data & assumptions → Load current P2/P3 outputs**. It loads Marvin’s category forecasts, ranges, run metadata and evaluation metrics from `marvin/person_2_forecasting/`, plus Elia’s resources, recommendations and assumptions from `elia/`.
 
-At the integrated revision, the expected scenario has a daily P50 parking peak of **91.7 units**, ordinary capacity **90**, and proposed capacity **139**: the maximum median gap changes **1.7 → 0**, with **1 → 0** days above capacity and **$24,400** of proposed weekly preparation cost. These are synthetic model results, not verified LAX demand or confirmed resources.
+The current merged release uses estimated FBO demand and provisional parking assumptions. Read the current numbers from the screen rather than reusing values from an older demo. The overview shows the median parking gap, its first date, proposed remaining gap and simulated exceedance risk at the peak-demand day. Expand the service-impact section for costs and simulated benefits, including losses.
 
 Click **Arrivals** above the chart for an ordinary/event comparison using P2’s learned baseline. Parking displays P3 daily P50 peaks and P10–P90 ranges. When all four P3 comparison files are present, the chart also displays ordinary parking in the same space units and daily-P50 basis. The delay toggle selects a separate simulation and updates parking, departures, staffing, fuel, costs, impact and recommendations together. Carryover shows unconstrained aircraft demand after February 17, including departures pushed beyond the window. Without the comparison files, ordinary parking and the delay option remain unavailable; a partial set is rejected. Category arrival intervals are shown individually and never added into a false total interval. The data tab shows P2’s historical holdout metrics with the producer’s observed/estimated/synthetic classification. Scores against estimated inputs are not observed FBO accuracy. Selected-day details expose event multipliers, reservation floors and their sources. The preparation panel compares simulated unaccommodated aircraft, delayed turns and modeled costs, including negative net benefits; exports retain these results.
 
 See [NATIVE-INTEGRATION.md](NATIVE-INTEGRATION.md) for exact mappings, limitations and remaining team work. The models are **not** re-run on load: regenerate P2 and P3 outputs coherently, then refresh. The app’s source badge always distinguishes team outputs from the handcrafted sample.
+
+## Review status and coherent updates
+
+For the native path, the dashboard validates the producer schemas and all 20 declared manifest files, including ordinary parking, delayed departures and carryover. A missing manifest is explicitly unreviewed; an existing malformed/mismatched manifest blocks loading. An unsigned producer status cannot establish verified human approval. A manager planning review never removes the provisional banner.
+
+The file list is deliberately fixed in `readiness/release_status.py`. Coordinate a contract change with Nazar if a producer adds/removes manifest entries; do not weaken validation to make a broken release load. Producers should run `python marvin/person_2_forecasting/run_provisional.py` with numpy/pandas installed after updating agreed inputs. It regenerates and verifies the complete release. Pull it, then use **Refresh current source**. Loading does not run simulations or silently activate changed files.
+
+Imported bundles are frozen snapshots; re-import them to update. Alan’s reference is read independently and is not part of the active forecast or planning approvals.
 
 ## Optional standardized seven-file contract
 
@@ -51,7 +61,7 @@ If the team wants a unified export format later, read [INTEGRATION.md](INTEGRATI
 
 Alan’s historical data and source documentation and teammates’ Python models stay in their modules. The dashboard consumes their exported aggregates; it does not run model code on an HTTP request. Elia coordinates the manifest with the other producers to describe the **whole bundle**, including synthetic assumptions.
 
-After the teammates commit those outputs and you pull their changes, select **Data & assumptions → Load seven-file contract**. File presence is shown separately from validation. To import outputs from elsewhere, choose **Import a complete output bundle** and select all seven files together. **Refresh current source** reloads the active source, not whichever source happens to have files available.
+The alternative contract remains incomplete in this repository: `elia/manifest.json`, `marvin/demand_predictions.csv` and `marvin/uncertainty_results.csv` are not supplied in that format. Existing native files are not interchangeable with these schemas. The advanced loader reports missing/incompatible files and keeps the previous dataset. If the team later supplies a complete compatible export, select **Data & assumptions → Advanced → Load seven-file contract**. File presence is shown separately from validation. To import outputs from elsewhere, choose **Import a complete output bundle** and select all seven files together. **Refresh current source** reloads the active source, not whichever source happens to have files available.
 
 ## Sample data is a demonstration, not a forecast
 
