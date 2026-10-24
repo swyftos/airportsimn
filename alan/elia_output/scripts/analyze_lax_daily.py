@@ -23,11 +23,11 @@ def main():
     m = pd.read_csv(OUT / "opsnet_lax_monthly.csv")
 
     sums = d.groupby([d["date"].dt.year.rename("year"), d["date"].dt.month.rename("month")])[
-        ["air_taxi", "general_aviation", "total"]].sum().reset_index()
-    check = sums.merge(m[["year", "month", "air_taxi", "general_aviation", "total"]],
+        ["air_taxi", "general_aviation"]].sum().reset_index()
+    check = sums.merge(m[["year", "month", "air_taxi", "general_aviation"]],
                        on=["year", "month"], suffixes=("_daily_sum", "_monthly"))
-    check["matches"] = (check[[f"{c}_daily_sum" for c in ("air_taxi", "general_aviation", "total")]].to_numpy()
-                        == check[[f"{c}_monthly" for c in ("air_taxi", "general_aviation", "total")]].to_numpy()).all(axis=1)
+    check["matches"] = (check[[f"{c}_daily_sum" for c in ("air_taxi", "general_aviation")]].to_numpy()
+                        == check[[f"{c}_monthly" for c in ("air_taxi", "general_aviation")]].to_numpy()).all(axis=1)
     check.to_csv(OUT / "opsnet_lax_daily_check.csv", index=False)
 
     d["ga_air_taxi"] = d["air_taxi"] + d["general_aviation"]

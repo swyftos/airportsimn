@@ -47,7 +47,7 @@ Archived sources: `alan/data/raw/nazar_apron/`.
 
 | ID | Source | What it supports | Confidence |
 |---|---|---|---|
-| L1 | LAWA Traffic Comparison (TCOM), monthly | LAX movements by category (air carrier, air taxi, GA, military), Jan 2015-Aug 2026 | High |
+| L1 | LAWA Traffic Comparison (TCOM), monthly | LAX private-aviation movements (air taxi, GA; air carrier and military excluded), Jan 2015-Aug 2026 | High |
 | L2 | LAWA Ten Year Summary of FAA Aircraft Movements | Annual totals 2008-2025, validates L1 | High |
 | L3 | LAWA FBO rental car services page | Checked, not used — car-rental data, not aircraft activity | n/a |
 | B1 | BTS T-100 Air Carrier Statistics | Checked, not usable — covers certificated airlines only, not GA/air-taxi | n/a |

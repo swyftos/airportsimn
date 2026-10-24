@@ -13,8 +13,10 @@ Outputs (alan/elia_output/data/processed/):
 Usage: python fetch_opsnet.py            # everything
        python fetch_opsnet.py lax-daily  # only the LAX daily series
 
-Columns follow the ATADS standard report: itinerant air_carrier, air_taxi, general_aviation, military,
-local civil (local_ga), local military, total. One operation = one takeoff or one landing.
+Private aviation only: itinerant air_taxi (Part 135, mostly on-demand charter), itinerant general_aviation
+(Part 91) and local civil operations (local_ga). The FAA report also returns air carrier (Part 121),
+military and totals that include them; those are dropped before anything is written.
+One operation = one takeoff or one landing.
 """
 import csv
 import datetime as dt
@@ -32,8 +34,9 @@ ROOT = Path(__file__).resolve().parent.parent  # alan/elia_output/
 OUT = ROOT / "data" / "processed"
 FORM = "https://www.aspm.faa.gov/opsnet/sys/Airport.asp"
 SERVER = "https://www.aspm.faa.gov/opsnet/sys/opsnet-server-x.asp"
-COLS = ["air_carrier", "air_taxi", "general_aviation", "military", "itinerant_total",
-        "local_ga", "local_military", "local_total", "total"]
+REPORT_COLS = ["air_carrier", "air_taxi", "general_aviation", "military", "itinerant_total",
+               "local_ga", "local_military", "local_total", "total"]  # ATADS standard report layout
+COLS = ["air_taxi", "general_aviation", "local_ga"]  # private aviation, the only columns written
 CALC = (" ,SUM(IFR_ITIN_AC) AS IFR_ITIN_AC,SUM(IFR_ITIN_AT) AS IFR_ITIN_AT,SUM(IFR_ITIN_GA) AS IFR_ITIN_GA,"
         "SUM(IFR_ITIN_MI) AS IFR_ITIN_MI,SUM(IFR_ITIN_AC+IFR_ITIN_AT+IFR_ITIN_GA+IFR_ITIN_MI) AS TOT_ITII,"
         "SUM(VFR_ITIN_AC) AS VFR_ITIN_AC,SUM(VFR_ITIN_AT) AS VFR_ITIN_AT,SUM(VFR_ITIN_GA) AS VFR_ITIN_GA,"
@@ -98,6 +101,11 @@ class Opsnet:
         return rows
 
 
+def private(vals):
+    row = dict(zip(REPORT_COLS, vals))
+    return [row[c] for c in COLS]
+
+
 def write(path, header, rows):
     with open(path, "w", newline="") as f:
         w = csv.writer(f)
@@ -111,7 +119,7 @@ def lax_daily(api, retrieved):
         for date, loc, *vals in api.query("yyyymmdd,LOCID", f"yyyymmdd>={year}0101 and yyyymmdd<={year}1231 and locid in ('LAX')",
                                           "r", "yyyymmdd", f"{year}0101", f"{year}1231", ["LAX"]):
             mm, dd, yy = date.split("/")
-            rows.append([f"{yy}-{mm}-{dd}", loc.strip(), *vals, yy in ("2020", "2021", "2022"),
+            rows.append([f"{yy}-{mm}-{dd}", loc.strip(), *private(vals), yy in ("2020", "2021", "2022"),
                          "verified_public", FORM, retrieved])
     write(OUT / "opsnet_lax_daily.csv",
           ["date", "locid", *COLS, "excluded_covid", "data_classification", "source", "retrieved_utc"], rows)
@@ -131,7 +139,7 @@ def main(what="all"):
         for date, loc, *vals in api.query("yyyymm,LOCID", f"yyyymm>={year}01 and yyyymm<={year}12 and locid in ('LAX')",
                                           "m", "yyyymm", f"{year}01", f"{year}12", ["LAX"]):
             m, y = date.split("/")
-            monthly.append([int(y), int(m), loc, *vals, y in ("2020", "2021", "2022"), "verified_public", FORM, retrieved])
+            monthly.append([int(y), int(m), loc, *private(vals), y in ("2020", "2021", "2022"), "verified_public", FORM, retrieved])
     write(OUT / "opsnet_lax_monthly.csv",
           ["year", "month", "locid", *COLS, "excluded_covid", "data_classification", "source", "retrieved_utc"], monthly)
 
@@ -141,7 +149,7 @@ def main(what="all"):
                                           + ",".join(f"'{a}'" for a in EVENT_AIRPORTS) + ")",
                                           "r", "yyyymmdd", start, end, EVENT_AIRPORTS):
             mm, dd, yy = date.split("/")
-            daily.append([f"{yy}-{mm}-{dd}", loc.strip(), *vals, year == 2022, "verified_public", FORM, retrieved])
+            daily.append([f"{yy}-{mm}-{dd}", loc.strip(), *private(vals), year == 2022, "verified_public", FORM, retrieved])
     write(OUT / "opsnet_daily_superbowl.csv",
           ["date", "locid", *COLS, "super_bowl_lvi_window", "data_classification", "source", "retrieved_utc"], daily)
 
@@ -157,11 +165,10 @@ def main(what="all"):
             cross.append([r[0], r[1],
                           o["air_taxi"], int(l["air_taxi"]), o["air_taxi"] - int(l["air_taxi"]),
                           o["general_aviation"] + o["local_ga"], int(l["general_aviation"]),
-                          o["general_aviation"] + o["local_ga"] - int(l["general_aviation"]),
-                          o["total"], int(l["total"]), o["total"] - int(l["total"])])
+                          o["general_aviation"] + o["local_ga"] - int(l["general_aviation"])])
         write(OUT / "opsnet_vs_lawa_crosscheck.csv",
               ["year", "month", "air_taxi_opsnet", "air_taxi_lawa", "air_taxi_diff",
-               "ga_opsnet_itin_plus_local", "ga_lawa", "ga_diff", "total_opsnet", "total_lawa", "total_diff"], cross)
+               "ga_opsnet_itin_plus_local", "ga_lawa", "ga_diff"], cross)
     print(f"{len(monthly)} monthly rows, {len(daily)} daily rows, {len(lax_daily(api, retrieved))} LAX daily rows")
 
 
