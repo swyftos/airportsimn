@@ -75,3 +75,27 @@ def test_ramp_capacity_matches_area_derivation():
 def test_opening_inventory_follows_p2_baseline():
     implied = po.implied_opening_inventory(po.load_demand(), A)
     assert abs(implied - A["initial_transient_aircraft"]) < 0.1
+
+
+def test_security_restriction_moves_window_movements_after_it():
+    dates = [f"2027-02-{d}" for d in range(11, 18)]
+    r = po.load_restriction()
+    profile, blocked = po.shift_profile(dates, A, r)
+    base = np.array([A[f"shift_share_{s}"] for s in po.SHIFTS])
+    assert np.allclose(profile.sum(1), 1)
+    t = dates.index(r["date"])
+    assert np.allclose(np.delete(profile, t, 0), base)
+    # 14:30-20:30 covers 6 of the day shift's 8 hours
+    assert np.isclose(blocked, A["shift_share_day"] * 6 / 8)
+    assert profile[t, 2] > base[2] and profile[t, 1] < base[1]
+
+
+def test_security_variant_parking_matches_standard_without_next_day_slips():
+    demand = po.load_demand()
+    standard, _ = po.run(demand, dict(A, security_next_day_share=0.0))
+    restricted, recs = po.run(demand, dict(A, security_next_day_share=0.0), "security_restriction")
+    assert list(restricted.columns) == list(standard.columns)
+    assert np.allclose(restricted["parking_demand_su_p50"], standard["parking_demand_su_p50"])
+    slipped, _ = po.run(demand, dict(A, security_next_day_share=1.0), "security_restriction")
+    assert slipped["parking_demand_su_p50"].sum() > standard["parking_demand_su_p50"].sum()
+    assert all(x["requires_human_approval"] for r in recs.values() for x in r["actions"])

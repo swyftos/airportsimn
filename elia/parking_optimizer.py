@@ -28,10 +28,12 @@ import pandas as pd
 
 HERE = Path(__file__).parent
 P2_DIRS = (HERE.parent / "marvin" / "person_2_forecasting", HERE.parent / "marvin" / "Person2-Forecasting")
+SECURITY_FILE = HERE.parent / "alan" / "data" / "processed" / "security_restriction_model_input.csv"
 CATS = ("light", "midsize", "large")
 CATEGORY_ALIASES = {"light_jet": "light", "midsize_jet": "midsize", "super_midsize": "midsize", "large_jet": "large"}
 DIRS = ("arrivals", "departures")
 SHIFTS = ("morning", "day", "night")
+SHIFT_HOURS = {"morning": (6, 14), "day": (14, 22), "night": (22, 30)}  # local clock hours, night ends 06:00 next day
 Z90 = 1.6449  # standard normal 95th percentile, edge of a central 90 % range
 
 
@@ -137,14 +139,50 @@ def shift_departures(dep, a):
     return shifted, moved[:, -1]
 
 
+def load_restriction(path=SECURITY_FILE) -> dict:
+    """Alan's game-day security restriction (TFR) window: no private movements between start and end."""
+    r = pd.read_csv(path).iloc[0]
+    clock = lambda t: int(t[:2]) + int(t[3:5]) / 60
+    return {"date": r["date"], "start": clock(r["start_time_local"]), "end": clock(r["end_time_local"]),
+            "source": r["source"]}
+
+
+def overlap(a0, a1, b0, b1):
+    return max(0.0, min(a1, b1) - max(a0, b0))
+
+
+def shift_profile(dates, a, restriction=None):
+    """Share of each day's movements per shift [day, shift]. On the restriction day, movements that would fall
+    inside the window (spread evenly within each shift) are released evenly over security_release_hours after it.
+    Returns (profile, blocked share of that day's movements)."""
+    base = np.array([a[f"shift_share_{s}"] for s in SHIFTS])
+    profile = np.tile(base, (len(dates), 1))
+    if not restriction or restriction["date"] not in dates:
+        return profile, 0.0
+    t, start, end, release = list(dates).index(restriction["date"]), restriction["start"], restriction["end"], a["security_release_hours"]
+    blocked = [base[i] * overlap(*SHIFT_HOURS[s], start, end) / (SHIFT_HOURS[s][1] - SHIFT_HOURS[s][0])
+               for i, s in enumerate(SHIFTS)]
+    profile[t] -= blocked
+    profile[t] += [sum(blocked) * overlap(*SHIFT_HOURS[s], end, end + release) / release for s in SHIFTS]
+    return profile, sum(blocked)
+
+
+def restrict_departures(dep, day, blocked, a):
+    """Departures blocked by the restriction that leave the next day instead (security_next_day_share of them)."""
+    moved = np.zeros_like(dep)
+    moved[:, day] = dep[:, day] * blocked * a["security_next_day_share"]
+    shifted = dep - moved
+    shifted[:, 1:] += moved[:, :-1]
+    return shifted, moved[:, -1]
+
+
 def gallons(dep_by_cat, a):
     return dep_by_cat @ np.array([a["fuel_uplift_rate"] * a[f"gal_{c}"] for c in CATS])
 
 
-def delayed_turns(movements, techs, a):
-    """movements [run, day], techs [day, shift] -> delayed turns per run."""
-    share = np.array([a[f"shift_share_{s}"] for s in SHIFTS])
-    work = movements[:, :, None] * share
+def delayed_turns(movements, techs, a, profile):
+    """movements [run, day], techs [day, shift], profile [day, shift] -> delayed turns per run."""
+    work = movements[:, :, None] * profile[None]
     return np.clip(work - techs[None] * a["movements_per_tech_shift"], 0, None).sum((1, 2))
 
 
@@ -154,7 +192,7 @@ def risk_level(util, a):
     return "Medium" if util >= a["risk_medium_threshold"] else "Low"
 
 
-def plan_scenario(dates, need_su, movements_p50, gallons_p50, a):
+def plan_scenario(dates, need_su, movements_p50, gallons_p50, a, profile):
     """Prepared plan: parking sized on the planning quantile, staffing and fuel on P50 + buffer."""
     ramp = a["ramp_capacity_su"]
     packed = ramp * (1 + a["tow_packing_gain"])
@@ -193,8 +231,7 @@ def plan_scenario(dates, need_su, movements_p50, gallons_p50, a):
             "rationale": f"P{q} parking demand {need_su.max():.0f} su exceeds all prepared capacity ({total:.0f} su)",
             "cost_usd": 0, "requires_human_approval": True, "approver": "FBO general manager"})
 
-    share = np.array([a[f"shift_share_{s}"] for s in SHIFTS])
-    need_techs = np.ceil(movements_p50[:, None] * share * (1 + a["staffing_buffer"]) / a["movements_per_tech_shift"])
+    need_techs = np.ceil(movements_p50[:, None] * profile * (1 + a["staffing_buffer"]) / a["movements_per_tech_shift"])
     techs = np.maximum(need_techs, a["normal_techs_per_shift"]).astype(int)
     extra_shifts = int((techs - a["normal_techs_per_shift"]).sum())
     if extra_shifts:
@@ -208,8 +245,7 @@ def plan_scenario(dates, need_su, movements_p50, gallons_p50, a):
             "requires_human_approval": True, "approver": "FBO general manager"})
 
     truck_gal = a["truck_capacity_gal"] * a["truck_loads_per_shift"]
-    busiest = max(a[f"shift_share_{s}"] for s in SHIFTS)
-    trucks = np.maximum(np.ceil(gallons_p50 * busiest * (1 + a["staffing_buffer"]) / truck_gal),
+    trucks = np.maximum(np.ceil(gallons_p50 * profile.max(1) * (1 + a["staffing_buffer"]) / truck_gal),
                         a["normal_fuel_trucks"]).astype(int)
     extra_truck_days = int((trucks - a["normal_fuel_trucks"]).sum())
     if extra_truck_days:
@@ -225,11 +261,11 @@ def plan_scenario(dates, need_su, movements_p50, gallons_p50, a):
             "prep_cost": sum(x["cost_usd"] for x in actions)}
 
 
-def outcome(arr, dep, capacity, techs, prep_cost, a):
+def outcome(arr, dep, capacity, techs, prep_cost, a, profile):
     """Per-run unaccommodated aircraft, delayed turns and total cost for one plan."""
     _, unacc = ramp_sim(arr, dep, capacity, a)
     unacc = unacc.sum(1)
-    delayed = delayed_turns((arr + dep).sum(2), techs, a)
+    delayed = delayed_turns((arr + dep).sum(2), techs, a, profile)
     cost = unacc * a["revenue_per_aircraft_usd"] + delayed * a["delayed_turn_cost_usd"] + prep_cost
     return {"unaccommodated": unacc, "delayed": delayed, "cost": cost}
 
@@ -253,17 +289,22 @@ def carryover_row(end, pushed, a):
 
 def run(demand: pd.DataFrame, a: dict, variant: str = "standard", carryover: dict | None = None):
     """Resource table and plans per scenario. variant 'departure_delay_24h' re-runs the same demand paths
-    with departures shifted by shift_departures. If a dict is passed as carryover, it is filled per scenario
+    with departures shifted by shift_departures; 'security_restriction' applies Alan's game-day TFR window
+    to the shift profile (and restrict_departures). If a dict is passed as carryover, it is filled per scenario
     with the aircraft still parked after the last day (demand not limited by capacity)."""
     rng = np.random.default_rng(int(a["mc_seed"]))
+    restriction = load_restriction() if variant == "security_restriction" else None
     rows, recs = [], {}
     for scenario, sdf in demand.groupby("scenario", sort=False):
         dates, mid, lo, hi = scenario_arrays(sdf)
         draws = sample_demand(mid, lo, hi, a, rng)
         arr, dep = draws[:, 0], draws[:, 1]
         pushed = np.zeros((arr.shape[0], len(CATS)))
+        profile, blocked = shift_profile(dates, a, restriction)
         if variant == "departure_delay_24h":
             dep, pushed = shift_departures(dep, a)
+        elif variant == "security_restriction":
+            dep, pushed = restrict_departures(dep, list(dates).index(restriction["date"]), blocked, a)
         elif variant != "standard":
             raise ValueError(f"unknown variant {variant}")
         free_peak, _, end = ramp_sim(arr, dep, np.full(len(dates), np.inf), a, return_end=True)
@@ -272,7 +313,7 @@ def run(demand: pd.DataFrame, a: dict, variant: str = "standard", carryover: dic
         need_su = np.percentile(free_peak, a["planning_quantile"] * 100, axis=0)
         movements = (arr + dep).sum(2)
         gal = gallons(dep, a)
-        plan = plan_scenario(dates, need_su, np.median(movements, 0), np.median(gal, 0), a)
+        plan = plan_scenario(dates, need_su, np.median(movements, 0), np.median(gal, 0), a, profile)
 
         ramp = a["ramp_capacity_su"]
         for t, date in enumerate(dates):
@@ -294,8 +335,8 @@ def run(demand: pd.DataFrame, a: dict, variant: str = "standard", carryover: dic
                 "fuel_trucks": int(plan["trucks"][t]), "fuel_trucks_normal": int(a["normal_fuel_trucks"])})
 
         normal_techs = np.full(plan["techs"].shape, int(a["normal_techs_per_shift"]))
-        base = outcome(arr, dep, np.full(len(dates), ramp), normal_techs, 0, a)
-        prep = outcome(arr, dep, plan["capacity"], plan["techs"], plan["prep_cost"], a)
+        base = outcome(arr, dep, np.full(len(dates), ramp), normal_techs, 0, a, profile)
+        prep = outcome(arr, dep, plan["capacity"], plan["techs"], plan["prep_cost"], a, profile)
         net = base["cost"] - prep["cost"]
         day = pd.DataFrame([r for r in rows if r["scenario"] == scenario])
         peak = day.loc[day["parking_demand_su_p50"].idxmax()]
@@ -391,6 +432,12 @@ def recommendations_json(demand, a, recs, variant):
     if variant == "departure_delay_24h":
         method += (f" Variant: from day index {int(a['delay_24h_first_day'])} (0 = first planning date), "
                    f"{a['delay_24h_share']:.0%} of each day's departures leave 24 h later, on the same demand paths.")
+    if variant == "security_restriction":
+        r = load_restriction()
+        method += (f" Variant: no private movements on {r['date']} between {r['start']:05.2f} and {r['end']:05.2f} h "
+                   f"(Alan's TFR input, {r['source']}). Movements in that window are released over "
+                   f"{a['security_release_hours']:g} h after it; {a['security_next_day_share']:.0%} of blocked "
+                   "departures leave the next day. Same demand paths.")
     meta = {
         "demand_source": demand.attrs["source"], "demand_provenance": demand.attrs["provenance"],
         "assumptions_file": "assumptions_p3.csv", "method": method,
@@ -417,6 +464,11 @@ def main():
     d_table.to_csv(HERE / "resource_requirements_departure_delay_24h.csv", index=False)
     (HERE / "scenario_recommendations_departure_delay_24h.json").write_text(
         json.dumps(recommendations_json(demand, a, d_recs, "departure_delay_24h"), indent=2))
+
+    s_table, s_recs = run(demand, a, "security_restriction")
+    s_table.to_csv(HERE / "resource_requirements_security_restriction.csv", index=False)
+    (HERE / "scenario_recommendations_security_restriction.json").write_text(
+        json.dumps(recommendations_json(demand, a, s_recs, "security_restriction"), indent=2))
 
     o_table, carry_ordinary = run_ordinary(load_ordinary_demand(sys.argv[1] if len(sys.argv) > 1 else None), a)
     o_table.to_csv(HERE / "ordinary_week_parking.csv", index=False)
