@@ -69,7 +69,7 @@ def build(history_path, holiday_path=None):
                   scenario_excess_scales={s: dict(metric=m, factor=k, excess=round(scenario_excess[s],4))
                                           for s,(m,k) in EVENT_EXCESS.items()},
                   direction_assumption='FAA table has no directional split. Aircraft conservation: extra arrivals = extra departures = half the five-day excess operations; arrivals Thu-Sat plus half of game day, departures half of game day plus Monday.',
-                  scope_transfer='History is GA only (Part 91). Air-taxi event response applied to GA FBO demand in Medium/High as an analog; unvalidated.',
+                  scope_transfer='History combines LAX GA and air taxi (Part 91 + Part 135). Air-taxi airport event response is applied to the estimated fictional-FBO mix in Medium/High; transfer is unvalidated.',
                   shoulders='Tuesday and Wednesday set to ordinary baseline; conservative boundary assumption.',
                   reservations='Zero synthetic placeholders, show rate zero; no observed bookings or claim of zero actual reservations.',
                   daily=[dict(date=str(d),medium_operations_multiplier=multipliers[i],

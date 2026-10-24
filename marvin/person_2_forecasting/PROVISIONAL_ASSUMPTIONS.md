@@ -90,7 +90,7 @@ Elia's optimizer is rerun on this release. Opening inventory is recomputed as fi
 
 ## Release and review
 
-Producer filenames, CSV column order and metadata keys are preserved; convert_monthly_to_daily.py keeps its name for the release contract although it now reads daily data. The 20-file release manifest lists opsnet_lax_daily.csv as its source in place of the LAWA monthly series (nazar/readiness/release_status.py updated to match), and monthly_reconciliation.csv names its airport column airport_private_ops (nazar/scripts/release_team.py updated). Additional evidence is hashed in event_evidence_manifest.json.
+Producer filenames, CSV column order and metadata keys are preserved; convert_monthly_to_daily.py keeps its name for the release contract although it now reads daily data. The 21-file release manifest includes opsnet_lax_daily.csv and the holiday_history.csv input used for the Presidents' Day factor; monthly_reconciliation.csv names its airport column airport_private_ops. Additional event evidence is hashed in event_evidence_manifest.json.
 
 Run from the repository root, using Python with numpy and pandas:
 

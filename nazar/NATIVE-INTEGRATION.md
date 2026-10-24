@@ -71,7 +71,7 @@ All native evidence chips are copied from validated resource rows. Producer narr
 
 ## Release integrity and remaining team work
 
-The native loader verifies the 20-file `marvin/person_2_forecasting/release_manifest.json` against exact file bytes and its run ID. All four comparison artifacts are included. A mismatched manifest fails loading; no manifest is labelled unreviewed. A matching manifest establishes file identity, not numerical coherence, approved assumptions, observed forecast accuracy or safe ramp geometry. Run the independent pipeline verifier after producer changes.
+The native loader verifies the 21-file `marvin/person_2_forecasting/release_manifest.json` against exact file bytes and its run ID. All four comparison artifacts are included. A mismatched manifest fails loading; no manifest is labelled unreviewed. A matching manifest establishes file identity, not numerical coherence, approved assumptions, observed forecast accuracy or safe ramp geometry. Run the independent pipeline verifier after producer changes.
 
 The release status participates in the dashboard version. Reviews and exports are rejected if current source files no longer match the displayed snapshot. The UI checks every 30 seconds while visible; review/export endpoints check immediately. Refresh accepts only a valid complete release. Existing reviews remain tied to their old dataset/scenario/variant.
 

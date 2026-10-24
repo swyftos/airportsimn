@@ -71,7 +71,7 @@ def main():
     write(dest/'holiday_history.csv',holiday_history())
     from build_event_inputs import build
     planning, evidence = build(dest/'historical_traffic.csv', dest/'holiday_history.csv')
-    (dest/'event_evidence.json').write_text(json.dumps(evidence,indent=2),encoding='utf-8')
+    (dest/'event_evidence.json').write_text(json.dumps(evidence,indent=2),encoding='utf-8',newline='\n')
     write(dest/'planning_inputs.csv',planning)
     print(f'{len(rows)} estimated rows from daily FAA GA + air-taxi counts; {len(checks)} months reconciled.')
 

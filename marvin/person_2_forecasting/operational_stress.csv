@@ -1,0 +1,13 @@
+case,scenario,peak_day,peak_parking_su_p50,peak_parking_su_p90,max_prob_over_normal_capacity,overall_risk,opening_aircraft,mc_runs,classification
+current,Low,2027-02-15,14.1,18.5,0.391,Medium,6.1,2000,assumption_stress_not_observed
+current,Medium,2027-02-14,17.4,21.6,0.807,High,6.1,2000,assumption_stress_not_observed
+current,High,2027-02-14,23.1,28.4,0.997,High,6.1,2000,assumption_stress_not_observed
+arrivals_40_percent,Low,2027-02-11,8.9,10.6,0.003,Low,4.8,2000,assumption_stress_not_observed
+arrivals_40_percent,Medium,2027-02-12,10.7,13.1,0.017,Low,4.8,2000,assumption_stress_not_observed
+arrivals_40_percent,High,2027-02-12,14.9,18.1,0.481,Medium,4.8,2000,assumption_stress_not_observed
+arrivals_60_percent,Low,2027-02-17,33.8,43.7,1.0,High,7.3,2000,assumption_stress_not_observed
+arrivals_60_percent,Medium,2027-02-17,33.4,42.7,1.0,High,7.3,2000,assumption_stress_not_observed
+arrivals_60_percent,High,2027-02-14,35.4,44.0,1.0,High,7.3,2000,assumption_stress_not_observed
+early_arrivals_late_departures,Low,2027-02-15,14.6,19.1,0.444,Medium,6.1,2000,assumption_stress_not_observed
+early_arrivals_late_departures,Medium,2027-02-15,18.4,22.9,0.884,High,6.1,2000,assumption_stress_not_observed
+early_arrivals_late_departures,High,2027-02-15,24.1,30.1,0.999,High,6.1,2000,assumption_stress_not_observed
