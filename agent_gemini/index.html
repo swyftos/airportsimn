@@ -23,29 +23,22 @@
       </div>
 
       <div class="controls-block">
-        <!-- Scenario Selector -->
-        <div class="control-group" role="group" aria-labelledby="scenario-label">
-          <span id="scenario-label" class="control-label">Traffic Scenario</span>
-          <div class="segmented-control" id="scenario-selector">
-            <button type="button" class="segment-btn" data-scenario="Low" title="Low scenario: +3.1% over Thu-Mon (LAX general aviation, 2022)">Low <span class="scenario-pct">+3.1%</span></button>
-            <button type="button" class="segment-btn active" data-scenario="Medium" title="Medium scenario: +15.5% (LAX air taxi, 2022)">Medium <span class="scenario-pct">+15.5%</span></button>
-            <button type="button" class="segment-btn" data-scenario="High" title="High scenario: +31% (Stress case, 2x Medium)">High <span class="scenario-pct">+31%</span></button>
-          </div>
-        </div>
-
-        <!-- Simulated Current Time ("Now") -->
+        <!-- Simulated Shift "Now" (Date & Time) -->
         <div class="control-group">
           <label for="demo-time-select" class="control-label">Simulated Shift "Now"</label>
           <div class="time-picker-wrapper">
             <select id="demo-time-select" class="select-input" aria-label="Simulated shift date and time">
               <option value="2027-02-11T10:00">Thu 11 Feb 10:00 (Inbound Ramp-up)</option>
-              <option value="2027-02-12T10:00" selected>Fri 12 Feb 10:00 (Peak Inbound Day)</option>
+              <option value="2027-02-12T10:00">Fri 12 Feb 10:00 (Peak Inbound Day)</option>
+              <option value="2027-02-12T10:45" selected>Fri 12 Feb 10:45 (Partial Hour Shift)</option>
               <option value="2027-02-13T14:00">Sat 13 Feb 14:00 (Staging & Mid-Event)</option>
               <option value="2027-02-14T14:00">Sun 14 Feb 14:00 (Pre-TFR Arrival Cutoff)</option>
               <option value="2027-02-14T20:30">Sun 14 Feb 20:30 (TFR Release Outbound)</option>
+              <option value="2027-02-14T22:30">Sun 14 Feb 22:30 (Midnight Roll to Mon)</option>
               <option value="2027-02-15T08:00">Mon 15 Feb 08:00 (Peak Outbound Wave)</option>
               <option value="2027-02-16T10:00">Tue 16 Feb 10:00 (Post-Event Normal)</option>
               <option value="2027-02-17T10:00">Wed 17 Feb 10:00 (Baseline Operations)</option>
+              <option value="2027-02-17T22:15">Wed 17 Feb 22:15 (Late Window past Week)</option>
             </select>
           </div>
         </div>
@@ -63,7 +56,7 @@
       <ul class="nav-list" role="tablist">
         <li role="presentation">
           <button role="tab" id="tab-week" aria-selected="true" aria-controls="view-week" class="nav-btn active">
-            <span class="nav-icon">📅</span> 7-Day Week Planner (Landing View)
+            <span class="nav-icon">📅</span> Week Overview (The Boss View)
           </button>
         </li>
         <li role="presentation">
@@ -93,64 +86,45 @@
       <div class="banner-badge">HUMAN-IN-COMMAND</div>
       <div class="banner-content">
         <strong>Decision Boundary:</strong>
-        <span id="meta-never-allowed">The system never authorizes aircraft movements, never accepts, refuses or cancels an aircraft or booking, and does not replace airport safety procedures.</span>
+        <span id="meta-never-allowed">The tool supports planning. It never authorizes aircraft movements, never accepts, refuses or cancels an aircraft or booking, and does not replace airport safety procedures.</span>
       </div>
-      <div class="banner-tag">Part 91 & 135 private aviation</div>
+      <div class="banner-tag">Part 91 & 135 private aviation • Zero passenger data</div>
     </section>
 
-    <!-- Top Key Metrics Bar (Instant Executive Assessment) -->
-    <section class="kpi-grid" aria-label="Week Executive Summary">
-      <div class="kpi-card peak-arrival-card">
-        <div class="kpi-header">
-          <span class="kpi-label">Busiest Arrival Day</span>
-          <span class="badge badge-peak">PEAK INBOUND</span>
-        </div>
-        <div class="kpi-value" id="kpi-peak-arrival-day">Friday 12 Feb</div>
-        <div class="kpi-sub" id="kpi-peak-arrival-stats">7.3 arrivals (90% range 3.0–11.0) • +43.6% vs ord</div>
-        <div class="kpi-timing">Busiest inbound window: <strong>09:00 – 18:00</strong></div>
-      </div>
-
-      <div class="kpi-card peak-departure-card">
-        <div class="kpi-header">
-          <span class="kpi-label">Busiest Departure Day</span>
-          <span class="badge badge-peak-dep">PEAK OUTBOUND</span>
-        </div>
-        <div class="kpi-value" id="kpi-peak-departure-day">Monday 15 Feb</div>
-        <div class="kpi-sub" id="kpi-peak-departure-stats">10.0 departures (90% range 6.0–14.0) • +55.1% vs ord</div>
-        <div class="kpi-timing">Busiest outbound window: <strong>07:00 – 11:00</strong> (Presidents' Day)</div>
-      </div>
-
-      <div class="kpi-card restriction-card">
-        <div class="kpi-header">
-          <span class="kpi-label">Game Day Restriction (Sun 14 Feb)</span>
-          <span class="badge badge-restriction">TFR RESTRICTED</span>
-        </div>
-        <div class="kpi-value">14:30 – 20:30 PST</div>
-        <div class="kpi-sub">Part 91 GA prohibited surface to FL180</div>
-        <div class="kpi-timing">Post-game departure surge: <strong>20:30 – 24:00 (40.5% of day)</strong></div>
-      </div>
-
-      <div class="kpi-card ramp-card">
-        <div class="kpi-header">
-          <span class="kpi-label">Ramp Space Peak (Secondary Indicator)</span>
-          <span class="badge badge-warning" id="kpi-ramp-badge">CAPACITY RISK</span>
-        </div>
-        <div class="kpi-value" id="kpi-ramp-stats">P90: 19.7 su vs 15.0 capacity</div>
-        <div class="kpi-sub" id="kpi-ramp-prob">81.7% probability ramp reaches capacity (Fri)</div>
-        <div class="kpi-timing">Secondary indicator only</div>
-      </div>
-    </section>
-
-    <!-- VIEW 1: 7-DAY WEEK PLANNER (LANDING VIEW) -->
+    <!-- VIEW 1: 7-DAY WEEK PLANNER (THE BOSS VIEW) -->
     <div id="view-week" class="tab-view active" role="tabpanel" aria-labelledby="tab-week">
       
-      <!-- SECTION A: 7-Day x 24-Hour Calendar / Heatmap of Busy Hours -->
+      <!-- HERO: 7-Day Simple Week Overview Cards -->
+      <section class="panel-section week-overview-section" aria-labelledby="week-overview-heading">
+        <div class="section-header">
+          <div>
+            <h2 id="week-overview-heading" class="section-title">Week at a Glance: Thu 11 – Wed 17 Feb 2027</h2>
+            <p class="section-desc">
+              <strong>Central Forecast:</strong> Measured Super Bowl LVI effect at LAX (+15.5% air taxi).
+              Plausible event range: Low 70.9 to High 85.2 total movements (+3.1% to +31%).
+              Selecting weather on any day immediately updates traffic and rolls suppressed flights to the next day.
+            </p>
+          </div>
+          <div class="days-actions">
+            <button type="button" id="reset-weather-btn" class="btn btn-secondary btn-sm" title="Reset all daily weather conditions to Clear">
+              Reset Weather to Clear
+            </button>
+          </div>
+        </div>
+
+        <!-- 7 Days Boss Cards Grid (Thu 11 to Wed 17 Feb) -->
+        <div class="week-overview-grid" id="week-overview-cards" role="region" aria-label="7 days operations overview">
+          <!-- Rendered dynamically by app.js -->
+        </div>
+      </section>
+
+      <!-- Heatmap of Busy Hours (Readable at a glance) -->
       <section class="panel-section heatmap-section" aria-labelledby="heatmap-heading">
         <div class="section-header">
           <div>
-            <h2 id="heatmap-heading" class="section-title">Week Traffic Heatmap: Busy Hours (Days × Hours)</h2>
+            <h2 id="heatmap-heading" class="section-title">Hourly Traffic Heatmap (Busy Hours Glance)</h2>
             <p class="section-desc">
-              Thursday to Wednesday 24-hour distribution. <strong>Click any day or cell</strong> to inspect hourly movements and manage flight logs.
+              24-hour distribution across the week. Click any cell to view 24h detail and manage flights.
             </p>
           </div>
           <div class="heatmap-controls">
@@ -191,50 +165,94 @@
           </div>
         </div>
 
-        <!-- Cell Details Inspector (Shows on hover/touch) -->
+        <!-- Safe Cell Details Inspector -->
         <div id="heatmap-inspector" class="heatmap-inspector" aria-live="polite">
-          <div class="inspector-prompt">Hover or tap any hour cell above to see exact expected movements, booked flights, and slot guidance.</div>
+          <div class="inspector-prompt">Hover or tap any hour cell above to see exact movements and slot guidance.</div>
         </div>
       </section>
 
-      <!-- SECTION B: 7 Days Operational Table & Per-Day Weather Settings -->
-      <section class="panel-section days-planning-section" aria-labelledby="days-planning-heading">
-        <div class="section-header">
-          <div>
-            <h2 id="days-planning-heading" class="section-title">7-Day Operations & Per-Day Weather Scenarios</h2>
+      <!-- Collapsible Operational Details & Comparisons -->
+      <section class="collapsible-group" aria-label="Secondary Planning Details">
+        
+        <!-- Collapsible 1: Day-Specific Operational Proposals -->
+        <details class="details-accordion" id="details-proposals">
+          <summary class="details-summary">
+            <span>📋 Day-Specific Operational Proposals (<span id="proposals-count-badge">0 Pending Review</span>)</span>
+          </summary>
+          <div class="details-content">
             <p class="section-desc">
-              Compare Super Bowl forecast (90% range) against the ordinary LAX baseline. Set daily weather to calculate measured traffic suppression and next-day spillover.
-            </p>
-          </div>
-          <div class="days-actions">
-            <button type="button" id="reset-weather-btn" class="btn btn-secondary btn-sm">Reset Weather to Clear</button>
-          </div>
-        </div>
-
-        <!-- 7 Days Grid Cards -->
-        <div class="days-grid" id="days-cards-container">
-          <!-- Rendered dynamically by app.js -->
-        </div>
-      </section>
-
-      <!-- SECTION C: Day-Specific Operational Proposals Panel -->
-      <section class="panel-section proposals-section" aria-labelledby="proposals-heading">
-        <div class="section-header">
-          <div>
-            <h2 id="proposals-heading" class="section-title">Day-Specific Operational Proposals</h2>
-            <p class="section-desc">
-              Data-derived proposals for arrival slot confirmations, PPR timing, and departure sequencing. 
+              Data-derived proposals for arrival slot confirmations, PPR timing, and departure board updates. 
               <strong>The human agent approves, notes, or dismisses each proposal.</strong>
             </p>
+            <div class="proposals-list" id="proposals-container">
+              <!-- Rendered dynamically by app.js -->
+            </div>
           </div>
-          <div class="proposals-filter">
-            <span class="proposals-summary-badge" id="proposals-count-badge">0 Pending Review</span>
-          </div>
-        </div>
+        </details>
 
-        <div class="proposals-list" id="proposals-container">
-          <!-- Rendered dynamically by app.js -->
-        </div>
+        <!-- Collapsible 2: Compare Cases (Sensitivity Analysis) -->
+        <details class="details-accordion" id="details-compare-cases">
+          <summary class="details-summary">
+            <span>📊 Compare Cases: Sensitivity Analysis (Low / Medium / High)</span>
+          </summary>
+          <div class="details-content">
+            <p class="section-desc">
+              The model's central forecast is <strong>Medium (+15.5%)</strong> based on measured Super Bowl LVI air taxi growth at LAX.
+              Low (+3.1%) and High (+31%) reflect the plausible range if the event effect is weaker or stronger.
+            </p>
+            <div class="table-responsive">
+              <table class="data-table" id="compare-cases-table">
+                <thead>
+                  <tr>
+                    <th>Scenario Case</th>
+                    <th>Model Precedent</th>
+                    <th>Thu 11</th>
+                    <th>Fri 12 (Peak In)</th>
+                    <th>Sat 13</th>
+                    <th>Sun 14 (Game)</th>
+                    <th>Mon 15 (Peak Out)</th>
+                    <th>Tue 16</th>
+                    <th>Wed 17</th>
+                    <th>Week Total</th>
+                  </tr>
+                </thead>
+                <tbody id="compare-cases-tbody">
+                  <!-- Rendered dynamically by app.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+
+        <!-- Collapsible 3: Weather Modeling & Next-Day Spillover Rules -->
+        <details class="details-accordion" id="details-weather-rules">
+          <summary class="details-summary">
+            <span>☁️ Weather Modeling & Next-Day Spillover Rules</span>
+          </summary>
+          <div class="details-content">
+            <div class="weather-rules-grid">
+              <div class="weather-rule-box">
+                <h4>Empirical Impact Factors (LAX NOAA x FAA Data)</h4>
+                <ul>
+                  <li><strong>Rain (≥0.10"):</strong> Part 91 GA: -5.6% | Part 135 Taxi: -2.1% (Feb prob: 12.1%)</li>
+                  <li><strong>Heavy Rain (≥0.50"):</strong> Part 91 GA: -9.8% | Part 135 Taxi: -4.1% (Feb prob: 5.0%)</li>
+                  <li><strong>Heavy Fog (Low Vis):</strong> Part 91 GA: -4.3% | Part 135 Taxi: -2.4% (Feb prob: 8.8%)</li>
+                </ul>
+              </div>
+              <div class="weather-rule-box">
+                <h4>Spillover & Range Scaling Formula</h4>
+                <p>
+                  <code>Effect% = share_part91 × eff_p91 + share_part135 × eff_p135</code><br>
+                  <code>Weather Factor = 1.0 + Effect%</code><br>
+                  <code>Adjusted Landings = Expected × Factor + Carried-in</code><br>
+                  <code>Adjusted 90% Range = [Low × Factor + Carried-in, High × Factor + Carried-in]</code><br>
+                  <em>Uncompleted movements roll directly into the following day's schedule.</em>
+                </p>
+              </div>
+            </div>
+          </div>
+        </details>
+
       </section>
 
     </div>
@@ -245,7 +263,7 @@
       <!-- Day Switcher Bar -->
       <div class="day-detail-header">
         <div class="day-detail-title-group">
-          <button type="button" class="btn btn-secondary btn-sm" id="back-to-week-btn">← Back to 7-Day Week Planner</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="back-to-week-btn">← Back to Week Overview</button>
           <div class="day-current-meta">
             <h2 class="day-current-title" id="day-detail-title">Friday 12 Feb 2027</h2>
             <div class="day-current-badges" id="day-detail-badges"></div>
@@ -275,7 +293,7 @@
         <div class="radar-card next-hours-card">
           <div class="card-header-flex">
             <h3 class="card-title">Next 3 Hours Radar Window</h3>
-            <span class="badge badge-info" id="next-hours-window-tag">10:00 – 13:00</span>
+            <span class="badge badge-info" id="next-hours-window-tag">10:45 – 13:45 PST</span>
           </div>
           <div class="next-hours-stats" id="next-hours-stats">
             <!-- Dynamic stats for simulated shift -->
@@ -290,7 +308,7 @@
           <div>
             <h3 id="timeline-heading" class="section-title">24-Hour Timeline: Landings vs. Departures</h3>
             <p class="section-desc">
-              Hourly movements adjusted for scenario, weather, and game-day restriction.
+              Hourly movements adjusted for weather and game-day restriction.
               <span class="badge badge-placeholder">PLACEHOLDER PROFILE</span>
               <span class="disclaimer-inline">Hour shares are a placeholder curve (agent_data.json). Entered movements replace it for covered hours.</span>
             </p>
@@ -388,8 +406,8 @@
 
             <div class="form-group">
               <label for="form-tail" class="form-label">Tail Number (Optional)</label>
-              <input type="text" id="form-tail" class="form-input" placeholder="e.g. N102GA" pattern="[A-Za-z0-9\-]+" maxlength="10">
-              <span class="field-hint">No passenger/operator names</span>
+              <input type="text" id="form-tail" class="form-input" placeholder="e.g. N102GA" pattern="[A-Za-z0-9\-]{0,10}" maxlength="10" title="Max 10 characters: letters, digits, and dash only">
+              <span class="field-hint">Max 10 chars (letters, digits, dash). No passenger names.</span>
             </div>
 
             <div class="form-group">
