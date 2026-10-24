@@ -21,7 +21,7 @@ button{font:inherit;color:inherit}
 .col{flex:1 1 0;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;gap:2px}
 .cn{background:#14213D;border-radius:3px 3px 0 0}
 .co{background:#FF6A2B;border-radius:3px 3px 0 0}
-.col.pk .cn,.col.pk .co{filter:none}
+.col.pk .cn{background:#FF6A2B}
 .capl{position:absolute;left:0;right:0;border-top:1.5px dashed rgba(20,33,61,.45)}
 .tlg{display:grid;grid-template-columns:150px minmax(0,1fr) 190px;gap:24px;align-items:center}
 .trk{position:relative;height:28px;background-image:linear-gradient(90deg,#EAECF0 1px,transparent 1px);background-size:25% 100%}
@@ -81,7 +81,7 @@ button{font:inherit;color:inherit}
 <p class="muted" style="margin: 6px 0 28px">{{hourNote}}</p><details class="muted" style="margin:-12px 0 28px;font-size:14px"><summary>Timing assumptions</summary><p>{{hourDetails}}</p></details>
 <div style="position: relative; height: 300px; display: flex; gap: 6px; align-items: flex-end" role="img" aria-label="{{hourAria}}">
 <template data-list="{{hours}}" as="h">
-<div class="col">
+<div class="{{h.cls}}">
 <div class="co" style="height: {{h.oh}}"></div>
 <div class="cn" style="height: {{h.nh}}"></div>
 </div>
