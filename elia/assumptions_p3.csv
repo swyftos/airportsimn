@@ -3,12 +3,13 @@ ramp_capacity_su,90,space units,synthetic,Fictional FBO main ramp. 1 space unit 
 overflow_capacity_su,40,space units,synthetic,Fictional remote apron that can be leased for the event week. Activation needs management approval
 tow_packing_gain,0.10,share of ramp,estimate,Tighter tow-in packing when aircraft stay several nights. Planning estimate to be confirmed with ops
 initial_transient_aircraft,12,aircraft,synthetic,Transient aircraft already parked on Feb 11 morning
-mix_light,0.25,share,estimate,Light jets and turboprops share of transient arrivals. To be replaced by P2 categories if provided
-mix_midsize,0.45,share,estimate,Midsize and super-midsize jets share
-mix_heavy,0.30,share,estimate,Large-cabin jets share. Event traffic skews to large cabin
+mix_light,0.36,share,estimate,Category share of the initial parked aircraft. Matches P2 forecast mix
+mix_super_midsize,0.42,share,estimate,Category share of the initial parked aircraft. Matches P2 forecast mix
+mix_large,0.22,share,estimate,Category share of the initial parked aircraft. Matches P2 forecast mix
 su_light,1.0,space units,estimate,Footprint relative to a light jet
-su_midsize,1.5,space units,estimate,Footprint relative to a light jet
-su_heavy,2.5,space units,estimate,Footprint relative to a light jet (G650 / Global class)
+su_super_midsize,1.5,space units,estimate,Footprint relative to a light jet (Challenger 350 / Praetor class)
+su_large,2.5,space units,estimate,Footprint relative to a light jet (G650 / Global class)
+dep_share_before_peak,0.5,share of daily departures,estimate,Departures that leave before the daily arrival peak
 shift_share_morning,0.40,share of daily movements,estimate,06:00-14:00
 shift_share_day,0.40,share of daily movements,estimate,14:00-22:00
 shift_share_night,0.20,share of daily movements,estimate,22:00-06:00
@@ -17,8 +18,8 @@ normal_techs_per_shift,3,technicians,synthetic,Normal operating plan of the fict
 staffing_buffer,0.15,share,estimate,Buffer above P50 workload when staffing the prepared plan
 fuel_uplift_rate,0.85,share of departures,estimate,Departures that take fuel at the FBO
 gal_light,150,gallons,estimate,Typical uplift per departure
-gal_midsize,400,gallons,estimate,Typical uplift per departure
-gal_heavy,1000,gallons,estimate,Typical uplift per departure
+gal_super_midsize,400,gallons,estimate,Typical uplift per departure
+gal_large,1000,gallons,estimate,Typical uplift per departure
 truck_capacity_gal,5000,gallons,estimate,Jet-A refueler capacity
 truck_loads_per_shift,3,loads,estimate,Refill cycles per truck per 8 h shift
 normal_fuel_trucks,2,trucks,synthetic,Normal operating plan of the fictional FBO
@@ -29,4 +30,7 @@ extra_truck_cost_per_day_usd,1500,USD,estimate,Rental refueler with driver per d
 delayed_turn_cost_usd,150,USD,estimate,Service cost of a turn handled late because of understaffing
 risk_medium_threshold,0.85,utilization,estimate,Utilization above which a day is Medium risk
 risk_high_threshold,1.00,utilization,estimate,Utilization above which a day is High risk
-dep_share_before_peak,0.5,share of daily departures,estimate,Departures that leave before the daily arrival peak
+mc_runs,10000,simulations,estimate,Monte Carlo demand paths per scenario
+mc_seed,42,seed,synthetic,Reproducible random draws
+mc_common_shock_share,0.6,share of log variance,estimate,Part of each day's deviation shared across days categories and directions (the event turns out bigger or smaller overall). P2 does not model cross-category correlation
+planning_quantile,0.90,quantile,estimate,Parking capacity is prepared for this quantile of simulated parking demand
