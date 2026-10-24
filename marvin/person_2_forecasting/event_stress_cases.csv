@@ -1,0 +1,5 @@
+case,event_excess_percent,five_day_expected_movements,assumed_fbo_share,method,evidence,fbo_transfer_validated
+no_event_uplift,0.0,51.31,0.10,same_daily_shape_scaled_from_medium,counterfactual,no
+current_medium,15.5,59.26,0.10,same_daily_shape_scaled_from_medium,LVI LAX airport anchor,no
+current_high,31.0,67.21,0.10,same_daily_shape_scaled_from_medium,double LVI anchor stress,no
+bay_area_LX_air_taxi,61.1,82.64,0.10,same_daily_shape_scaled_from_medium,LX Bay Area airport analog,no

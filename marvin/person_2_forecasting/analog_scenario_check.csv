@@ -1,0 +1,5 @@
+event,airports,airport_count,air_taxi_excess_percent,position,comparison,fbo_transfer_validated
+LIX_2025_New_Orleans,MSY|NEW,2,278.0,above_high,recent non-host-year controls,no
+LVIII_2024_Las_Vegas,HND|LAS|VGT,3,17.4,within_low_high,recent non-host-year controls,no
+LVII_2023_Phoenix,CHD|DVT|FFZ|GEU|GYR|IWA|PHX|SDL,8,-17.8,below_low,recent non-host-year controls,no
+LVI_2022_LAX_anchor,LAX,1,15.5,within_low_high,LVI anchor uses its own control years,no
