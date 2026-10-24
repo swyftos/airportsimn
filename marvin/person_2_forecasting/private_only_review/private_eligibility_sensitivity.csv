@@ -1,0 +1,6 @@
+eligible_fraction_of_FAA_GA_category,ordinary_fbo_arrivals_per_day,classification,note
+0,0.0,synthetic_sensitivity_not_observed,"20% FBO share applied only after private-eligibility filter; 100% is an upper case, not an assertion."
+0.25,0.8379,synthetic_sensitivity_not_observed,"20% FBO share applied only after private-eligibility filter; 100% is an upper case, not an assertion."
+0.5,1.6759,synthetic_sensitivity_not_observed,"20% FBO share applied only after private-eligibility filter; 100% is an upper case, not an assertion."
+0.75,2.5138,synthetic_sensitivity_not_observed,"20% FBO share applied only after private-eligibility filter; 100% is an upper case, not an assertion."
+1,3.3518,synthetic_sensitivity_not_observed,"20% FBO share applied only after private-eligibility filter; 100% is an upper case, not an assertion."
