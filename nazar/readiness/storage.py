@@ -1,6 +1,7 @@
 """Local, durable planning reviews; no operational action is executed."""
 from __future__ import annotations
 import json
+from contextlib import contextmanager
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,10 +19,15 @@ class ReviewStore:
                 note TEXT NOT NULL, reviewer TEXT NOT NULL, reviewed_at TEXT NOT NULL,
                 checks TEXT NOT NULL)''')
             db.execute('CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)')
+    @contextmanager
     def connect(self):
         db=sqlite3.connect(self.path,timeout=10)
         db.row_factory=sqlite3.Row
-        return db
+        try:
+            with db:
+                yield db
+        finally:
+            db.close()
     def save_source(self, source, files=None):
         with self.connect() as db:
             db.execute('INSERT OR REPLACE INTO settings VALUES (?,?)',('source',source))

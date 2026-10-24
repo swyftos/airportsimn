@@ -1,6 +1,6 @@
 # Demo and acceptance checklist
 
-## Three-minute story
+## Three-minute story using the handcrafted sample
 
 1. **Open the desk as Maya, FBO manager.** Say: “Our focus is FBO parking preparation at a fictional operator at LAX. These initial inputs are synthetic; the team’s models plug into the same interface.”
 2. **Expected outlook.** Start with “Prepare for a 28-unit parking gap.” Point out 92 needed versus 64 available. The manager first learns the size and timing of the problem, not a wall of controls.
@@ -12,6 +12,17 @@
 8. **Export the plan.** The JSON contains the selected scenario, derived summary, recommendations, version and matched review records for the team to inspect.
 
 Answer “What decision should AI never make?”: **It must never authorize aircraft movements or override airport safety procedures.** A human must validate physical parking suitability and commit resources. This app records planning reviews only.
+
+## Presentation with the connected team models
+
+Use **Data & assumptions → Load current P2/P3 outputs** before presenting this version. Do not narrate the handcrafted sample’s numbers over the native model screens.
+
+- Expected demand: peak daily P50 parking need 147.5, current capacity 90, proposed 139. The remaining median shortfall is 8.5; the preparation does not eliminate risk.
+- Compare **Arrivals** to show the supplied ordinary baseline against event estimates. Explain that the missing ordinary parking baseline is still a team deliverable.
+- Select game day: the parking P10–P90 range is 92.8–235.9 units and the supplied simulation exceeds proposed capacity in 56.1% of runs. These are unvalidated synthetic-model outputs, not observed probabilities.
+- Show the per-category arrival ranges and P2’s synthetic historical test metrics on the data tab. Historical validation does not validate the assumed event uplift.
+- Explain that the 24-hour delay toggle is disabled until Person 3 supplies that variant. Do not describe the current P3 within-day departure-order assumption as a 24-hour delay test.
+- Review the overflow proposal; the displayed weekly preparation cost is $43,600, including supplied action costs. Record a request for confirmed capacity, geometry checks and quotes.
 
 ## What each teammate should demonstrate before the final rehearsal
 
@@ -36,6 +47,6 @@ Answer “What decision should AI never make?”: **It must never authorize airc
 
 ## Remaining work before calling it a complete hackathon solution
 
-The dashboard and integration module work now. The **real baseline, forecasting/AI component, simulator and validated preparation output** still need to come from Persons 1–3. The sample generator is not that component. An LLM is optional and must not invent numerical results. Demonstrate model skill with honest validation or present conditional resource improvement estimates with their assumptions. UI polish comes after an early end-to-end integration run, not after every model is finished.
+The dashboard and integration module work now. Marvin’s learned forecasting component and Elia’s Monte Carlo parking component are now integrated from their committed exports. Their current outputs are synthetic. Alan’s real-data baseline, ordinary parking comparison, and a separate delay variant remain incomplete. The sample generator is not the forecasting component. An LLM is optional and must not invent numerical results. Demonstrate model skill with honest validation or present conditional resource improvement estimates with their assumptions. UI polish comes after an early end-to-end integration run, not after every model is finished.
 
 LA 2028 is a stretch goal. Keep it outside the core demo until this seven-day story is reliable.

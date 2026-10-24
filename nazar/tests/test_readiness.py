@@ -121,6 +121,16 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(self.request('/api/source',{'source':'team'})[0],200)
         (self.root/'repo'/'alan'/'baseline.csv').unlink()
         restored=Application(self.root/'state',self.root/'repo');self.assertIsNone(restored.bundle);self.assertEqual(restored.source,'team')
+    def test_native_http_review_and_export(self):
+        from readiness.team_adapter import NATIVE_PATHS
+        if not all((ROOT.parent/p).is_file() for p in NATIVE_PATHS.values()):self.skipTest('Native outputs missing')
+        self.server.application.repo_root=ROOT.parent
+        status,data=self.request('/api/source',{'source':'team-native'});self.assertEqual(status,200)
+        self.assertTrue(data['bundle']['native'])
+        self.assertEqual(self.request('/api/review',self.review())[0],201)
+        status,export=self.request('/api/export?scenario=medium&variant=standard')
+        self.assertEqual(status,200);self.assertEqual(export['source'],'team-native');self.assertEqual(len(export['reviews']),1)
+        self.assertEqual(self.request('/api/export?scenario=medium&variant=departure_delay_24h')[0],400)
     def test_login_malformed_role(self):
         self.assertEqual(self.request('/api/login',{'role':[]})[0],400)
     def test_path_traversal_and_static(self):
@@ -128,5 +138,50 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(self.request('/')[0],200)
         self.assertEqual(self.request('/app.js')[0],200)
         self.assertEqual(self.request('/styles.css')[0],200)
+
+class NativeAdapterTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        from readiness.team_adapter import NATIVE_PATHS
+        cls.paths=NATIVE_PATHS
+        cls.repo=ROOT.parent
+        if not all((cls.repo/p).is_file() for p in NATIVE_PATHS.values()):
+            raise unittest.SkipTest('Native P2/P3 outputs not present in this checkout.')
+    def native_files(self):
+        return {k:(self.repo/p).read_text(encoding='utf-8-sig') for k,p in self.paths.items()}
+    def test_native_summary_matches_producer(self):
+        from readiness.team_adapter import load_native
+        f=self.native_files();b=load_native(f);plans=json.loads(f['p3_recommendations'])
+        for sc in ('low','medium','high'):
+            summary=summarize(b,sc,'standard')
+            self.assertAlmostEqual(summary['peak_demand'],plans['scenarios'][sc.title()]['summary']['peak_parking_demand_su_p50'])
+            self.assertEqual(summary['preparation_cost'],plans['scenarios'][sc.title()]['preparation_cost_usd'])
+    def test_no_invented_baseline_ranges_or_delay(self):
+        from readiness.team_adapter import load_native
+        b=load_native(self.native_files())
+        self.assertTrue(all(r['parking_units'] is None for r in b['baseline']))
+        self.assertTrue(all(r['arrivals_lower'] is None and r['arrivals_upper'] is None for r in b['demand']))
+        self.assertEqual(b['variants'],['standard']);self.assertEqual(len(b['category_ranges']),126)
+    def test_mismatched_forecast_rejected(self):
+        from readiness.team_adapter import load_native
+        f=self.native_files();lines=f['p2_uncertainty'].splitlines();parts=lines[1].split(',');parts[4]='999';lines[1]=','.join(parts);f['p2_uncertainty']='\n'.join(lines)
+        with self.assertRaisesRegex(ContractError,'disagree'):load_native(f)
+    def test_unknown_actions_rejected(self):
+        from readiness.team_adapter import load_native
+        f=self.native_files();j=json.loads(f['p3_recommendations']);j['scenarios']['Medium']['actions'][0]['id']='auto_accept_reservations';f['p3_recommendations']=json.dumps(j)
+        with self.assertRaisesRegex(ContractError,'unknown'):load_native(f)
+    def test_action_costs_reconcile(self):
+        from readiness.team_adapter import load_native
+        f=self.native_files();j=json.loads(f['p3_recommendations']);j['scenarios']['Medium']['preparation_cost_usd']+=1;f['p3_recommendations']=json.dumps(j)
+        with self.assertRaisesRegex(ContractError,'costs'):load_native(f)
+    def test_native_source_persists(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a=Application(Path(tmp),self.repo);a.activate('team-native');first=a.bundle['version']
+            self.assertEqual(a.snapshot()['source'],'team-native')
+            a=Application(Path(tmp),self.repo);self.assertEqual(first,a.bundle['version'])
+    def test_changed_input_changes_review_version(self):
+        from readiness.team_adapter import load_native
+        f=self.native_files();old=load_native(f)['version'];j=json.loads(f['p2_report']);j['issue_date']='2026-10-24';f['p2_report']=json.dumps(j)
+        self.assertNotEqual(old,load_native(f)['version'])
 
 if __name__=='__main__':unittest.main()

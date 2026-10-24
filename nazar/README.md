@@ -2,7 +2,7 @@
 
 A working local readiness desk for a fictional **Pacific Executive FBO at LAX**. It helps a manager see parking pressure during February 11–17, 2027, compare preparations, inspect assumptions, and record a human planning review.
 
-**Owner: Nazar Meniailo / z1ppyyy — Person 4.** Everything in this contribution lives in `nazar/`. The dashboard is ready for the other three modules to connect; their forecasting and parking logic remain their responsibility.
+**Owner: Nazar Meniailo / z1ppyyy — Person 4.** Everything in this contribution lives in `nazar/`. The dashboard connects directly to Marvin’s and Elia’s committed outputs through a native adapter. Their forecasting and parking logic remain their responsibility; Alan’s real-data work is still pending in the current checkout.
 
 ## Run it
 
@@ -28,9 +28,19 @@ Do not open `static/index.html` directly: the app needs its local Python server.
 - Source and assumption ledger; JSON plan export.
 - Three demo employee views with server-enforced role checks for writes. **These are selectable, unverified demo identities, not real authentication.**
 
-## Connect the team
+## Connect the current team code — works now
 
-Read [INTEGRATION.md](INTEGRATION.md) before generating outputs. The seven files in [sample-data](sample-data/) are complete examples of the proposed contract. Coordinate any schema changes before coding to avoid incompatible modules.
+The native adapter reads the existing P2/P3 formats without requiring teammates to rename their files. Open **Data & assumptions → Load current P2/P3 outputs**. It loads Marvin’s category forecasts, ranges and model report from `marvin/Person2-Forecasting/`, plus Elia’s resources, recommendations and assumptions from `elia/`.
+
+At the integrated revision, the expected scenario has a daily P50 parking peak of **147.5 units**, ordinary capacity **90**, and proposed capacity **139**: the maximum median gap changes **57.5 → 8.5**, with **4 → 2** days above capacity and **$43,600** of proposed weekly preparation cost. These are synthetic model results, not verified LAX demand or confirmed resources.
+
+Click **Arrivals** above the chart for an ordinary/event comparison using P2’s learned baseline. Parking displays P3 daily P50 peaks and P10–P90 ranges. The ordinary parking baseline is explicitly unavailable; the app does not fabricate it. The delay toggle is disabled for native outputs because no separate delayed-departure result is supplied. Category arrival intervals are shown individually and never added into a false total interval. The data tab also shows P2’s ordinary-week synthetic holdout metrics.
+
+See [NATIVE-INTEGRATION.md](NATIVE-INTEGRATION.md) for exact mappings, limitations and remaining team work. The models are **not** re-run on load: regenerate P2 and P3 outputs coherently, then refresh. The app’s source badge always distinguishes team outputs from the handcrafted sample.
+
+## Optional standardized seven-file contract
+
+If the team wants a unified export format later, read [INTEGRATION.md](INTEGRATION.md). The native integration above does not require migrating to it. The seven files in [sample-data](sample-data/) are complete examples of the proposed contract. Coordinate any schema changes before coding to avoid incompatible modules.
 
 | Person | Responsibility | Dashboard inputs |
 | --- | --- | --- |
@@ -41,7 +51,7 @@ Read [INTEGRATION.md](INTEGRATION.md) before generating outputs. The seven files
 
 Alan’s historical data and source documentation and teammates’ Python models stay in their modules. The dashboard consumes their exported aggregates; it does not run model code on an HTTP request. Elia coordinates the manifest with the other producers to describe the **whole bundle**, including synthetic assumptions.
 
-After the teammates commit those outputs and you pull their changes, select **Data & assumptions → Load team outputs**. File presence is shown separately from validation. To import outputs from elsewhere, choose **Import a complete output bundle** and select all seven files together. **Refresh current source** reloads the active source, not whichever source happens to have files available.
+After the teammates commit those outputs and you pull their changes, select **Data & assumptions → Load seven-file contract**. File presence is shown separately from validation. To import outputs from elsewhere, choose **Import a complete output bundle** and select all seven files together. **Refresh current source** reloads the active source, not whichever source happens to have files available.
 
 ## Sample data is a demonstration, not a forecast
 
@@ -53,7 +63,7 @@ Selecting a scenario asks “what if?” It does not make the employee the forec
 
 ## Responsible AI boundary
 
-This module displays the preparation output supplied by the resource/planner module. The shipped advice is templated sample text, **not live AI-generated advice**. If the team adds an LLM, keep the key in the backend, have it reference validated evidence, disclose the generation method in `source`, and check its prose. The dashboard checks numerical evidence fields against resource values; it does **not** fact-check arbitrary narrative claims or verify external sources.
+This module displays the preparation output supplied by the resource/planner module. The native path uses P2’s learned ridge forecasts plus P3’s Monte Carlo/rule-based resource advice. The separate sample uses handcrafted text. Neither path calls a live LLM. If the team adds an LLM, keep the key in the backend, have it reference validated evidence, disclose the generation method in `source`, and check its prose. The dashboard checks numerical evidence fields against resource values; it does **not** fact-check arbitrary narrative claims or verify external sources.
 
 AI must never authorize aircraft movements, select a physically safe aircraft position, clear towing/taxiing/takeoff/landing, override airport procedures, or autonomously commit resources or money. Approving a card only records a planning review. It sends no operational instruction, booking, purchase or message. Scalar parking units do not demonstrate aircraft compatibility, clearances or safe geometry.
 
@@ -79,6 +89,7 @@ Tests cover data contracts, missing/invalid files, evidence mismatches, finite v
 - `readiness/contracts.py`: schema validation and deterministic summary arithmetic.
 - `readiness/data.py`: fixed teammate paths and explicit source loading.
 - `readiness/storage.py`: local source/review persistence.
+- `readiness/team_adapter.py`: validates and normalizes the existing P2/P3 exports without changing their code.
 - `static/`: dashboard HTML, CSS and browser interactions.
 - `sample-data/`: fixtures and reproducible fixture generator.
 - `tests/`: standard-library automated checks.

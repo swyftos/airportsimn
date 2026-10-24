@@ -15,7 +15,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit, parse_qs
 from readiness.contracts import ContractError, load_bundle, summarize
-from readiness.data import sample_bundle, team_bundle, team_status
+from readiness.data import sample_bundle, team_bundle, team_status, native_bundle, native_status
 from readiness.storage import ReviewStore
 
 ROOT=Path(__file__).resolve().parent
@@ -39,6 +39,7 @@ class Application:
     def read_source(self,source,files=None):
         if source=='sample': return sample_bundle(ROOT)
         if source=='team': return team_bundle(self.repo_root)
+        if source=='team-native': return native_bundle(self.repo_root)
         if source=='import': return load_bundle(files)
         raise ContractError('Unknown data source.')
     def activate(self,source,files=None):
@@ -48,7 +49,7 @@ class Application:
     def snapshot(self):
         return {'bundle':self.bundle,'source':self.source,'load_error':self.load_error,
                 'summaries':{s:{v:summarize(self.bundle,s,v) for v in self.bundle['variants']} for s in ('low','medium','high')} if self.bundle else {},
-                'team_files':team_status(self.repo_root),'history':self.store.history(self.bundle['version'] if self.bundle else '')}
+                'native_files':native_status(self.repo_root), 'team_files':team_status(self.repo_root),'history':self.store.history(self.bundle['version'] if self.bundle else '')}
 
 class Handler(BaseHTTPRequestHandler):
     server_version='RampReadyLocal/1.0'
@@ -93,7 +94,7 @@ class Handler(BaseHTTPRequestHandler):
                     if not self.app.bundle: return self.reply(409,{'error':'No valid dataset is loaded.'})
                     try:
                         sc=q.get('scenario',['medium'])[0]; variant=q.get('variant',['standard'])[0]
-                        data={'dataset':self.app.bundle['meta'],'version':self.app.bundle['version'],'scenario':sc,'variant':variant,
+                        data={'dataset':self.app.bundle['meta'],'source':self.app.source,'assumptions':self.app.bundle['assumptions'],'basis':'Daily P50 parking peaks from P3' if self.app.bundle.get('native') else 'Supplied daily peak parking fixtures/outputs','version':self.app.bundle['version'],'scenario':sc,'variant':variant,
                             'summary':summarize(self.app.bundle,sc,variant),
                             'recommendations':[r for r in self.app.bundle['recommendations'] if r['scenario']==sc and r['variant']==variant],
                             'reviews':[r for r in self.app.store.history(self.app.bundle['version']) if not r['stale'] and r['scenario']==sc and r['variant']==variant],

@@ -33,3 +33,12 @@ def team_status(repo_root):
 
 def team_bundle(repo_root):
     return load_bundle(read_paths(team_paths(repo_root)))
+
+
+def native_bundle(repo_root):
+    from .team_adapter import NATIVE_PATHS, load_native
+    return load_native(read_paths({k:Path(repo_root)/v for k,v in NATIVE_PATHS.items()}))
+
+def native_status(repo_root):
+    from .team_adapter import NATIVE_PATHS
+    return [{'file':k,'path':v,'present':(Path(repo_root)/v).is_file()} for k,v in NATIVE_PATHS.items()]

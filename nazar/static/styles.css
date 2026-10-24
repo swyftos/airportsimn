@@ -5,3 +5,5 @@
 @media(prefers-reduced-motion:no-preference){button{transition:background .15s,opacity .15s}.view{animation:appear .2s ease-out}@keyframes appear{from{opacity:.5;transform:translateY(3px)}to{opacity:1;transform:none}}}
 
 .scenario-help{margin:-6px 0 20px;max-width:800px}
+
+.chart-controls{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:20px}.native-risk{display:grid;gap:5px;background:#f8f3e7;border:1px solid #eadfbe;border-radius:6px;padding:14px 18px;margin-top:14px;font-size:12px}.native-risk small{font-size:10px}@media(max-width:640px){.chart-controls{align-items:flex-start;flex-direction:column;gap:10px}}
