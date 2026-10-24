@@ -29,11 +29,11 @@ const state = {
 };
 
 // Storage Keys
-const STORAGE_KEY_MOVEMENTS = 'lax_fbo_movements_v1';
-const STORAGE_KEY_PROPOSALS = 'lax_fbo_proposals_v1';
-const STORAGE_KEY_WEATHER = 'lax_fbo_weather_v1';
-const STORAGE_KEY_THEME = 'lax_fbo_theme_v1';
-const STORAGE_KEY_SCENARIO = 'lax_fbo_scenario_v1';
+const STORAGE_KEY_MOVEMENTS = 'rampready_refined_movements_v1';
+const STORAGE_KEY_PROPOSALS = 'rampready_refined_proposals_v1';
+const STORAGE_KEY_WEATHER = 'rampready_refined_weather_v1';
+const STORAGE_KEY_THEME = 'rampready_refined_theme_v1';
+const STORAGE_KEY_SCENARIO = 'rampready_refined_scenario_v1';
 
 // Sample shift movements for instant realistic testing
 const SAMPLE_MOVEMENTS = [
@@ -80,7 +80,7 @@ function loadStoredPreferences() {
       state.userMovements = JSON.parse(savedMovements);
     } else {
       // Seed with sample movements for instant usability
-      state.userMovements = [...SAMPLE_MOVEMENTS];
+      state.userMovements = [];
       saveMovements();
     }
 
@@ -102,8 +102,8 @@ function loadStoredPreferences() {
     const savedTheme = localStorage.getItem(STORAGE_KEY_THEME);
     if (savedTheme) {
       state.theme = savedTheme;
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      state.theme = 'dark';
+    } else {
+      state.theme = 'light';
     }
     applyTheme(state.theme);
   } catch (err) {
@@ -236,6 +236,7 @@ function switchTab(viewId) {
   } else if (viewId === 'view-trust') {
     renderTrustView();
   } else if (viewId === 'view-week') {
+    renderWeekOverview();
     renderHeatmap();
     renderDayCards();
     renderProposals();
@@ -255,6 +256,7 @@ function setupControls() {
     btn.addEventListener('click', () => {
       scenarioBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+      if (state.scenario !== btn.dataset.scenario) invalidatePlanReview();
       state.scenario = btn.dataset.scenario;
       localStorage.setItem(STORAGE_KEY_SCENARIO, state.scenario);
       showToast(`Scenario switched to ${state.scenario} (${state.data ? state.data.scenarios[state.scenario] : ''})`);
@@ -300,6 +302,7 @@ function setupControls() {
   const resetWeatherBtn = document.getElementById('reset-weather-btn');
   if (resetWeatherBtn) {
     resetWeatherBtn.addEventListener('click', () => {
+      invalidatePlanReview();
       Object.keys(state.weatherSettings).forEach(d => state.weatherSettings[d] = 'clear');
       saveWeather();
       renderAllViews();
@@ -322,10 +325,10 @@ function setupControls() {
   const loadSampleBtn = document.getElementById('btn-load-sample');
   if (loadSampleBtn) {
     loadSampleBtn.addEventListener('click', () => {
-      state.userMovements = [...SAMPLE_MOVEMENTS];
+      state.userMovements = SAMPLE_MOVEMENTS.map(m => ({...m, source: 'sample'}));
       saveMovements();
       renderAllViews();
-      showToast('Loaded 19 realistic Super Bowl shift movements');
+      showToast('Loaded 19 SAMPLE movements. These are fictional, not bookings.');
     });
   }
 
@@ -371,6 +374,7 @@ function renderAllViews() {
   if (!state.data) return;
   updateNavCount();
   renderTopKPIs();
+  renderWeekOverview();
   renderHeatmap();
   renderDayCards();
   renderProposals();
@@ -702,7 +706,7 @@ function updateHeatmapInspector(cell) {
 
   let tfrNotice = '';
   if (isTfr) {
-    tfrNotice = ` • <span class="badge badge-restriction">TFR RESTRICTION: No GA Part 91</span>`;
+    tfrNotice = ` • <span class="badge badge-restriction">ASSUMED PAUSE · verify actual notice</span>`;
   }
 
   inspector.innerHTML = `<div class="inspector-data-row">
@@ -720,197 +724,14 @@ function updateHeatmapInspector(cell) {
  * SECTION B: 7 Days Operational Table & Per-Day Weather Scenarios
  */
 function renderDayCards() {
-  if (!state.data) return;
   const container = document.getElementById('days-cards-container');
-  if (!container) return;
-
-  const impacts = computeDailyWeatherImpacts();
-  const scen = state.scenario;
-  let html = '';
-
-  impacts.forEach(impact => {
-    const day = impact.day;
-    const rawScen = day.scenarios[scen];
-    const isSelected = day.date === state.selectedDay;
-
-    // Badges
-    const badges = [];
-    if (day.game_day) badges.push('<span class="badge badge-restriction">GAME DAY (SUN 14 FEB)</span>');
-    if (day.presidents_day) badges.push('<span class="badge badge-peak-dep">PRESIDENTS\' DAY</span>');
-    if (day.security_restriction) badges.push('<span class="badge badge-restriction">TFR 14:30–20:30</span>');
-    if (day.date === '2027-02-12') badges.push('<span class="badge badge-peak">PEAK INBOUND DAY</span>');
-    if (day.date === '2027-02-15') badges.push('<span class="badge badge-peak-dep">PEAK OUTBOUND DAY</span>');
-
-    // Weather impact description
-    let weatherBadgeHtml = '';
-    if (impact.weather !== 'clear') {
-      const pctFormatted = (impact.effectPct * 100).toFixed(1);
-      weatherBadgeHtml = `<div class="weather-spillover-alert">
-        <span>⚠️ ${impact.weather.replace('_', ' ').toUpperCase()}: ${pctFormatted}% effect on movements.</span>
-        <span>${impact.lostArrivals.toFixed(1)} arr & ${impact.lostDepartures.toFixed(1)} dep shifted to next day.</span>
-      </div>`;
-    }
-
-    // Carried over from yesterday notice
-    let carryoverHtml = '';
-    if (impact.carriedOverArrivals + impact.carriedOverDepartures > 0) {
-      const totalCarried = (impact.carriedOverArrivals + impact.carriedOverDepartures).toFixed(1);
-      carryoverHtml = `<div class="weather-spillover-alert" style="background:var(--brand-accent-subtle); border-color:var(--brand-accent-border); color:var(--brand-accent);">
-        ⚡ +${totalCarried} delayed movements carried over from ${impact.carriedOverFromDay} (bad weather rule).
-      </div>`;
-    }
-
-    // Parking indicator
-    let rampBadgeClass = 'badge-ok';
-    let rampStatusText = 'Capacity OK';
-    if (rawScen.prob_ramp_full > 0.7) {
-      rampBadgeClass = 'badge-critical';
-      rampStatusText = 'High Ramp Risk';
-    } else if (rawScen.prob_ramp_full > 0.3) {
-      rampBadgeClass = 'badge-warning';
-      rampStatusText = 'Moderate Ramp Risk';
-    }
-
-    // Peak windows
-    let arrPeak = '10:00 – 14:00';
-    let depPeak = '08:00 – 10:00';
-    if (day.date === '2027-02-14') {
-      arrPeak = '10:00 – 13:30 (Pre-TFR cutoff)';
-      depPeak = '20:30 – 24:00 (Post-game surge: 40.5% of day)';
-    } else if (day.date === '2027-02-15') {
-      depPeak = '07:00 – 11:00 (Presidents\' Day outbound wave)';
-    }
-
-    // Range visual bar calculations (0 to 20 scale)
-    const maxScale = 20;
-    const arrP10Pct = (rawScen.arrivals_range90[0] / maxScale) * 100;
-    const arrP90Pct = (rawScen.arrivals_range90[1] / maxScale) * 100;
-    const arrWidth = Math.max(4, arrP90Pct - arrP10Pct);
-    const arrExpPct = (impact.finalArrivals / maxScale) * 100;
-    const arrOrdPct = (rawScen.ordinary_arrivals / maxScale) * 100;
-
-    const depP10Pct = (rawScen.departures_range90[0] / maxScale) * 100;
-    const depP90Pct = (rawScen.departures_range90[1] / maxScale) * 100;
-    const depWidth = Math.max(4, depP90Pct - depP10Pct);
-    const depExpPct = (impact.finalDepartures / maxScale) * 100;
-    const depOrdPct = (rawScen.ordinary_departures / maxScale) * 100;
-
-    html += `
-    <article class="day-card ${isSelected ? 'is-selected' : ''}" data-date="${day.date}">
-      <!-- Col 1: Day & Weather -->
-      <div class="day-col-meta">
-        <div class="day-date-line">
-          <div>
-            <div class="day-name">${day.weekday}</div>
-            <div class="day-date-sub">${formatDateLong(day.date)}</div>
-          </div>
-          <span class="badge ${day.day_type === 'weekend' ? 'badge-assumed' : 'badge-info'}">${day.day_type}</span>
-        </div>
-
-        <div class="day-badges-row">
-          ${badges.join(' ')}
-        </div>
-
-        <!-- Weather Box -->
-        <div class="day-weather-box">
-          <div class="weather-header">
-            <span class="weather-label">Set Day Weather</span>
-            <span class="weather-prob-tag">Feb Probabilities</span>
-          </div>
-          <select class="select-input select-sm weather-select" data-date="${day.date}" aria-label="Weather condition for ${day.weekday}">
-            <option value="clear" ${impact.weather === 'clear' ? 'selected' : ''}>☀️ Clear (Baseline)</option>
-            <option value="rain" ${impact.weather === 'rain' ? 'selected' : ''}>🌧️ Rain (12.1% prob, ≥0.10")</option>
-            <option value="heavy_rain" ${impact.weather === 'heavy_rain' ? 'selected' : ''}>⛈️ Heavy Rain (5.0% prob, ≥0.50")</option>
-            <option value="heavy_fog" ${impact.weather === 'heavy_fog' ? 'selected' : ''}>🌫️ Heavy Fog (8.8% prob, low vis)</option>
-          </select>
-          ${weatherBadgeHtml}
-          ${carryoverHtml}
-        </div>
-      </div>
-
-      <!-- Col 2: Landings & Departures Range Comparison -->
-      <div class="day-col-movements">
-        <!-- Landings / Arrivals -->
-        <div class="metric-bar-group">
-          <div class="metric-bar-header">
-            <span class="metric-title" style="color:var(--color-arrivals);">
-              <span>🛬 Landings (Arrivals)</span>
-            </span>
-            <span class="metric-numbers">
-              <span class="stat-expected">${impact.finalArrivals.toFixed(1)}</span>
-              <span class="stat-range"> [90% range ${rawScen.arrivals_range90[0].toFixed(1)}–${rawScen.arrivals_range90[1].toFixed(1)}]</span>
-              <span class="stat-ord"> vs Ord: ${rawScen.ordinary_arrivals.toFixed(1)}</span>
-            </span>
-          </div>
-          <div class="range-track" title="90% range band [${rawScen.arrivals_range90[0]} - ${rawScen.arrivals_range90[1]}] vs ordinary ${rawScen.ordinary_arrivals}">
-            <div class="range-band" style="left:${arrP10Pct}%; width:${arrWidth}%;"></div>
-            <div class="range-marker-p50" style="left:${arrExpPct}%;" title="Expected: ${impact.finalArrivals.toFixed(1)}"></div>
-            <div class="range-marker-ord" style="left:${arrOrdPct}%;" title="Ordinary Week: ${rawScen.ordinary_arrivals.toFixed(1)}"></div>
-          </div>
-        </div>
-
-        <!-- Takeoffs / Departures -->
-        <div class="metric-bar-group">
-          <div class="metric-bar-header">
-            <span class="metric-title" style="color:var(--color-departures);">
-              <span>🛫 Takeoffs (Departures)</span>
-            </span>
-            <span class="metric-numbers">
-              <span class="stat-expected">${impact.finalDepartures.toFixed(1)}</span>
-              <span class="stat-range"> [90% range ${rawScen.departures_range90[0].toFixed(1)}–${rawScen.departures_range90[1].toFixed(1)}]</span>
-              <span class="stat-ord"> vs Ord: ${rawScen.ordinary_departures.toFixed(1)}</span>
-            </span>
-          </div>
-          <div class="range-track" title="90% range band [${rawScen.departures_range90[0]} - ${rawScen.departures_range90[1]}] vs ordinary ${rawScen.ordinary_departures}">
-            <div class="range-band range-dep-band" style="left:${depP10Pct}%; width:${depWidth}%;"></div>
-            <div class="range-marker-p50 range-marker-dep-p50" style="left:${depExpPct}%;" title="Expected: ${impact.finalDepartures.toFixed(1)}"></div>
-            <div class="range-marker-ord" style="left:${depOrdPct}%;" title="Ordinary Week: ${rawScen.ordinary_departures.toFixed(1)}"></div>
-          </div>
-        </div>
-
-        <!-- Ramp space secondary indicator -->
-        <div class="ramp-mini-indicator">
-          <span class="ramp-mini-text">Ramp: P50 <strong>${rawScen.parking_su_p50.toFixed(1)} su</strong> | P90 <strong>${rawScen.parking_su_p90.toFixed(1)} su</strong> (Ramp Cap: ${rawScen.ramp_capacity_su.toFixed(1)} su)</span>
-          <span class="badge ${rampBadgeClass}">${rampStatusText} (${Math.round(rawScen.prob_ramp_full * 100)}%)</span>
-        </div>
-      </div>
-
-      <!-- Col 3: Operational Peak Windows & Action -->
-      <div class="day-col-action">
-        <div class="peak-windows-box">
-          <div class="peak-window-item">🛬 Inbound Window: <strong>${arrPeak}</strong></div>
-          <div class="peak-window-item">🛫 Outbound Window: <strong>${depPeak}</strong></div>
-          <div class="peak-window-item" style="color:var(--text-muted); font-size:0.7rem; margin-top:4px;">
-            Part 91: ${Math.round(rawScen.share_part91 * 100)}% • Part 135: ${Math.round(rawScen.share_part135 * 100)}%
-          </div>
-        </div>
-
-        <button type="button" class="btn btn-primary btn-open-day" data-date="${day.date}">
-          Open Day Detail & Movements (24h) →
-        </button>
-      </div>
-    </article>`;
-  });
-
-  container.innerHTML = html;
-
-  // Add event listeners for day cards and weather selects
-  container.querySelectorAll('.weather-select').forEach(select => {
-    select.addEventListener('change', (e) => {
-      const date = e.target.dataset.date;
-      state.weatherSettings[date] = e.target.value;
-      saveWeather();
-      renderAllViews();
-      showToast(`Weather on ${date} set to ${e.target.value}. Recalculated traffic and spillover.`);
-    });
-  });
-
-  container.querySelectorAll('.btn-open-day').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.selectedDay = btn.dataset.date;
-      switchTab('view-day');
-    });
-  });
+  if (!container || !state.data) return;
+  container.innerHTML = computeDailyWeatherImpacts().map(d=>`<article class="weather-day"><div><h3>${d.weekday} ${formatDateShort(d.date)}</h3><p>${d.finalArrivals.toFixed(1)} arrivals · ${d.finalDepartures.toFixed(1)} departures</p></div><label>Weather what-if<select class="weather-select select-input" data-date="${d.date}" aria-label="Weather condition for ${d.weekday}">${[['clear','Clear'],['rain','Rain'],['heavy_rain','Heavy rain'],['heavy_fog','Heavy fog']].map(([v,l])=>`<option value="${v}" ${d.weather===v?'selected':''}>${l}</option>`).join('')}</select></label>${d.carriedOverArrivals+d.carriedOverDepartures>0?`<small>Includes ${(d.carriedOverArrivals+d.carriedOverDepartures).toFixed(1)} movements carried over under this assumption.</small>`:''}</article>`).join('');
+  container.querySelectorAll('.weather-select').forEach(select=>select.addEventListener('change',e=>{
+    state.weatherSettings[e.target.dataset.date]=e.target.value;
+    invalidatePlanReview(); saveWeather(); renderAllViews();
+    showToast('Weather what-if updated. Review the revised preparation steps.');
+  }));
 }
 
 /**
@@ -925,79 +746,17 @@ function renderProposals() {
   const impacts = computeDailyWeatherImpacts();
   const scen = state.scenario;
 
-  // Generate day-specific proposals strictly from agent_data.json
+  const arrivalPeak = impacts.reduce((a,b) => b.finalArrivals > a.finalArrivals ? b : a);
+  const departurePeak = impacts.reduce((a,b) => b.finalDepartures > a.finalDepartures ? b : a);
+  const delayed = impacts.reduce((n,d) => n+d.carriedOverArrivals+d.carriedOverDepartures,0);
   const proposals = [
-    {
-      id: 'prop-thu',
-      date: '2027-02-11',
-      dayLabel: 'Thu 11 Feb',
-      title: 'Inbound Staging & Arrival Ramp-up Slot Verification',
-      category: 'Arrival Slot Confirmation',
-      text: `Expected arrivals build to ${impacts[0].finalArrivals.toFixed(1)} landings (range ${impacts[0].day.scenarios[scen].arrivals_range90[0]}–${impacts[0].day.scenarios[scen].arrivals_range90[1]}). Ramp parking reaches P50 ${impacts[0].day.scenarios[scen].parking_su_p50.toFixed(1)} su vs 15.0 su capacity. Proposal: Confirm arrival slot times for corporate arrivals between 10:00 and 14:00 to prevent ramp congestion before Friday peak.`,
-      actionHint: 'Acknowledge to confirm slots with flight coordination desk.'
-    },
-    {
-      id: 'prop-fri',
-      date: '2027-02-12',
-      dayLabel: 'Fri 12 Feb (Peak Inbound)',
-      title: 'Arrival Reservation Check (Busiest Inbound Day)',
-      category: 'PPR Slot Prioritization',
-      text: `Busiest arrival day of the week: ${impacts[1].finalArrivals.toFixed(1)} expected arrivals (${impacts[1].day.scenarios[scen].arrivals_range90[0]}–${impacts[1].day.scenarios[scen].arrivals_range90[1]}), with ramp overflow probability at ${Math.round(impacts[1].day.scenarios[scen].prob_ramp_full * 100)}% (P90 ${impacts[1].day.scenarios[scen].parking_su_p90.toFixed(1)} su). Proposal: Reconfirm arrival reservations (PPR) and ETAs for 09:00–18:00 a day ahead; keep the arrival board current as confirmations come in.`,
-      actionHint: 'Human agent approval required.'
-    },
-    {
-      id: 'prop-sat',
-      date: '2027-02-13',
-      dayLabel: 'Sat 13 Feb',
-      title: 'Mid-Event Ramp Dwell & Parking Rebalancing',
-      category: 'Parking & Slot Protocol',
-      text: `Flight movements pause at ${impacts[2].finalArrivals.toFixed(1)} arrivals / ${impacts[2].finalDepartures.toFixed(1)} departures, but ramp parking remains saturated at P50 ${impacts[2].day.scenarios[scen].parking_su_p50.toFixed(1)} su. Proposal: Confirm weekend parking reservations; verify quick-turn status on Saturday arrivals.`,
-      actionHint: 'Operational planning guidance.'
-    },
-    {
-      id: 'prop-sun-tfr',
-      date: '2027-02-14',
-      dayLabel: 'Sun 14 Feb (Game Day)',
-      title: 'Assumed Game-Day Pause (Super Bowl LVI Precedent, 14:30–20:30)',
-      category: 'Security Protocol / TFR',
-      text: `The Super Bowl LVI FAA advisory banned private movements within 10 NM, surface to FL180, from 14:30 to 20:30; this plan assumes the same window in 2027 (no 2027 notice is published). Proposal: Contact the crews of aircraft due between 14:00 and 20:30 to confirm their timing and update the board. The actual restriction is set by the FAA notice, not by this tool.`,
-      actionHint: 'Operational hold protocol.'
-    },
-    {
-      id: 'prop-sun-night',
-      date: '2027-02-14',
-      dayLabel: 'Sun 14 Feb (Post-Game)',
-      title: 'Post-Game Departure Surge Staging Window (20:30–24:00)',
-      category: 'Outbound Surge Window',
-      text: `40.5% of Sunday departures are compressed between 20:30 and 24:00 (${(impacts[3].finalDepartures * 0.405).toFixed(1)} departures in 3.5 hours). Proposal: Have the outbound list ready by 20:00: reconfirm each ETD and tail so aircraft are ready when the restriction ends. Air traffic control issues clearances and sequences departures.`,
-      actionHint: 'ATC Coordination & Flight Release.'
-    },
-    {
-      id: 'prop-mon',
-      date: '2027-02-15',
-      dayLabel: 'Mon 15 Feb (Peak Outbound)',
-      title: 'Presidents\' Day Departure Surge Management (Busiest Outbound Day)',
-      category: 'Outbound Slot Sequencing',
-      text: `Busiest departure day of the week: ${impacts[4].finalDepartures.toFixed(1)} departures (90% range up to ${impacts[4].day.scenarios[scen].departures_range90[1]}), with over 35% departing between 07:00 and 11:00. Proposal: Reconfirm ETDs the evening before and keep the departure board current from 07:00. Crews file their flight plans; air traffic control sequences departures.`,
-      actionHint: 'Prioritize outbound flight plans.'
-    }
+    {id:'review-arrivals',dayLabel:`Before ${arrivalPeak.weekday}`,title:'Reconfirm arrival plans.',
+     text:`${arrivalPeak.weekday} has the highest expected arrivals: ${arrivalPeak.finalArrivals.toFixed(1)}. Ask crews for updated arrival times and quick-turn or overnight plans; update the local records.`},
+    {id:'review-departures',dayLabel:`Before ${departurePeak.weekday}`,title:'Check departure intentions.',
+     text:`Plan around ${departurePeak.finalDepartures.toFixed(1)} expected departures on ${departurePeak.weekday}. Reconfirm departure times with crews and review ground-service readiness. ATC retains clearance and sequencing authority.`},
+    {id:'review-conditions',dayLabel:delayed>0?'Weather what-if':'Before game day',title:delayed>0?'Review the delayed-flight plan.':'Verify restrictions with the airport.',
+     text:delayed>0?'The weather what-if moves suppressed traffic into the following day. Check affected crews’ intentions; delays and cancellations may differ from this assumption.':'The hourly example assumes a Sunday 14:30–20:30 pause. Verify actual FAA notices and airport procedures before changing any arrival or departure arrangements.'}
   ];
-
-  // Dynamic Weather Spillover Proposals
-  impacts.forEach((imp, idx) => {
-    if (imp.carriedOverArrivals + imp.carriedOverDepartures > 0) {
-      const tot = (imp.carriedOverArrivals + imp.carriedOverDepartures).toFixed(1);
-      proposals.splice(idx, 0, {
-        id: `prop-weather-${imp.date}`,
-        date: imp.date,
-        dayLabel: `${imp.weekday} ${formatDateShort(imp.date)} (Weather Spillover)`,
-        title: `Absorb +${tot} Delayed Movements from ${imp.carriedOverFromDay}`,
-        category: 'Weather Delay Spillover',
-        text: `Bad weather on ${imp.carriedOverFromDay} displaced ${tot} movements into ${imp.weekday}'s schedule (+${imp.carriedOverArrivals.toFixed(1)} arr, +${imp.carriedOverDepartures.toFixed(1)} dep). Proposal: Reserve additional morning arrival and departure handling capacity to absorb delayed flights without impacting baseline slots.`,
-        actionHint: 'Weather contingency response.'
-      });
-    }
-  });
 
   // Calculate pending count
   let pendingCount = 0;
@@ -1005,7 +764,7 @@ function renderProposals() {
     const cur = state.proposalStates[p.id] || { status: 'pending', note: '' };
     if (cur.status === 'pending') pendingCount++;
   });
-  if (countBadge) countBadge.textContent = `${pendingCount} Pending Review`;
+  if (countBadge) countBadge.textContent = `${3-pendingCount} of 3 steps reviewed`;
 
   let html = '';
   proposals.forEach(prop => {
@@ -1033,21 +792,21 @@ function renderProposals() {
       <div class="proposal-actions">
         <div class="proposal-btns">
           <button type="button" class="btn btn-ok btn-sm btn-ack-prop" data-id="${prop.id}">
-            ✅ Acknowledge
+            ${cur.status === 'acknowledged' ? 'Reviewed ✓' : 'Mark reviewed'}
           </button>
           <button type="button" class="btn btn-secondary btn-sm btn-dismiss-prop" data-id="${prop.id}">
-            Dismiss
+            ${cur.status === 'dismissed' ? 'Dismissed' : 'Dismiss'}
           </button>
         </div>
 
-        <div style="display:flex; align-items:center; gap:6px; flex:1; max-width:500px;">
+        <details class="team-note"><summary>Add a team note</summary><div class="note-fields">
           <input type="text" 
             class="form-input proposal-note-input" 
             data-id="${prop.id}" 
-            placeholder="Operational note / agent initials..." 
+            aria-label="Team note: ${escapeHtml(prop.title)}" placeholder="Add a team note…" 
             value="${escapeHtml(cur.note || '')}">
           <button type="button" class="btn btn-secondary btn-sm btn-save-note" data-id="${prop.id}">Save Note</button>
-        </div>
+        </div></details>
       </div>
     </div>`;
   });
@@ -1118,7 +877,7 @@ function renderDayDetail() {
     const b = [];
     if (day.game_day) b.push('<span class="badge badge-restriction">SUPER BOWL GAME DAY</span>');
     if (day.presidents_day) b.push('<span class="badge badge-peak-dep">PRESIDENTS\' DAY</span>');
-    if (day.security_restriction) b.push('<span class="badge badge-restriction">TFR 14:30–20:30 ACTIVE</span>');
+    if (day.security_restriction) b.push('<span class="badge badge-restriction">ASSUMED PAUSE 14:30–20:30</span>');
     b.push(`<span class="badge ${impact.weather !== 'clear' ? 'badge-warning' : 'badge-ok'}">Weather: ${impact.weather}</span>`);
     badgesEl.innerHTML = b.join(' ');
   }
@@ -1155,14 +914,14 @@ function renderDayDetail() {
     const unannouncedArr = Math.max(0, Math.round(expArr - bookedArr));
     const unannouncedDep = Math.max(0, Math.round(expDep - bookedDep));
 
-    realityContainer.innerHTML = `
+    realityContainer.innerHTML = `<p class="record-source">${dayMovements.length ? (dayMovements.some(m => m.source === 'sample') ? 'Includes SAMPLE records — not confirmed bookings.' : 'Locally entered records — not independently verified.') : 'No booking data loaded. A gap does not establish unannounced demand.'}</p>
       <div class="reality-line">
-        <span><strong>Landings:</strong> ${bookedArr} booked vs ~${expArr.toFixed(1)} expected</span>
-        <span class="reality-guidance">Plan for ~${unannouncedArr} unannounced landing${unannouncedArr !== 1 ? 's' : ''}</span>
+        <span><strong>Landings:</strong> ${bookedArr} local records vs ~${expArr.toFixed(1)} expected</span>
+        <span class="reality-guidance">Gap of ~${unannouncedArr} arrival${unannouncedArr !== 1 ? 's' : ''}</span>
       </div>
       <div class="reality-line">
-        <span><strong>Departures:</strong> ${bookedDep} booked vs ~${expDep.toFixed(1)} expected</span>
-        <span class="reality-guidance">Plan for ~${unannouncedDep} unannounced departure${unannouncedDep !== 1 ? 's' : ''}</span>
+        <span><strong>Departures:</strong> ${bookedDep} local records vs ~${expDep.toFixed(1)} expected</span>
+        <span class="reality-guidance">Gap of ~${unannouncedDep} departure${unannouncedDep !== 1 ? 's' : ''}</span>
       </div>
     `;
   }
@@ -1186,58 +945,28 @@ function renderNext3HoursRadar(day, impact) {
   const noteEl = document.getElementById('next-hours-note');
   if (!statsContainer) return;
 
-  // Extract simulated current hour
-  let currentHour = 10;
-  if (state.simulatedNow.includes('T')) {
-    currentHour = parseInt(state.simulatedNow.split('T')[1].split(':')[0], 10);
-  }
-
-  const nextHours = [currentHour, (currentHour + 1) % 24, (currentHour + 2) % 24];
-  const windowStr = `${currentHour.toString().padStart(2, '0')}:00 – ${((currentHour + 3) % 24).toString().padStart(2, '0')}:00 PST`;
-  if (windowTag) windowTag.textContent = windowStr;
-
+  const time = state.simulatedNow.split('T')[1] || '10:00';
+  const [hour, minute] = time.split(':').map(Number);
+  const start = hour * 60 + minute;
+  const end = Math.min(start + 180, 1440);
+  const label = m => `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
+  if (windowTag) windowTag.textContent = `${formatDateShort(day.date)} · ${label(start)}–${label(end)} PST`;
   const hourly = getHourlyProfileForDay(day, impact.finalArrivals, impact.finalDepartures);
-  let nextArrExp = 0;
-  let nextDepExp = 0;
-  let nextBookedArr = 0;
-  let nextBookedDep = 0;
-  let inTfrWindow = false;
-
-  nextHours.forEach(h => {
-    const hrData = hourly[h];
-    nextArrExp += hrData.arrExp;
-    nextDepExp += hrData.depExp;
-    nextBookedArr += hrData.userArrCount;
-    nextBookedDep += hrData.userDepCount;
-    if (hrData.isTfr) inTfrWindow = true;
+  let arrivals=0, departures=0;
+  hourly.forEach(h => {
+    const overlap = Math.max(0, Math.min(end,(h.hour+1)*60)-Math.max(start,h.hour*60))/60;
+    arrivals += h.arrExp*overlap;
+    departures += h.depExp*overlap;
   });
+  const records = state.userMovements.filter(m => {
+    const [h,min] = m.time.split(':').map(Number);
+    return m.date===day.date && h*60+min>=start && h*60+min<end;
+  });
+  statsContainer.innerHTML = `<div class="next-stat-box"><span class="next-stat-val">${arrivals.toFixed(1)}</span><span class="next-stat-lbl">Expected arrivals</span></div><div class="next-stat-box"><span class="next-stat-val">${departures.toFixed(1)}</span><span class="next-stat-lbl">Expected departures</span></div><div class="next-stat-box"><span class="next-stat-val">${records.length}</span><span class="next-stat-lbl">Local records</span></div>`;
+  if (noteEl) noteEl.textContent = day.game_day && start < 1230 && end > 870
+    ? 'This window overlaps the assumed game-day pause. It is a planning assumption, not an active FAA notice. Verify official restrictions with the airport.'
+    : 'Illustrative hourly allocation, not a live traffic forecast. Reconfirm crew timings; ATC controls clearances and sequencing.';
 
-  statsContainer.innerHTML = `
-    <div class="next-stat-box">
-      <span class="next-stat-val" style="color:var(--color-arrivals);">${nextArrExp.toFixed(1)}</span>
-      <span class="next-stat-lbl">Exp Landings (${nextBookedArr} Booked)</span>
-    </div>
-    <div class="next-stat-box">
-      <span class="next-stat-val" style="color:var(--color-departures);">${nextDepExp.toFixed(1)}</span>
-      <span class="next-stat-lbl">Exp Takeoffs (${nextBookedDep} Booked)</span>
-    </div>
-    <div class="next-stat-box">
-      <span class="next-stat-val">${(nextArrExp + nextDepExp).toFixed(1)}</span>
-      <span class="next-stat-lbl">Total Movements (3h)</span>
-    </div>
-  `;
-
-  if (noteEl) {
-    if (inTfrWindow) {
-      noteEl.innerHTML = `<strong style="color:var(--status-critical);">⚠️ TFR Active:</strong> All Part 91 general aviation movements prohibited surface to FL180 until 20:30. Exemptions require verified TSA screening.`;
-    } else if (nextArrExp > 2.0) {
-      noteEl.innerHTML = `<strong>Inbound Rush:</strong> Heavy landing wave in progress (~${nextArrExp.toFixed(1)} landings). Priority runway turnoffs and quick ramp staging advised.`;
-    } else if (nextDepExp > 2.0) {
-      noteEl.innerHTML = `<strong>Outbound Rush:</strong> Heavy departure push in progress (~${nextDepExp.toFixed(1)} takeoffs). Stagger taxi clearances to avoid runway hold delays.`;
-    } else {
-      noteEl.textContent = `Steady baseline operations during this 3-hour shift window. Monitor slot confirmations.`;
-    }
-  }
 }
 
 /**
@@ -1288,7 +1017,7 @@ function render24HourTimelineChart(day, impact) {
     svg += `<rect x="${tfrX}" y="${padding.top}" width="${tfrW}" height="${chartH}" fill="url(#tfr-stripe)" />
       <rect x="${tfrX}" y="${padding.top}" width="${tfrW}" height="20" fill="rgba(217, 119, 6, 0.15)" />
       <text x="${tfrX + tfrW / 2}" y="${padding.top + 14}" font-size="10" font-weight="bold" fill="var(--status-warning)" text-anchor="middle">
-        TFR 14:30–20:30 (Part 91 GA Blocked)
+        Assumed pause 14:30–20:30
       </text>`;
   }
 
@@ -1400,6 +1129,9 @@ function renderDayMovementsTable() {
  * VIEW 3: FULL FLIGHT MOVEMENT BOARD (CRUD + Filters)
  */
 function renderMovementsBoard() {
+  const source = document.getElementById('movement-source');
+  if (source) source.textContent = state.userMovements.some(m=>m.source==='sample') ? 'DEMO DATA · Includes fictional sample flights. These are not confirmed bookings.' : state.userMovements.length ? 'LOCAL RECORDS · Entered or imported in this browser; not independently verified.' : 'No booking data loaded. Add your records or explicitly load fictional sample movements.';
+
   const tbody = document.getElementById('all-movements-tbody');
   if (!tbody) return;
 
@@ -1813,4 +1545,44 @@ function showToast(msg, isError = false) {
   window._toastTimeout = setTimeout(() => {
     toast.setAttribute('hidden', 'true');
   }, 3200);
+}
+
+/** Presentation layer only: uses the existing daily outputs and weather calculation. */
+function renderWeekOverview() {
+  if (!state.data) return;
+  const days = computeDailyWeatherImpacts();
+  const arrival = days.reduce((a,b)=>b.finalArrivals>a.finalArrivals?b:a);
+  const departure = days.reduce((a,b)=>b.finalDepartures>a.finalDepartures?b:a);
+  const weatherChanged = days.some(d=>d.weather!=='clear');
+  document.getElementById('week-headline').textContent = `Prepare for ${arrival.weekday} arrivals.`;
+  document.getElementById('week-intro').textContent = `${departure.weekday} is your busiest departure day. See what changes across the week, then review the preparation plan.`;
+  document.getElementById('scenario-explanation').textContent = `${state.scenario} demand · ${state.data.scenarios[state.scenario]}. A planning scenario, not an automatic prediction of which case will occur.`;
+  const summary = (d, kind, label) => {
+    const raw = d.day.scenarios[state.scenario];
+    const value = kind==='arrivals'?d.finalArrivals:d.finalDepartures;
+    const ordinary = raw[`ordinary_${kind}`];
+    const diff = ordinary>0?(value/ordinary-1)*100:0;
+    const range = raw[`${kind}_range90`];
+    return `<button class="summary-card ${kind}" data-open-day="${d.date}"><span class="summary-label">${label}<span>↗</span></span><strong>${d.weekday}<small>${formatDateShort(d.date)}</small></strong><div class="summary-metric">${value.toFixed(1)}<span>expected ${kind}</span></div><p><b>${diff>=0?'+':''}${Math.round(diff)}%</b> vs ordinary week (${ordinary.toFixed(1)})</p><span class="summary-range">${weatherChanged?'Unadjusted model':'Model'} 90% range: ${range[0]}–${range[1]}${weatherChanged?' · weather uncertainty not calibrated':''}</span></button>`;
+  };
+  const total = days.reduce((n,d)=>n+d.finalArrivals,0);
+  const ordinaryTotal = days.reduce((n,d)=>n+d.day.scenarios[state.scenario].ordinary_arrivals,0);
+  document.getElementById('week-summary').innerHTML = summary(arrival,'arrivals','Busiest arrival day')+summary(departure,'departures','Busiest departure day')+`<div class="summary-card week-total"><span class="summary-label">The seven-day picture</span><strong>${total.toFixed(1)}<small>expected arrivals</small></strong><p>Compared with ${ordinaryTotal.toFixed(1)} in an ordinary week.</p><span class="summary-range">Super Bowl · Sun 14 Feb<br>Presidents’ Day · Mon 15 Feb</span><button class="text-link" id="view-evidence">See where the numbers come from →</button></div>`;
+  // Keep scale fixed across scenarios; extend only when a weather carryover exceeds it.
+  const max = Math.max(...state.data.days.flatMap(d=>Object.values(d.scenarios).flatMap(s=>[s.expected_arrivals,s.expected_departures,s.ordinary_arrivals,s.ordinary_departures])),...days.flatMap(d=>[d.finalArrivals,d.finalDepartures]))*1.06;
+  document.getElementById('week-bars').innerHTML = days.map(d=>{
+    const raw=d.day.scenarios[state.scenario];
+    const bar=(n,baseline,kind)=>`<div class="daily-bar-row"><span class="bar-kind">${kind==='arrivals'?'Arr':'Dep'}</span><div class="daily-track"><span class="daily-fill ${kind}" style="width:${n/max*100}%"></span><i class="baseline-marker" style="left:${baseline/max*100}%"></i></div><strong>${n.toFixed(1)}</strong></div>`;
+    return `<button class="daily-row ${d.date===arrival.date?'peak-row':''}" data-open-day="${d.date}" aria-label="Explore ${d.weekday} ${formatDateShort(d.date)}: ${d.finalArrivals.toFixed(1)} arrivals, ${d.finalDepartures.toFixed(1)} departures"><span class="daily-date"><b>${d.weekday.slice(0,3)} <span>${formatDateShort(d.date)}</span></b><small>${d.day.game_day?'Super Bowl':d.day.presidents_day?'Presidents’ Day':d.date===arrival.date?'Peak arrivals':d.weather!=='clear'?'Weather what-if':''}</small></span><span class="daily-bars">${bar(d.finalArrivals,raw.ordinary_arrivals,'arrivals')}${bar(d.finalDepartures,raw.ordinary_departures,'departures')}</span><span class="row-arrow">↗</span></button>`;
+  }).join('');
+  const parking = days.reduce((a,b)=>b.day.scenarios[state.scenario].parking_su_p90>a.day.scenarios[state.scenario].parking_su_p90?b:a);
+  const ps = parking.day.scenarios[state.scenario];
+  document.getElementById('parking-context').innerHTML=`<h3>Supporting parking estimate</h3><p>${parking.weekday}: ${ps.parking_su_p90.toFixed(1)} space units at the model’s 90th percentile, against ${ps.ramp_capacity_su.toFixed(1)} capacity. Space units account for aircraft size; they are not aircraft counts. This estimate does not update for the weather what-if.</p>`;
+  document.querySelectorAll('[data-open-day]').forEach(btn=>btn.addEventListener('click',()=>{state.selectedDay=btn.dataset.openDay;switchTab('view-day');window.scrollTo({top:0,behavior:'smooth'});}));
+  document.getElementById('view-evidence').addEventListener('click',()=>{switchTab('view-trust');window.scrollTo({top:0,behavior:'smooth'});});
+}
+
+function invalidatePlanReview() {
+  Object.values(state.proposalStates).forEach(p=>p.status='pending');
+  saveProposals();
 }
