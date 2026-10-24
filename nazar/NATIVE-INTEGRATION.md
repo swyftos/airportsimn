@@ -81,3 +81,5 @@ Alan’s committed baseline and assumptions appear as a separate reference. Thei
 2. Elia: recompute opening inventory and regenerate all parking variants after the agreed forecast changes.
 3. All: review capacity, geometry, costs and uncertainty. Scalar space units cannot authorize an aircraft movement or prove a safe layout.
 4. Nazar: pull the coherent release, refresh, run the tests/verifier and repeat the walkthrough in `DEMO.md`. The dashboard supports these updates without rewriting the UI as long as contracts remain stable.
+
+Coordinated release: see [the release guide](RELEASE.md). The default stops on the current Alan/Marvin policy mismatch; only `--allow-provisional-mismatch` explicitly permits reproducing that provisional demo.
