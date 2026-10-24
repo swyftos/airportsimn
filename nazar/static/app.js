@@ -32,9 +32,11 @@ function render(){
  $('avatar').textContent=profile.initials;$('employee-name').textContent=profile.name;$('employee-role').textContent=profile.position+' · demo';
  $('greeting').textContent=`${profile.name.split(' ')[0]}, start with the capacity gap. Then review the preparations your team needs.`;
  $('org-name').textContent=b?.meta.fbo_name||'No valid dataset loaded';
+ $('sample-notice').hidden=!b||data.source!=='sample';
+ $('use-team-overview').disabled=!manager;
  $('source-badge').textContent=b?`${b.meta.data_classification==='synthetic'?'Synthetic':b.meta.data_classification==='mixed'?'Mixed inputs':'Producer-labelled observed'} · ${data.source==='sample'?'sample demonstration':['team','team-native'].includes(data.source)?'team outputs':'imported bundle'}`:'Inputs unavailable';
  $('review-count').textContent=data.history.length;
- $('no-data').hidden=!!b;$('dashboard-content').hidden=!b;$('export').disabled=!b;
+ $('no-data').hidden=!!b;$('dashboard-content').hidden=!b;$('export').disabled=!b||!!data.input_status?.stale;
  $('no-data-reason').textContent=data.load_error||'Load a valid complete output bundle.';
  $('version-footer').textContent=b?'Dataset '+b.version.slice(0,10):'No active version';
  ['load-contract','load-team','load-sample','refresh-source','import-files','bundle-files'].forEach(id=>$(id).disabled=!manager);
@@ -46,17 +48,28 @@ function render(){
   document.querySelectorAll('[data-scenario]').forEach(el=>{const selected=el.dataset.scenario===state.scenario;el.classList.toggle('selected',selected);el.setAttribute('aria-pressed',selected);});
   renderOverview();
  }
- renderEvidence();renderHistory();
+ renderEvidence();renderHistory();renderReleaseStatus();
+}
+function renderReleaseStatus(){
+ const b=state.data?.bundle,review=b?.release_review,stale=state.data?.input_status?.stale;
+ const banner=$('release-banner');banner.hidden=!(stale||review||(b&&state.data.source!=='sample'));
+ if(banner.hidden)return;
+ const title=stale?'Displayed plan is out of date':review?.label||'Provisional inputs — review not recorded';
+ const message=stale?state.data.input_status.message:review?.message||'Source classification does not establish team approval. Review this dataset before presenting it as the agreed forecast.';
+ banner.innerHTML=`<div class="release-heading"><strong>${esc(title)}</strong><button class="text-button" data-goto="evidence">${stale?'Inspect & refresh inputs':'Inspect assumptions'} →</button></div>${stale?`<p>${esc(message)}</p>`:`<details><summary>What this means</summary><p>${esc(message)}</p>${review?.run_id?`<small>Release ${esc(review.run_id.slice(0,12))} · file hashes matched · human review remains separate</small>`:''}</details>`}`;
 }
 function renderOverview(){
  const b=state.data.bundle,s=state.data.summaries[state.scenario][state.variant],rows=currentRows();
  const shortage=s.peak_shortfall>0;
- $('peak-label').textContent=b.native?'Median parking need at peak':'Parking needed at peak';
- $('gap-label').textContent=b.native?'Median gap after proposed plan':'Uncovered after proposed plan';
+ const peakDay=rows.reduce((peak,row)=>row.parking_units>peak.parking_units?row:peak,rows[0]);
+ $('hero-risk').hidden=!b.native;
+ $('hero-risk').textContent=b.native?`Remaining uncertainty: on ${day(peakDay.date)}, simulated demand exceeds proposed capacity in ${fmt(peakDay.prob_over_prepared*100)}% of runs. This is not a validated event probability.`:'';
+ $('peak-label').textContent=b.native?'Peak parking need · median':'Parking needed at peak';
+ $('gap-label').textContent=b.native?'Gap after preparation · median':'Uncovered after proposed plan';
  $('hero-kicker').textContent=shortage?'Preparation needed':'Capacity outlook';
- $('hero-title').textContent=shortage?`Prepare for a ${fmt(s.peak_shortfall)}-unit parking gap.`:'Your forecast fits on-site capacity.';
+ $('hero-title').textContent=shortage?`Prepare for a ${fmt(s.peak_shortfall)}-unit parking gap.`:'Median demand fits on-site capacity.';
  $('hero-description').textContent=shortage?`Demand first exceeds on-site capacity on ${day(s.first_shortage,{weekday:'long',month:'short',day:'numeric'})}. ${s.remaining_shortfall>0?`The proposed plan still leaves up to ${fmt(s.remaining_shortfall)} units uncovered.`:'The proposed capacity covers the modelled gap if those resources are confirmed.'}`:'Keep checking bookings and departure plans. These estimates are conditional on the supplied assumptions.';
- if(b.native)$('hero-description').textContent='Using the median of simulated daily parking needs: '+$('hero-description').textContent;
+ if(b.native)$('hero-description').textContent+=' This is a median planning estimate; higher demand can still exceed capacity.';
  $('peak').textContent=fmt(s.peak_demand);$('capacity').textContent=fmt(s.capacity_at_peak);$('remaining').textContent=fmt(s.remaining_shortfall);
  $('role-task').textContent={manager:'Your role: verify resources and record the team’s planning decisions.',reservations:'Your role: verify booking estimates and planned departure times.',operations:'Your role: check usable parking capacity and ground-team readiness.'}[state.profile.role];
  renderChart();
@@ -75,7 +88,7 @@ function renderOverview(){
  const recs=b.recommendations.filter(r=>r.scenario===state.scenario&&r.variant===state.variant);
  $('actions').innerHTML=recs.length?recs.map((r,i)=>{
   const review=latestReview(r.id);
-  return `<article class="action"><span class="action-number">${i+1}</span><div><h3>${esc(r.title)}</h3><p>${esc(r.reason)}</p><div class="action-meta"><span>Owner: ${esc(roles[r.owner])}</span><span>Review by ${esc(day(r.due_date))}</span><span>Source: ${esc(r.source)}</span></div><div>${r.evidence.map(e=>`<span class="evidence-chip">${esc(day(e.date))} · ${esc(fields[e.field])}: ${fmt(e.value)}</span>`).join('')}</div></div><div class="action-control"><small>${review?esc(decisions[review.decision]):'Awaiting human review'}</small><button class="secondary" data-review="${esc(r.id)}" ${state.profile.role==='manager'?'':'disabled'}>${review?'Review again':'Review action'} →</button></div></article>`;
+  return `<article class="action"><span class="action-number">${i+1}</span><div><h3>${esc(r.title)}</h3><p>${esc(r.reason)}</p><div class="action-meta"><span>Owner: ${esc(roles[r.owner])}</span><span>Review by ${esc(day(r.due_date))}</span><span>Source: ${esc(r.source)}</span></div><div>${r.evidence.map(e=>`<span class="evidence-chip">${esc(day(e.date))} · ${esc(fields[e.field])}: ${fmt(e.value)}</span>`).join('')}</div></div><div class="action-control"><small>${review?esc(decisions[review.decision]):'Awaiting human review'}</small><button class="secondary" data-review="${esc(r.id)}" ${state.profile.role==='manager'&&!state.data.input_status?.stale?'':'disabled'}>${review?'Review again':'Review action'} →</button></div></article>`;
  }).join(''):'<p class="empty">No recommendations were supplied for this scenario. Ask the resource module owner for preparation advice.</p>';
  $('support-values').innerHTML=`<div class="support-values"><div><strong>${fmt(s.max_staff)}</strong><small>${b.native?'Peak proposed technicians per shift':'Peak people required'}</small></div><div><strong>${fmt(s.total_fuel)}</strong><small>Week’s fuel estimate · gal</small></div></div>`;
  $('uncertainty-copy').textContent=b.meta.interval_description+' '+(b.meta.data_classification==='synthetic'?'These synthetic outputs demonstrate the workflow; they do not establish forecast accuracy.':'Estimated inputs measure assumed traffic, not observed FBO accuracy. Source and model descriptions require review with the model owner.');
@@ -111,6 +124,8 @@ function renderForecastDrivers(){
 }
 function renderEvidence(){
  const {data}=state,b=data.bundle;
+ const ref=data.alan_reference;
+ $('alan-reference').innerHTML=`<h2>Alan’s ordinary-week reference</h2><p>${esc(ref?.message||'Reference not supplied.')}</p>${ref?.available?`<div class="table-scroll"><table><thead><tr><th>Date</th><th>Estimated arrivals</th><th>Estimated departures</th><th>Estimated parked aircraft</th></tr></thead><tbody>${ref.rows.map(r=>`<tr><td>${esc(day(r.date))}</td><td>${fmt(r.arrivals)}</td><td>${fmt(r.departures)}</td><td>${fmt(r.parking_units)}</td></tr>`).join('')}</tbody></table></div>${ref.assumptions.map(a=>`<p class="fine"><strong>${esc(a.label)}:</strong> ${esc(a.value)}. ${esc(a.note)}</p>`).join('')}`:''}`;
  $('dataset-version').textContent=b?'Version '+b.version.slice(0,10):'No active version';
  $('connection-list').innerHTML=(data.source==='team'?data.team_files:(data.native_files||data.team_files)).map(f=>`<div class="connection"><div><strong>${esc(f.file)}</strong><small>${esc(f.path)}</small></div><span class="${f.present?'':'missing'}">${f.present?'File found':'Not supplied'}</span></div>`).join('');
  $('evidence-meta').innerHTML=b?`<h2>Active dataset</h2><dl>${[['Dataset',b.meta.dataset_name],['Source',data.source],['Classification',b.meta.data_classification+' (declared by producer)'],['Operator',b.meta.fbo_name+' · '+b.meta.airport],['Model version',b.meta.model_version],['Generated',b.meta.generated_at],['Uncertainty',b.meta.interval_kind+' — '+b.meta.interval_description],['Window',b.meta.window_start+' to '+b.meta.window_end+' · '+b.meta.timezone],['Notes',b.meta.notes]].map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>`:'<p>No dataset is active. Inspect the loading error and supply all required files.</p>';
@@ -128,8 +143,8 @@ function openReview(id){
 }
 async function changeSource(source,files){
  $('source-result').hidden=true;
- try{state.data=await api(files?'/api/import':'/api/source',files?{files}:{source});render();$('source-result').textContent='Validated and loaded. Reviews from a different dataset version are marked as previous.';$('source-result').classList.remove('error');toast('Dataset loaded successfully.');}
- catch(e){$('source-result').textContent=e.message+' The previously active dataset has been kept.';$('source-result').classList.add('error');}
+ try{error('');state.data=await api(files?'/api/import':'/api/source',files?{files}:{source});render();$('source-result').textContent='Validated and loaded. Reviews from a different dataset version are marked as previous.';$('source-result').classList.remove('error');toast('Dataset loaded successfully.');}
+ catch(e){error(e.message+' The previous dataset has been kept.');$('source-result').textContent=e.message+' The previously active dataset has been kept.';$('source-result').classList.add('error');}
  $('source-result').hidden=false;
 }
 $('login-form').addEventListener('submit',async e=>{e.preventDefault();$('login-error').textContent='';await busy(e.submitter,async()=>{try{await enter(await api('/api/login',{role:$('profile-select').value}));}catch(e){$('login-error').textContent=e.message;}});});
@@ -150,6 +165,7 @@ $('review-form').addEventListener('submit',async e=>{e.preventDefault();$('revie
  try{const result=await api('/api/review',{...state.review,decision:$('decision').value,note:$('review-note').value,checks:{assumptions:$('check-assumptions').checked,availability:$('check-availability').checked,cost:$('check-cost').checked}});state.data.history=result.history;$('review-dialog').close();render();toast('Planning decision recorded. No operational action was sent.');}
  catch(e){$('review-error').textContent=e.message;}
  });});
+$('use-team-overview').addEventListener('click',e=>busy(e.currentTarget,()=>changeSource('team-native')));
 $('load-team').addEventListener('click',e=>busy(e.currentTarget,()=>changeSource('team-native')));
 $('load-contract').addEventListener('click',e=>busy(e.currentTarget,()=>changeSource('team')));
 $('load-sample').addEventListener('click',e=>busy(e.currentTarget,()=>changeSource('sample')));
@@ -160,6 +176,12 @@ $('import-files').addEventListener('click',e=>busy(e.currentTarget,async()=>{
  if(chosen.some(f=>f.size>2000000)||chosen.reduce((sum,f)=>sum+f.size,0)>4500000){$('source-result').hidden=false;$('source-result').textContent='Files are too large. Keep each below 2 MB and the bundle below 4.5 MB.';return;}
  try{const files=Object.fromEntries(await Promise.all(chosen.map(async f=>[f.name,await f.text()])));await changeSource('import',files);}catch(e){$('source-result').hidden=false;$('source-result').textContent=e.message;}
 }));
-$('export').addEventListener('click',()=>{const a=document.createElement('a');a.href='/api/export?'+new URLSearchParams({scenario:state.scenario,variant:state.variant});a.download='readiness-plan.json';a.click();});
+$('export').addEventListener('click',async()=>{try{const response=await fetch('/api/export?'+new URLSearchParams({scenario:state.scenario,variant:state.variant}),{credentials:'same-origin'});if(!response.ok){const result=await response.json();throw new Error(result.error);}const url=URL.createObjectURL(await response.blob()),a=document.createElement('a');a.href=url;a.download='readiness-plan.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(e){error(e.message);}});
 window.addEventListener('hashchange',()=>{if(state.profile)showView(location.hash.slice(1));});
 (async()=>{try{const session=await api('/api/session');if(session.profile)await enter(session);}catch(e){$('login-error').textContent=e.message;}})();
+
+// Refresh status from the server; source files are never silently activated.
+setInterval(async()=>{
+ if(!state.profile||document.hidden||$('review-dialog').open)return;
+ try{const next=await api('/api/dashboard');if(JSON.stringify(next)!==JSON.stringify(state.data)){state.data=next;render();}}catch(e){error('Could not refresh input status: '+e.message);}
+},30000);

@@ -1,54 +1,39 @@
-# Demo and acceptance checklist
+# RampReady: three-minute team demo
 
-## Three-minute story using the handcrafted sample
+## Start from the shared repository
 
-1. **Open the desk as Maya, FBO manager.** Say: “Our focus is FBO parking preparation at a fictional operator at LAX. These initial inputs are synthetic; the team’s models plug into the same interface.”
-2. **Expected outlook.** Start with “Prepare for a 28-unit parking gap.” Point out 92 needed versus 64 available. The manager first learns the size and timing of the problem, not a wall of controls.
-3. **Select a day in the chart.** Compare ordinary and event parking. Explain that arrivals do not equal occupied spaces: existing aircraft, dwell time, footprint and delayed departures determine occupancy. Arrival ranges are supplied assumptions in this demo, not confidence claims.
-4. **Review preparations.** Proposed additional capacity takes 3 days above capacity to 0, conditionally. $3,780 is an illustrative overflow-only cost. It is not a quote or proof of a real-world saving.
-5. **Higher demand, then delayed departures.** Standard higher demand leaves 14 units uncovered; delayed departures leave 27. Show that the tool admits an unresolved problem instead of declaring the airport ready.
-6. **Request changes on the overflow action.** Enter a note asking for verified availability, suitability and a quote. Show the review history. Nothing is ordered or authorized.
-7. **Inspect Data & assumptions.** Show explicit sources, missing teammate files, the assumption ledger, and the model/version. Explain that invalid input is rejected rather than silently replaced with samples.
-8. **Export the plan.** The JSON contains the selected scenario, derived summary, recommendations, version and matched review records for the team to inspect.
+Use Python 3.10+ and run `python3 nazar/app.py` (Windows: `py -3 nazar/app.py`). Open http://127.0.0.1:4180 and choose Maya, the manager demo account. Fresh installs load the current team outputs; if an older installation shows samples, click **Use current team outputs**. No API key is needed. These are demo identities, not verified accounts.
 
-Answer “What decision should AI never make?”: **It must never authorize aircraft movements or override airport safety procedures.** A human must validate physical parking suitability and commit resources. This app records planning reviews only.
+Run `python3 -m unittest discover -s nazar/tests -v` beforehand. With numpy/pandas available, also run `python3 nazar/scripts/verify_team_pipeline.py`. The latter must report `matched`. Read the current values from the screen; do not memorize an earlier release’s numbers.
 
-## Presentation with the connected team models
+## Demonstration script
 
-Run `python3 nazar/scripts/verify_team_pipeline.py` (numpy/pandas required), then use **Data & assumptions → Load current P2/P3 outputs** before presenting this version. Do not narrate the handcrafted sample’s numbers over the native model screens.
+1. **0:00 — The manager’s problem.** “We help one fictional FBO at LAX prepare parking for seven days around the Super Bowl.” Point to the first shortage date, median peak demand, available capacity and remaining gap. Explain that parking units account for aircraft size, not individual marked stands.
+2. **0:30 — Where the numbers come from.** Show the provisional banner. “Our forecast uses estimated FBO allocations from public airport data, plus assumed event multipliers and illustrative reservations. These are conditional scenarios, not confirmed bookings.”
+3. **0:50 — Explore the week.** Compare ordinary and event parking, then select the busiest day. Show its uncertainty range and remaining simulated exceedance risk. A zero median gap does not mean zero risk. Arrivals is an optional supporting view.
+4. **1:15 — Stress-test preparation.** Choose Higher and enable delayed departures. Explain the displayed start date and affected share. Show that remaining shortages persist when the supplied preparation is insufficient. Expand aircraft carryover if asked; it is unconstrained demand beyond the window, not confirmed inventory.
+5. **1:40 — A concrete preparation decision.** Click **Review preparations**. Show overflow, layout and referral proposals with owners and evidence. Expand simulated service impact and cost tradeoffs; describe benefits as conditional estimates and retain negative outcomes.
+6. **2:10 — Keep humans in command.** Review the overflow proposal and choose **Request changes**. Enter “Confirm usable area, availability and a quote before committing resources.” Open Review history to show the exact scenario and variant. Nothing is booked, ordered or authorized. Planning review does not approve the forecast itself.
+7. **2:35 — Evidence and handoff.** Show Data & assumptions, Alan’s separately labelled baseline and the forecast holdout scores. Return to the overview and export the selected plan. The JSON retains release status, scenario, variant, resources, impact and version-matched reviews.
 
-- Expected demand: peak daily P50 parking need 91.7, current capacity 90, proposed 139. The remaining median shortfall is 0; the preparation does not eliminate risk.
-- Compare **Arrivals** to show the supplied ordinary baseline against event estimates. Switch back to Parking to compare ordinary and event daily P50 peaks in the same space units.
-- Select game day: the parking P10–P90 range is 54.8–132.6 units and the supplied simulation exceeds proposed capacity in 7.0% of runs. These are unvalidated synthetic-model outputs, not observed probabilities.
-- Show the impact comparison: Expected mean unaccommodated aircraft changes 9.4 → 0.9, but median net benefit is −$15,006 and preparation pays off in only 38.7% of simulations. Discuss the risk/cost tradeoff; do not pitch guaranteed savings. These figures belong to the currently committed synthetic output set and must be refreshed when producers change it.
-- Show the per-category arrival ranges and P2’s synthetic historical test metrics on the data tab. Historical validation does not validate the assumed event uplift.
-- Enable the departure-delay toggle: under the current synthetic release, Expected peak parking rises from 91.7 to 121.9 su and preparation cost changes from $24,400 to $30,000. Departures shift from Feb 14 onward. Inspect Monday and show its recomputed departures, then compare aircraft demand remaining after Feb 17 (17.6 standard vs 29.7 delayed at P50). Carryover assumes unlimited parking; it is not confirmed on-site inventory.
-- Record a changes-requested review for one variant and verify it does not carry into the other. Export the delayed plan and confirm its resources, impact and carryover match the screen.
-- Review the overflow proposal; the displayed weekly preparation cost is $24,400, including supplied action costs. Record a request for confirmed capacity, geometry checks and quotes.
+Answer to the judges: **AI must never authorize aircraft movements or override airport safety procedures.** Qualified humans must validate geometry, clearances, availability and spending.
 
-## What each teammate should demonstrate before the final rehearsal
+## Refresh after teammates finish their models
 
-- Alan: explain ordinary-week selection, sources, weekday mapping, capacities and synthetic assumptions.
-- Marvin: explain the central prediction, how lower/higher were built, uncertainty meaning and holdout evaluation if available. Event attendance is not aircraft demand.
-- Elia: reconcile occupancy against visits, demonstrate carry-in/carry-out and delayed departures, verify overflow constraints and costs. Export daily peaks without calling them hourly measurements.
-- Nazar: load the complete native comparison release, reconcile dashboard summaries, show one source failure and one successful human review; explain stale reviews.
+1. Agree the model assumptions with Alan and Marvin. Elia updates opening inventory as necessary.
+2. Producers regenerate with `python marvin/person_2_forecasting/run_provisional.py` (numpy/pandas required) and commit the complete release together.
+3. Pull the merged changes, run tests and the pipeline verifier, then click **Refresh current source**.
+4. Changed files cause a visible stale-plan warning and block review/export. Missing or mismatched release files cannot silently fall back to samples. Fix the complete release before refreshing again.
 
-## Integration acceptance
+The optional seven-file contract under Advanced is not the team’s current integration route. Its three missing exports must be produced in the matching schema before that path can load. Alan’s parked-aircraft estimates must not be substituted for P3 space units.
 
-- [ ] All owners agree on dates, timezone, footprint units, variants and file fields.
-- [ ] Team files load without manually editing dashboard values.
-- [ ] Ordinary-week, lower, expected, higher and supported delay outputs reconcile against producer files.
-- [ ] Uncertainty is labelled according to how it was actually computed.
-- [ ] A missing file, mismatched evidence value or invalid numerical input produces a readable error and keeps the previous dataset.
-- [ ] Dataset changes invalidate old approvals; scenario/variant reviews are distinct.
-- [ ] Non-manager demo roles can inspect but cannot submit reviews/change data.
-- [ ] Approval requires checks and a meaningful note; unresolved capacity remains visible after approval.
-- [ ] The team explains proposed-vs-confirmed resources and identifies all synthetic assumptions.
-- [ ] No passenger data, real tail numbers, secret keys or `.state` database are committed.
-- [ ] Export and startup work on another teammate’s laptop.
+## Final team acceptance
 
-## Remaining work before calling it a complete hackathon solution
+- All scenario/variant numbers reproduce from the producer files; the verifier reports matched.
+- Forecast assumptions are agreed, or visibly presented as provisional.
+- Uncertainty, estimated/synthetic provenance and cost assumptions are explained honestly.
+- Manager-only review, missing/changed-input rejection, export and role switching work.
+- Each teammate can start the app from a clean pull; local review databases are not shared through Git.
+- The presenter rehearses the full sequence and can explain why preparation still leaves risk.
 
-The dashboard and integration module work now. Marvin’s learned forecasting component and Elia’s Monte Carlo parking component are now integrated from their committed exports. Their current outputs are synthetic. Ordinary parking and the separate delay variant now come from P3. Publishing and regenerating the complete forecast/parking release against the agreed estimated inputs remains team work. The sample generator is not the forecasting component. An LLM is optional and must not invent numerical results. Demonstrate model skill with honest validation or present conditional resource improvement estimates with their assumptions. UI polish comes after an early end-to-end integration run, not after every model is finished.
-
-LA 2028 is a stretch goal. Keep it outside the core demo until this seven-day story is reliable.
+This is a local hackathon decision-support demo, not a deployed operational system. No live LLM is required: the learned forecast and Monte Carlo/resource rules supply the recommendations. LA 2028 remains outside the core demonstration.

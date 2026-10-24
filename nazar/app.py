@@ -17,6 +17,7 @@ from urllib.parse import urlsplit, parse_qs
 from readiness.contracts import ContractError, load_bundle, summarize
 from readiness.data import sample_bundle, team_bundle, team_status, native_bundle, native_status
 from readiness.storage import ReviewStore
+from readiness.release_status import alan_reference
 
 ROOT=Path(__file__).resolve().parent
 PROFILES={
@@ -46,8 +47,19 @@ class Application:
         candidate=self.read_source(source,files)
         self.store.save_source(source,files if source=='import' else None)
         self.bundle=candidate; self.source=source; self.imported=files if source=='import' else None; self.load_error=None
+    def input_status(self):
+        if not self.bundle:return {'stale':True,'message':self.load_error or 'No valid dataset is loaded.'}
+        if self.source=='import':return {'stale':False,'message':'Imported snapshot; re-import to use updated files.'}
+        try:
+            candidate=self.read_source(self.source,self.imported)
+            if candidate['version']!=self.bundle['version']:
+                return {'stale':True,'message':'Inputs changed since this plan was loaded. Refresh the current source before reviewing or exporting; the screen still shows the previous snapshot.'}
+        except (ContractError,OSError,ValueError,TypeError,KeyError) as exc:
+            return {'stale':True,'message':'Current source cannot be verified: '+str(exc)+' The screen still shows the previous snapshot.'}
+        return {'stale':False,'message':'Loaded snapshot matches current source files.'}
     def snapshot(self):
         return {'bundle':self.bundle,'source':self.source,'load_error':self.load_error,
+                'input_status':self.input_status(),'alan_reference':alan_reference(self.repo_root),
                 'summaries':{s:{v:summarize(self.bundle,s,v) for v in self.bundle['variants']} for s in ('low','medium','high')} if self.bundle else {},
                 'native_files':native_status(self.repo_root), 'team_files':team_status(self.repo_root),'history':self.store.history(self.bundle['version'] if self.bundle else '')}
 
@@ -92,9 +104,11 @@ class Handler(BaseHTTPRequestHandler):
                 if url.path=='/api/export':
                     q=parse_qs(url.query)
                     if not self.app.bundle: return self.reply(409,{'error':'No valid dataset is loaded.'})
+                    freshness=self.app.input_status()
+                    if freshness['stale']: return self.reply(409,{'error':freshness['message']})
                     try:
                         sc=q.get('scenario',['medium'])[0]; variant=q.get('variant',['standard'])[0]
-                        data={'dataset':self.app.bundle['meta'],'source':self.app.source,'assumptions':self.app.bundle['assumptions'],'basis':'Daily P50 parking peaks from P3' if self.app.bundle.get('native') else 'Supplied daily peak parking fixtures/outputs','version':self.app.bundle['version'],'scenario':sc,'variant':variant,
+                        data={'release_review':self.app.bundle.get('release_review',{'status':'unreviewed','label':'Review status not supplied'}),'dataset':self.app.bundle['meta'],'source':self.app.source,'assumptions':self.app.bundle['assumptions'],'basis':'Daily P50 parking peaks from P3' if self.app.bundle.get('native') else 'Supplied daily peak parking fixtures/outputs','version':self.app.bundle['version'],'scenario':sc,'variant':variant,
                             'summary':summarize(self.app.bundle,sc,variant),
                             'simulation_impact':self.app.bundle.get('impacts_by_variant',{}).get(variant,self.app.bundle.get('impacts',{})).get(sc),
                             'baseline':self.app.bundle['baseline'],
@@ -150,6 +164,8 @@ class Handler(BaseHTTPRequestHandler):
                     self.app.activate(source,files)
                     return self.reply(200,self.app.snapshot())
                 if path=='/api/review':
+                    freshness=self.app.input_status()
+                    if freshness['stale']: return self.reply(409,{'error':freshness['message']})
                     bundle=self.app.bundle
                     if not bundle or body.get('version')!=bundle['version']:
                         return self.reply(409,{'error':'This plan is stale. Refresh the data and review the new version.'})

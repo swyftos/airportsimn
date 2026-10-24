@@ -63,6 +63,7 @@ class ServerTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.root=Path(self.temp.name)
         self.server=create_server(0,self.root/'state',self.root/'repo')
+        self.server.application.activate('sample')
         self.thread=threading.Thread(target=self.server.serve_forever,daemon=True);self.thread.start()
         self.cookie='';self.csrf='';self.login('manager')
     def tearDown(self):
@@ -145,6 +146,46 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(self.request('/api/review',review)[0],201)
         self.assertEqual(len(self.request('/api/export?scenario=medium&variant=standard')[1]['reviews']),1)
         self.assertEqual(self.request('/api/export?scenario=medium&variant=missing')[0],400)
+    def test_release_tampering_blocks_review_export_and_refresh(self):
+        from readiness.release_status import RELEASE_FILES, MANIFEST
+        repo=self.root/'hashed-release'
+        for relative in RELEASE_FILES|{MANIFEST}:
+            dest=repo/relative;dest.parent.mkdir(parents=True,exist_ok=True)
+            dest.write_bytes((ROOT.parent/relative).read_bytes())
+        self.server.application.repo_root=repo
+        self.assertEqual(self.request('/api/source',{'source':'team-native'})[0],200)
+        self.assertEqual(self.request('/api/review',self.review())[0],201)
+        exported=self.request('/api/export?scenario=medium&variant=standard')[1]
+        self.assertEqual(exported['release_review']['status'],'provisional_pending_Alan_review')
+        original=self.server.application.bundle['version']
+        path=repo/'elia/ordinary_week_parking.csv';saved=path.read_bytes();path.write_bytes(saved+b'\n')
+        self.assertTrue(self.request('/api/dashboard')[1]['input_status']['stale'])
+        self.assertEqual(self.request('/api/review',self.review())[0],409)
+        self.assertEqual(self.request('/api/export?scenario=medium&variant=standard')[0],409)
+        self.assertEqual(self.request('/api/source',{'source':'team-native'})[0],400)
+        self.assertEqual(self.server.application.bundle['version'],original)
+        path.write_bytes(saved)
+        self.assertEqual(self.request('/api/source',{'source':'team-native'})[0],200)
+        self.assertFalse(self.request('/api/dashboard')[1]['input_status']['stale'])
+    def test_changed_native_files_block_review_and_export_until_refresh(self):
+        from readiness.team_adapter import NATIVE_PATHS
+        repo=self.root/'changed-inputs'
+        for name,relative in NATIVE_PATHS.items():
+            dest=repo/relative;dest.parent.mkdir(parents=True,exist_ok=True)
+            dest.write_bytes((ROOT.parent/relative).read_bytes())
+        self.server.application.repo_root=repo
+        self.assertEqual(self.request('/api/source',{'source':'team-native'})[0],200)
+        original=self.server.application.bundle['version']
+        report=repo/NATIVE_PATHS['p2_report'];data=json.loads(report.read_text());data['seed']=12345;report.write_text(json.dumps(data))
+        status,snapshot=self.request('/api/dashboard');self.assertTrue(snapshot['input_status']['stale'])
+        self.assertEqual(snapshot['bundle']['version'],original)
+        self.assertEqual(self.request('/api/review',self.review())[0],409)
+        self.assertEqual(self.request('/api/export?scenario=medium&variant=standard')[0],409)
+        self.assertEqual(self.request('/api/source',{'source':'team-native'})[0],200)
+        self.assertFalse(self.request('/api/dashboard')[1]['input_status']['stale'])
+        self.assertNotEqual(self.server.application.bundle['version'],original)
+        export=self.request('/api/export?scenario=medium&variant=standard')[1]
+        self.assertEqual(export['release_review']['status'],'unreviewed')
     def test_login_malformed_role(self):
         self.assertEqual(self.request('/api/login',{'role':[]})[0],400)
     def test_path_traversal_and_static(self):
