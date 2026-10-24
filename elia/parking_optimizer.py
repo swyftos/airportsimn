@@ -7,11 +7,12 @@ normal operating plan over thousands of Monte Carlo demand paths.
 The optimizer only RECOMMENDS. Every action carries requires_human_approval and an
 approver role; nothing here accepts, rejects or cancels an individual reservation.
 
-Inputs (P2, ../marvin/Person2-Forecasting/):
-    demand_predictions.csv   date, scenario, aircraft_category, direction, expected_movements, ...
-    uncertainty_results.csv  same keys + lower90_prediction, upper90_prediction
+Input (P2, ../marvin/person_2_forecasting/uncertainty_results.csv):
+    date, scenario, aircraft_category, target (arrivals|departures), expected, lower, upper
+The earlier P2 layout (Person2-Forecasting/, direction, expected_movements, lower90/upper90_prediction)
+is still accepted. Category names are mapped to light / midsize / large.
 Monte Carlo: each (day, category, direction) is drawn from a split lognormal whose median is
-expected_movements and whose 5th/95th percentiles are P2's 90 % prediction range. A shared
+the expected value and whose 5th/95th percentiles are P2's planning range. A shared
 shock (mc_common_shock_share) makes the whole event run bigger or smaller together, since
 P2 warns that its category intervals must not be summed independently.
 
@@ -26,8 +27,9 @@ import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).parent
-P2_DIR = HERE.parent / "marvin" / "Person2-Forecasting"
-CATS = ("light", "super_midsize", "large")
+P2_DIRS = (HERE.parent / "marvin" / "person_2_forecasting", HERE.parent / "marvin" / "Person2-Forecasting")
+CATS = ("light", "midsize", "large")
+CATEGORY_ALIASES = {"light_jet": "light", "midsize_jet": "midsize", "super_midsize": "midsize", "large_jet": "large"}
 DIRS = ("arrivals", "departures")
 SHIFTS = ("morning", "day", "night")
 Z90 = 1.6449  # standard normal 95th percentile, edge of a central 90 % range
@@ -38,17 +40,22 @@ def load_assumptions(path=HERE / "assumptions_p3.csv") -> dict:
     return dict(zip(df["parameter"], df["value"].astype(float)))
 
 
-def load_demand(p2_dir=P2_DIR) -> pd.DataFrame:
-    p2_dir = Path(p2_dir)
-    keys = ["date", "scenario", "aircraft_category", "direction"]
-    d = pd.read_csv(p2_dir / "demand_predictions.csv")
-    u = pd.read_csv(p2_dir / "uncertainty_results.csv")[keys + ["lower90_prediction", "upper90_prediction"]]
-    df = d.merge(u, on=keys, validate="one_to_one")
+def load_demand(p2_dir=None) -> pd.DataFrame:
+    p2_dir = Path(p2_dir) if p2_dir else next((d for d in P2_DIRS if d.exists()), P2_DIRS[0])
+    df = pd.read_csv(p2_dir / "uncertainty_results.csv").rename(columns={
+        "target": "direction", "expected": "expected_movements",
+        "lower": "lower90_prediction", "upper": "upper90_prediction"})
+    if "expected_movements" not in df:  # earlier P2 layout kept the point forecast in demand_predictions.csv
+        keys = ["date", "scenario", "aircraft_category", "direction"]
+        d = pd.read_csv(p2_dir / "demand_predictions.csv")[keys + ["expected_movements"]]
+        df = df.merge(d, on=keys, validate="one_to_one")
+    df["aircraft_category"] = df["aircraft_category"].replace(CATEGORY_ALIASES)
     unknown = set(df["aircraft_category"]) - set(CATS)
     if unknown:
         raise ValueError(f"unknown aircraft categories from P2: {sorted(unknown)}")
     df.attrs["source"] = str(p2_dir)
-    df.attrs["provenance"] = sorted(df["input_provenance"].unique()) if "input_provenance" in df else []
+    prov = next((c for c in ("historical_data_class", "input_provenance") if c in df), None)
+    df.attrs["provenance"] = sorted(df[prov].unique()) if prov else []
     return df
 
 
@@ -68,7 +75,8 @@ def sample_demand(mid, lo, hi, a, rng):
     s = a["mc_common_shock_share"]
     z = np.sqrt(s) * rng.standard_normal((n, 1, 1, 1)) + np.sqrt(1 - s) * rng.standard_normal((n,) + mid.shape)
     sig_up = np.log(np.maximum(hi, mid) / mid) / Z90
-    sig_dn = np.log(mid / np.clip(lo, 1e-6, mid)) / Z90
+    # a lower bound of 0 (P2 floors ranges at zero) has no lognormal equivalent: mirror the upper spread
+    sig_dn = np.where(lo > 0, np.log(mid / np.clip(lo, 1e-6, mid)) / Z90, sig_up)
     return mid * np.exp(np.where(z > 0, sig_up, sig_dn) * z)
 
 
@@ -259,7 +267,7 @@ def run(demand: pd.DataFrame, a: dict):
 
 def main():
     a = load_assumptions()
-    demand = load_demand(sys.argv[1] if len(sys.argv) > 1 else P2_DIR)
+    demand = load_demand(sys.argv[1] if len(sys.argv) > 1 else None)
     table, recs = run(demand, a)
     table.to_csv(HERE / "resource_requirements.csv", index=False)
     out = {"meta": {

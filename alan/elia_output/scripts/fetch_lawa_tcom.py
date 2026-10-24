@@ -4,10 +4,10 @@ Source page: https://www.lawa.org/lawa-investor-relations/statistics-for-lax/vol
 Each TCOM PDF gives the report month and the same month one year earlier, so every month appears in
 two reports; both readings are kept and compared as a consistency check.
 
-Output: processed/lawa_monthly_movements.csv
+Output: alan/elia_output/data/processed/lawa_monthly_movements.csv
     year, month, air_carrier, air_taxi, general_aviation, military, total,
     report_file, report_url, column (current|prior_year), retrieved_utc
-Raw PDFs are cached in raw/ so the run is repeatable offline.
+Raw PDFs are cached in alan/elia_output/data/raw/lawa_tcom/ (git-ignored) so the run is repeatable offline.
 """
 import csv
 import datetime as dt
@@ -19,8 +19,8 @@ from pathlib import Path
 
 import pdfplumber
 
-HERE = Path(__file__).parent
-RAW, OUT = HERE / "raw", HERE / "processed"
+ROOT = Path(__file__).resolve().parent.parent  # alan/elia_output/
+RAW, OUT = ROOT / "data" / "raw" / "lawa_tcom", ROOT / "data" / "processed"
 BASE = "https://www.lawa.org"
 PAGE = BASE + "/lawa-investor-relations/statistics-for-lax/volume-of-air-traffic"
 UA = {"User-Agent": "Mozilla/5.0 (SpartHill Hacks research; contact elia108@proton.me)"}
@@ -64,7 +64,7 @@ def parse(pdf_path: Path):
 
 
 def main(min_year=2015):
-    RAW.mkdir(exist_ok=True)
+    RAW.mkdir(parents=True, exist_ok=True)
     OUT.mkdir(exist_ok=True)
     retrieved = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
     rows, failed = [], []

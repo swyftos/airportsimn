@@ -7,7 +7,7 @@ Rules, in order of preference for each month:
                        page points to the wrong file, or whose PDF is a scan)
   3. annual_residual   official annual total minus the 11 other months (only if exactly one month is missing)
 
-Outputs (processed/):
+Outputs (alan/elia_output/data/processed/):
   lawa_annual_10yr.csv       official annual totals scraped from LAWA
   lax_monthly_movements.csv  year, month, air_carrier, air_taxi, general_aviation, military, total,
                              value_source, excluded_covid, data_classification, source_url
@@ -20,8 +20,8 @@ from pathlib import Path
 
 import pandas as pd
 
-HERE = Path(__file__).parent
-OUT = HERE / "processed"
+ROOT = Path(__file__).resolve().parent.parent  # alan/elia_output/
+OUT = ROOT / "data" / "processed"
 ANNUAL_URL = "https://www.lawa.org/lawa-investor-relations/statistics-for-lax/10-year-summary/faa-aircraft-movements"
 CATS = ["air_carrier", "air_taxi", "military", "general_aviation", "total"]  # column order on the LAWA page
 EXCLUDED = {2020, 2021, 2022}  # team guideline: COVID years excluded from trend fitting
