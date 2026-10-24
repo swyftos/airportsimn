@@ -134,7 +134,17 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(status,200);self.assertEqual(export['source'],'team-native');self.assertEqual(len(export['reviews']),1)
         self.assertEqual(export['simulation_impact'],data['bundle']['impacts']['medium'])
         self.assertEqual(len(export['forecast_drivers']),42)
-        self.assertEqual(self.request('/api/export?scenario=medium&variant=departure_delay_24h')[0],400)
+        status,delayed=self.request('/api/export?scenario=medium&variant=departure_delay_24h')
+        self.assertEqual(status,200)
+        self.assertNotEqual(delayed['summary']['preparation_cost'],export['summary']['preparation_cost'])
+        self.assertEqual(delayed['simulation_impact'],data['bundle']['impacts_by_variant']['departure_delay_24h']['medium'])
+        self.assertEqual(len(delayed['resources']),7)
+        self.assertEqual(len(delayed['carryover']),2)
+        self.assertEqual(delayed['reviews'],[])
+        review=self.review();review['variant']='departure_delay_24h'
+        self.assertEqual(self.request('/api/review',review)[0],201)
+        self.assertEqual(len(self.request('/api/export?scenario=medium&variant=standard')[1]['reviews']),1)
+        self.assertEqual(self.request('/api/export?scenario=medium&variant=missing')[0],400)
     def test_login_malformed_role(self):
         self.assertEqual(self.request('/api/login',{'role':[]})[0],400)
     def test_path_traversal_and_static(self):
@@ -242,7 +252,69 @@ class NativeAdapterTests(unittest.TestCase):
         with self.assertRaisesRegex(ContractError,'reconcile'):load_native(raw)
     def test_changed_input_changes_review_version(self):
         from readiness.team_adapter import load_native
-        f=self.native_files();old=load_native(f)['version'];j=json.loads(f['p2_report']);j['seed']+=1;f['p2_report']=json.dumps(j)
+        f=self.native_files();old=load_native(f)['version'];j=json.loads(f['p2_report']);j['seed']=(j.get('seed') or 0)+1;f['p2_report']=json.dumps(j)
         self.assertNotEqual(old,load_native(f)['version'])
+
+class ParkingVariantTests(unittest.TestCase):
+    def files(self):
+        from readiness.data import native_paths, read_paths
+        return read_paths(native_paths(ROOT.parent))
+    def test_release_loads_both_variants_and_ordinary_units(self):
+        from readiness.team_adapter import load_native
+        b=load_native(self.files())
+        self.assertEqual(b['variants'],['standard','departure_delay_24h'])
+        self.assertEqual(len(b['resources']),42)
+        self.assertEqual(len(b['carryover']),7)
+        original=list(csv.DictReader(io.StringIO(self.files()['p3_ordinary'])))
+        for row,expected in zip(b['baseline'],original):
+            self.assertEqual(row['parking_units'],float(expected['parking_demand_su_p50']))
+        for variant,key in [('standard','p3_recommendations'),('departure_delay_24h','p3_delay_recommendations')]:
+            plans=json.loads(self.files()[key])['scenarios']
+            for sc in ('low','medium','high'):
+                self.assertEqual(summarize(b,sc,variant)['preparation_cost'],plans[sc.title()]['preparation_cost_usd'])
+                self.assertEqual(b['impacts_by_variant'][variant][sc],plans[sc.title()]['impact'])
+    def test_partial_release_rejected(self):
+        from readiness.team_adapter import load_native
+        from readiness.parking_variants import EXTENSION_PATHS
+        for key in EXTENSION_PATHS:
+            with self.subTest(key=key):
+                raw=self.files();del raw[key]
+                with self.assertRaisesRegex(ContractError,'four files'):load_native(raw)
+    def test_bad_ordinary_join_quantiles_and_carryover_rejected(self):
+        from readiness.team_adapter import load_native
+        mutations=[('p3_ordinary','arrivals_baseline','999'),('p3_ordinary','parking_demand_su_p10','999'),('p3_ordinary','capacity_normal_su','99'),('p3_carryover','opening_aircraft','99'),('p3_carryover','aircraft_remaining_p90','0'),('p3_carryover','departures_pushed_past_window_p50','1')]
+        for name,field,value in mutations:
+            with self.subTest(name=name,field=field):
+                raw=self.files();NativeAdapterTests.alter_csv(self,raw,name,field,value)
+                with self.assertRaises(ContractError):load_native(raw)
+    def test_duplicate_and_missing_carryover_rejected(self):
+        from readiness.team_adapter import load_native
+        for duplicate in (True,False):
+            raw=self.files();lines=raw['p3_carryover'].splitlines()
+            raw['p3_carryover']='\n'.join(lines+[lines[1]] if duplicate else lines[:-1])
+            with self.assertRaisesRegex(ContractError,'duplicate or missing'):load_native(raw)
+    def test_delay_metadata_and_provenance_rejected(self):
+        from readiness.team_adapter import load_native
+        provenance=json.loads(self.files()['p2_report'])['historical_data_classes']
+        different=['synthetic'] if provenance != ['synthetic'] else ['estimated']
+        for field,value in [('variant','standard'),('demand_provenance',different)]:
+            raw=self.files();doc=json.loads(raw['p3_delay_recommendations']);doc['meta'][field]=value
+            raw['p3_delay_recommendations']=json.dumps(doc)
+            with self.assertRaises(ContractError):load_native(raw)
+    def test_extension_change_invalidates_reviews(self):
+        from readiness.team_adapter import load_native
+        raw=self.files();old=load_native(raw)['version']
+        NativeAdapterTests.alter_csv(self,raw,'p3_carryover','aircraft_remaining_p50','15.9')
+        self.assertNotEqual(load_native(raw)['version'],old)
+    def test_partial_disk_release_does_not_fall_back(self):
+        from readiness.data import native_bundle
+        from readiness.team_adapter import NATIVE_PATHS
+        from readiness.parking_variants import EXTENSION_PATHS
+        with tempfile.TemporaryDirectory() as tmp:
+            raw=self.files()
+            for key,rel in NATIVE_PATHS.items():
+                p=Path(tmp)/rel;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(raw[key])
+            key='p3_ordinary';p=Path(tmp)/EXTENSION_PATHS[key];p.write_text(raw[key])
+            with self.assertRaisesRegex(ContractError,'Missing inputs'):native_bundle(tmp)
 
 if __name__=='__main__':unittest.main()

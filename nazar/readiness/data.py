@@ -35,10 +35,22 @@ def team_bundle(repo_root):
     return load_bundle(read_paths(team_paths(repo_root)))
 
 
+def native_paths(repo_root):
+    from .team_adapter import NATIVE_PATHS
+    from .parking_variants import EXTENSION_PATHS
+    paths={k:Path(repo_root)/v for k,v in NATIVE_PATHS.items()}
+    extensions={k:Path(repo_root)/v for k,v in EXTENSION_PATHS.items()}
+    if any(p.exists() for p in extensions.values()):
+        paths.update(extensions)  # Partial releases fail in read_paths, never silently fall back.
+    return paths
+
+
 def native_bundle(repo_root):
-    from .team_adapter import NATIVE_PATHS, load_native
-    return load_native(read_paths({k:Path(repo_root)/v for k,v in NATIVE_PATHS.items()}))
+    from .team_adapter import load_native
+    return load_native(read_paths(native_paths(repo_root)))
+
 
 def native_status(repo_root):
     from .team_adapter import NATIVE_PATHS
-    return [{'file':k,'path':v,'present':(Path(repo_root)/v).is_file()} for k,v in NATIVE_PATHS.items()]
+    from .parking_variants import EXTENSION_PATHS
+    return [{'file':k,'path':v,'present':(Path(repo_root)/v).is_file()} for k,v in (NATIVE_PATHS|EXTENSION_PATHS).items()]

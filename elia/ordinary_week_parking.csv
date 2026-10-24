@@ -1,0 +1,8 @@
+date,variant,arrivals_baseline,departures_baseline,parking_demand_su_p10,parking_demand_su_p50,parking_demand_su_p90,capacity_normal_su,utilization_normal_p50,prob_over_normal_capacity,risk_level,staff_required_peak_shift,techs_normal_per_shift,fuel_gallons_p50,data_status
+2027-02-11,ordinary,20.1,20.1,24.4,32.4,41.5,90.0,0.36,0.0,Low,3,3,6675,provisional
+2027-02-12,ordinary,20.1,20.1,24.6,34.7,45.5,90.0,0.386,0.0,Low,3,3,6686,provisional
+2027-02-13,ordinary,20.1,20.1,24.8,35.9,47.9,90.0,0.399,0.0,Low,3,3,6684,provisional
+2027-02-14,ordinary,20.1,20.1,25.2,37.0,50.0,90.0,0.412,0.0,Low,3,3,6683,provisional
+2027-02-15,ordinary,20.3,20.3,25.5,38.0,51.9,90.0,0.423,0.0,Low,3,3,6710,provisional
+2027-02-16,ordinary,20.2,20.2,25.7,38.8,53.8,90.0,0.431,0.0,Low,3,3,6656,provisional
+2027-02-17,ordinary,20.2,20.2,26.2,39.5,55.5,90.0,0.439,0.001,Low,3,3,6656,provisional

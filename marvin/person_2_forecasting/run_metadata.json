@@ -7,8 +7,8 @@
     2022
   ],
   "seed": null,
-  "history_file": "marvin\\person_2_forecasting\\provisional_inputs\\historical_traffic.csv",
-  "planning_file": "marvin\\person_2_forecasting\\provisional_inputs\\planning_inputs.csv",
+  "history_file": "marvin/person_2_forecasting/provisional_inputs/historical_traffic.csv",
+  "planning_file": "marvin/person_2_forecasting/provisional_inputs/planning_inputs.csv",
   "historical_data_classes": [
     "estimated"
   ],

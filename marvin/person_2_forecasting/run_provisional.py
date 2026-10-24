@@ -55,12 +55,17 @@ def run():
     assert list(after)==list(before) and list(after['meta'])==list(before['meta'])
     assert after['meta']['demand_provenance']==['estimated']
     assert digest(source)==source_hash
+    # Verify every standard/ordinary/delay artifact before stamping this release.
+    subprocess.run([sys.executable, '-B', 'nazar/scripts/verify_team_pipeline.py'], cwd=ROOT, check=True)
     paths=[HERE/name for name in contract['csv_columns']]
     paths += [HERE/'run_metadata.json',HERE/'forecast_model.py',HERE/'convert_monthly_to_daily.py',
               HERE/'PROVISIONAL_ASSUMPTIONS.md',HERE/'run_provisional.py',
               HERE/'provisional_inputs/historical_traffic.csv',HERE/'provisional_inputs/planning_inputs.csv',
               P3/'resource_requirements.csv',P3/'scenario_recommendations.json',P3/'assumptions_p3.csv',
-              P3/'parking_optimizer.py',source]
+              P3/'parking_optimizer.py',source,
+              P3/'ordinary_week_parking.csv',P3/'parking_carryover.csv',
+              P3/'resource_requirements_departure_delay_24h.csv',
+              P3/'scenario_recommendations_departure_delay_24h.json']
     manifest={'generated_at':datetime.now(timezone.utc).isoformat(),
               'status':'provisional_pending_Alan_review','historical_data_class':'estimated',
               'reservation_class':'synthetic','event_multipliers':'assumed_not_empirically_validated',
