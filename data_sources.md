@@ -14,6 +14,7 @@ owner's own doc — this file is the merged index:
 - `alan/docs/super_bowl_surge_benchmark.md` — Super Bowl LVI/LVII/LVIII surge benchmark (Step 4)
 - `alan/docs/lax_private_capacity_and_cost_research.md` — LAX private-aircraft capacity and landing cost research (Items 1 & 2)
 - `alan/docs/vip_tfr_operational_impact.md` — VIP/high-security TFR operational impact (Item 5)
+- `alan/docs/traffic_categories_and_fleet_mix.md` — traffic categories, fleet-mix and FBO-share evidence, operations-vs-visits
 
 ---
 
