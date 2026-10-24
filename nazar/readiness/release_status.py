@@ -16,7 +16,11 @@ EVIDENCE_FILES={P2+p for p in ('FAA_EVENT_UPDATE.md','build_event_inputs.py',
     'alan/elia_output/data/processed/superbowl_lvi_daily_profile.csv',
     'alan/elia_output/data/processed/opsnet_daily_superbowl.csv',
     'alan/elia_output/scripts/analyze_superbowl_lvi.py',
-    'alan/elia_output/data_sources_lawa_bts.md'}
+    'alan/elia_output/data_sources_lawa_bts.md',
+    'alan/elia_output/data/processed/opsnet_lax_monthly.csv',
+    'alan/data/processed/security_restriction_model_input.csv',
+    'elia/resource_requirements_security_restriction.csv',
+    'elia/scenario_recommendations_security_restriction.json'}
 RELEASE_FILES={P2+p for p in (
     'demand_predictions.csv','uncertainty_results.csv','evaluation_metrics.csv',
     'daily_totals.csv','run_metadata.json','forecast_model.py',
@@ -36,7 +40,7 @@ def evidence_review(root, run_id):
     try:audit=json.loads(path.read_text(encoding='utf-8-sig'))
     except ValueError as exc:raise ContractError('FAA event evidence manifest contains invalid JSON.') from exc
     if not isinstance(audit,dict) or audit.get('release_run_id')!=run_id or not isinstance(audit.get('files'),dict) or set(audit['files'])!=EVIDENCE_FILES:
-        raise ContractError('FAA event evidence manifest must match this release and the documented 12 evidence files.')
+        raise ContractError('FAA event evidence manifest must match this release and the documented 16 evidence files.')
     for name,expected in audit['files'].items():
         target=(root/name).resolve()
         if not target.is_relative_to(root) or not target.is_file() or target.stat().st_size>5_000_000 or digest(target)!=expected:
