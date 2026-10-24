@@ -63,3 +63,13 @@ def test_ordinary_week_uses_p2_baseline():
     assert len(table) == 7 and (table["data_status"] == "provisional").all()
     assert (table["parking_demand_su_p10"] <= table["parking_demand_su_p90"]).all()
     assert carry["opening_aircraft"] == A["initial_transient_aircraft"]
+
+
+def test_ramp_capacity_matches_area_derivation():
+    derived = A["ramp_area_m2"] * A["usable_parking_share"] / A["m2_per_su"]
+    assert round(derived) == A["ramp_capacity_su"]
+
+
+def test_opening_inventory_follows_p2_baseline():
+    implied = po.implied_opening_inventory(po.load_demand(), A)
+    assert abs(implied - A["initial_transient_aircraft"]) < 0.1

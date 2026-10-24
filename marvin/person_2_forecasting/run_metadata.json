@@ -6,13 +6,13 @@
     2021,
     2022
   ],
-  "seed": 42,
-  "history_file": "outputs\\demo_historical_traffic.csv",
-  "planning_file": "outputs\\demo_planning_inputs.csv",
+  "seed": null,
+  "history_file": "marvin\\person_2_forecasting\\provisional_inputs\\historical_traffic.csv",
+  "planning_file": "marvin\\person_2_forecasting\\provisional_inputs\\planning_inputs.csv",
   "historical_data_classes": [
-    "synthetic"
+    "estimated"
   ],
   "nominal_baseline_coverage": 0.9,
   "uncertainty": "Baseline split-conformal intervals scaled by assumed multipliers; event coverage not validated",
-  "caution": "Synthetic results are not real forecast accuracy. Human review required."
+  "caution": "Estimated or synthetic inputs do not establish observed FBO accuracy. Human review required."
 }

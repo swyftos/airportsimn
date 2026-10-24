@@ -1,8 +1,12 @@
 parameter,value,unit,classification,source_or_rationale
-ramp_capacity_su,90,space units,synthetic,Fictional FBO main ramp. 1 space unit (su) = one light jet parking spot
+ramp_capacity_su,75,space units,estimate,round(ramp_area_m2 x usable_parking_share / m2_per_su). Range 61 to 91 su for 550-650 m2 per su and 75-95 % usable. Low confidence: the area is a 2008 figure
+ramp_area_m2,52600,m2,benchmark,Atlantic Aviation LAX ramp reported as 13 acres in 2008 (AIN; Nazar source NAZAR-S07 in alan/docs/data_sources_nazar.md). Reference facility for the fictional FBO. Not a current survey
+m2_per_su,600,m2 per space unit,estimate,Light-jet position (Citation CJ3 16.3 m span x 15.6 m length) plus 3 m clearance and half of a 24 m shared taxilane = 589 m2. Same method gives 1.46 su for a Challenger 350 and 2.57 su for a G650
+usable_parking_share,0.85,share of ramp,estimate,Ramp left for parking after fuel-truck lanes hangar fronts and ground equipment areas
 overflow_capacity_su,40,space units,synthetic,Fictional remote apron that can be leased for the event week. Activation needs management approval
 tow_packing_gain,0.10,share of ramp,estimate,Tighter tow-in packing when aircraft stay several nights. Planning estimate to be confirmed with ops
-initial_transient_aircraft,12,aircraft,synthetic,Transient aircraft already parked on Feb 11 morning
+initial_transient_aircraft,22.2,aircraft,estimate,Opening inventory on 2027-02-11 morning = P2 baseline arrivals on 2027-02-11 (20.14) x opening_dwell_days (Little's law). Recompute when P2 changes; test_opening_inventory_follows_p2_baseline fails otherwise
+opening_dwell_days,1.1,days,benchmark,Average ordinary dwell used to set initial_transient_aircraft. Value from Alan's ledger avg_dwell_days (40 % turns / 45 % overnight / 15 % multi-day)
 mix_light,0.47,share,estimate,Category share of the initial parked aircraft. Matches P2 forecast mix
 mix_midsize,0.33,share,estimate,Category share of the initial parked aircraft. Matches P2 forecast mix
 mix_large,0.20,share,estimate,Category share of the initial parked aircraft. Matches P2 forecast mix
