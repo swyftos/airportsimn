@@ -1,0 +1,7 @@
+aircraft_category,direction,scope,evaluation_data,n_test,model_mae,baseline_mae,improvement_pct,interval_coverage90,train_end,calibration_end,evaluation_note
+large,arrivals,fbo,synthetic,189,1.4259,1.4385,0.8755,0.9101,2024-12-19,2025-06-20,ordinary weeks; not validation of Super Bowl uplift or FBO capture share
+large,departures,fbo,synthetic,189,1.4461,1.4954,3.2936,0.8783,2024-12-19,2025-06-20,ordinary weeks; not validation of Super Bowl uplift or FBO capture share
+light,arrivals,fbo,synthetic,189,1.7652,1.7903,1.4065,0.8889,2024-12-19,2025-06-20,ordinary weeks; not validation of Super Bowl uplift or FBO capture share
+light,departures,fbo,synthetic,189,1.6827,1.7579,4.2785,0.9048,2024-12-19,2025-06-20,ordinary weeks; not validation of Super Bowl uplift or FBO capture share
+super_midsize,arrivals,fbo,synthetic,189,2.0717,2.2149,6.4655,0.8677,2024-12-19,2025-06-20,ordinary weeks; not validation of Super Bowl uplift or FBO capture share
+super_midsize,departures,fbo,synthetic,189,1.8369,2.0086,8.5499,0.8836,2024-12-19,2025-06-20,ordinary weeks; not validation of Super Bowl uplift or FBO capture share
