@@ -56,6 +56,19 @@ do not include charter flights, only private" — Alan, mid-project). Part
 135/air_taxi is excluded from the current baseline (`alan/baseline.csv`)
 and from Marvin's `private_only_review/` folder.
 
+**Real Part 135 records do exist in the repo, kept deliberately
+separate**: Elia's `alan/elia_output/data/processed/opsnet_lax_daily.csv`
+already has a full daily `air_taxi` column (FAA ATADS/OPSNET,
+`verified_public`) for the same 2015-2025 window as the GA data,
+cross-checked 132/132 months against `opsnet_lax_daily_check.csv`.
+`alan/scripts/build_historical_traffic_air_taxi.py` turns this into
+`alan/data/processed/historical_traffic_air_taxi_interim.csv` using the
+same daily-direct method as the Part 91 pipeline. **This output does not
+feed `alan/baseline.csv`** and is not meant to — it exists only for
+comparison/context, e.g. grounding the Medium forecast scenario's
+air-taxi-derived event-size uplift (+15.5%, confirmed with Marvin) in a
+real measured air-taxi baseline instead of an unsourced number.
+
 ### 1.3 Part 91 — general_aviation
 
 **FAA definition**: the general operating and flight rules that apply to
@@ -81,6 +94,17 @@ further split:
 - **Business aviation support flights** — positioning, maintenance,
   ferry flights — that generate a movement but not a "visit" with a
   passenger needing FBO services.
+
+**Concrete sourced example of positioning-flight contamination**: Atlantic
+Aviation's own 2013 LAX hangar project filing
+(`alan/data/processed/alan_5010/` chain of custody; see Item 1a in
+`alan/docs/lax_private_capacity_and_cost_research.md`) states the explicit
+purpose of basing more aircraft at LAX was to let owners **stop flying
+in empty to position the aircraft before a passenger trip** — cutting
+operations from 4 per customer trip (fly in empty, fly out, fly in, fly
+out with passengers) down to 2 (based at LAX, fly out and back with
+passengers only). This is a real, government-filed example of exactly the
+positioning-flight contamination described above, not a hypothetical.
 
 **Project scope**: this is the category the project's narrowed, private-
 only baseline is built on (`alan/scripts/build_historical_traffic.py`,

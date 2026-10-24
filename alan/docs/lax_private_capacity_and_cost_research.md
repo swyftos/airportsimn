@@ -23,6 +23,22 @@ current state; verified independently that construction completed).
 — independently corroborated across Atlantic's own release and AIN trade
 press, describing a real, completed, operating structure.
 
+**Additional detail recovered from the original 2013 LAWA project filing**
+(decrypted and extracted locally; this is the primary CEQA-style document
+behind the AIN reporting above, not a separate source): in 2004, the
+predecessor operator (Mercury Air Group, acquired by Atlantic in 2007)
+built a 10,059 sq ft FBO customer service/customs building plus a
+**concrete aircraft parking apron** on the same leasehold — a real
+construction record, though the filing does not give the apron's area.
+The filing also explicitly states the 2013/2016 hangar project's purpose:
+letting owners who previously based their aircraft elsewhere **stop
+flying in empty to position the aircraft** before a passenger trip,
+cutting operations per customer trip from 4 (empty positioning in/out,
+then passenger in/out) to 2 (based at LAX, passenger in/out only). See
+`alan/docs/traffic_categories_and_fleet_mix.md` section 1.3 for how this
+grounds the project's positioning-flight contamination discussion in a
+real, sourced example rather than a general statement.
+
 ## Item 1b — Runway throughput (sanity-check ceiling only)
 
 Same FAA source Marvin also used for his Item 3 cross-check — see
