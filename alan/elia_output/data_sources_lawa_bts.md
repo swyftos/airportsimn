@@ -1,10 +1,10 @@
 # Step 2 — LAWA statistics cross-check and BTS scope check (Elia)
 
-Written to be merged into Alan's `data_sources.md`. Retrieval date for every source below: **2026-10-23** (exact UTC timestamps in `processed/lawa_monthly_movements.csv`). Everything is reproducible:
+Elia's part of Step 2, stored in `alan/elia_output/`, to be merged into `alan/docs/data_sources.md`. Retrieval date for every source below: **2026-10-23** (exact UTC timestamps in `alan/elia_output/data/processed/lawa_monthly_movements.csv`). Everything is reproducible:
 
 ```
-python fetch_lawa_tcom.py 2015   # downloads 129 TCOM PDFs into raw/, parses FAA movement block
-python build_lawa_series.py      # cleans, fills gaps, validates against LAWA official annual totals
+python alan/elia_output/scripts/fetch_lawa_tcom.py 2015   # downloads 129 TCOM PDFs into alan/elia_output/data/raw/lawa_tcom/, parses FAA movement block
+python alan/elia_output/scripts/build_lawa_series.py      # cleans, fills gaps, validates against LAWA official annual totals
 ```
 
 ## Sources
@@ -16,7 +16,7 @@ python build_lawa_series.py      # cleans, fills gaps, validates against LAWA of
 | L3 | LAWA "FBO Rental Car Services at LAX and VNY" | https://www.lawa.org/lawa-investor-relations/statistics-for-lax/fbo-rental-car-services-lax-and-vny | Checked and **not used**: it reports car-rental revenue and transactions at FBOs, not aircraft activity | n/a | n/a |
 | B1 | BTS Air Carrier Statistics (T-100) database description | https://www.transtats.bts.gov/DatabaseInfo.asp?QO_VQ=EEE&DB_URL= | Scope check only, no data pulled (see below) | n/a | n/a |
 
-## Deliverables in `processed/`
+## Deliverables in `alan/elia_output/data/processed/`
 
 - `lax_monthly_movements.csv`: 132 months (2015-01 to 2025-12, plus 2026 to August), one row per month. Columns `year, month, air_carrier, air_taxi, general_aviation, military, total, value_source, excluded_covid, data_classification, source_url`. Years 2020, 2021, 2022 are kept and flagged `excluded_covid=True`, never silently dropped.
 - `lawa_annual_10yr.csv`: official annual totals (L2).
