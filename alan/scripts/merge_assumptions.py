@@ -3,6 +3,9 @@ root-level assumptions.csv deliverable.
 
 Sources, each with a different schema:
   alan/assumptions.csv            id,label,value,unit,classification,source,note
+                                   (written by build_baseline.py on every run)
+  alan/assumptions_research.csv   already in the output schema below; Alan's hand-maintained
+                                   research rows (landing fee, hangar, TFR), copied as-is
   alan/data/processed/assumptions_nazar.csv
                                    assumption_id,parameter,value,unit,classification,
                                    confidence,source_ids,status,notes
@@ -112,6 +115,14 @@ def load_elia():
 CARRIED_FIELDS = ("confidence", "status", "note")
 
 
+def load_alan_research():
+    """Alan's research rows, kept in their own hand-maintained file because build_baseline.py
+    rewrites alan/assumptions.csv; they are regenerated like any other source, so they no
+    longer trip the stale-row warning."""
+    with open(ROOT / "alan" / "assumptions_research.csv", newline="") as f:
+        return list(csv.DictReader(f))
+
+
 def load_existing():
     """The ledger this script is about to overwrite, keyed by id. Used
     both to preserve rows this script can't regenerate, and to carry
@@ -143,7 +154,8 @@ def fill_from_existing(row, existing):
 
 def main():
     existing = load_existing()
-    regenerated = [fill_from_existing(r, existing) for r in load_alan() + load_nazar() + load_elia()]
+    regenerated = [fill_from_existing(r, existing)
+                   for r in load_alan() + load_alan_research() + load_nazar() + load_elia()]
     regenerated_ids = {r["id"] for r in regenerated}
     preserved = [r for id_, r in existing.items() if id_ not in regenerated_ids]
     rows = preserved + regenerated
