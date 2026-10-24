@@ -75,6 +75,22 @@ The effect is measured, not assumed: on LAX days with at least 0.5 in of rain, c
 
 Result: the game-day peak moves from 17.4 to 17.1 su in Medium (14.2 → 14.5 su Low, 23.0 → 22.8 su High, where Monday absorbs the delayed movements). Weather is a minor factor for parking compared with the event scenarios or a 24-hour delay.
 
+## Sensitivity and capacity stress (`sensitivity.py`)
+
+`sensitivity_tornado.csv` and `capacity_stress.csv` (2,000 Monte Carlo paths per run, same seed; written by Gemini, reviewed). One input changes at a time, Medium scenario, standard variant (base peak 17.4 su):
+
+| Input (low / base / high) | Medium peak P50, su | Swing |
+|---|---|---|
+| FBO share 5 % / 10 % / 15 % | 8.7 / 17.4 / 26.0 | 17.3 |
+| Opening dwell 0.8 / 1.1 / 1.5 days | 15.0 / 17.4 / 20.5 | 5.5 |
+| Aircraft mix light-heavy / 47-33-20 / large-heavy | 15.4 / 17.4 / 20.0 | 4.6 |
+| Departures before the peak 30 / 50 / 70 % | 18.8 / 17.4 / 15.9 | 2.9 |
+| Large-jet footprint 2.0 / 2.5 / 3.0 su | 16.1 / 17.4 / 18.5 | 2.4 |
+
+The FBO share drives the result far more than anything else, and it is an assumption. Dwell time and aircraft mix come next; both could be measured with ADS-B data.
+
+Capacity stress: the same demand against ramps of 10 to 75 su. Parking never binds above 40 su. The smallest tested ramp at which fewer than 0.5 aircraft a run go unaccommodated without preparation is 20 / 20 / 30 su (Low / Medium / High), and 30 / 30 / 40 su with the 24-hour delay. Below that, the plan's tow-in packing (free) and overflow apron (40 su at $4,000 a day) remove almost all unaccommodated aircraft, but the apron costs more than the revenue it protects ($2,400 an aircraft) in most runs. Preparation pays off in 85 % of runs only for the 10 su ramp with the 24-hour delay in High, and in about half of the runs at 15 su in that case. Sizing capacity to the share matters: Atlantic held about 56 % of the two incumbents' leased land, so a ramp proportional to a 10 % share would be roughly 75 × 10 / 56 ≈ 13 su, inside the range where parking binds. That proportional sizing is an illustration for the team's capacity decision, not a measured stand count.
+
 ## Aircraft still parked after 2027-02-17 (`parking_carryover.csv`)
 
 One row per variant and scenario: opening aircraft, aircraft remaining after the last day (P10, P50, P90, demand not limited by capacity), space units remaining at P50, and departures pushed past the window by the delay.

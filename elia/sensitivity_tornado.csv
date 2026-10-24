@@ -1,6 +1,6 @@
 parameter,low_value,base_value,high_value,peak_p50_low,peak_p50_base,peak_p50_high,swing_p50,peak_p90_low,peak_p90_high,note
-demand_scale,0.5,1.0,1.5,8.5,17.0,25.5,17.0,10.6,31.8,"mc_runs=2000; FBO share 0.05 / 0.10 / 0.15; max prob_over_normal_capacity low=0.000, base=0.000, high=0.000"
-opening_dwell_days,0.8,1.1,1.5,14.8,17.0,20.0,5.2,18.9,24.3,"mc_runs=2000; opening dwell days; max prob_over_normal_capacity low=0.000, base=0.000, high=0.000"
-aircraft_mix,"(0.60,0.30,0.10)","(0.47,0.33,0.20)","(0.30,0.35,0.35)",15.1,17.0,19.5,4.4,18.8,25.0,"mc_runs=2000; fleet mix light/midsize/large; max prob_over_normal_capacity low=0.000, base=0.000, high=0.000"
-dep_share_before_peak,0.3,0.5,0.7,18.5,17.0,15.5,3.0,23.0,19.6,"mc_runs=2000; departure share before arrival peak; max prob_over_normal_capacity low=0.000, base=0.000, high=0.000"
-su_large,2.0,2.5,3.0,15.8,17.0,18.1,2.3,19.8,22.7,"mc_runs=2000; large jet space unit footprint; max prob_over_normal_capacity low=0.000, base=0.000, high=0.000"
+demand_scale,0.5,1.0,1.5,8.7,17.4,26.0,17.3,10.8,32.3,"mc_runs=2000; FBO share 0.05 / 0.10 / 0.15; max prob_over_normal_capacity low=0.000, base=0.000, high=0.000"
+opening_dwell_days,0.8,1.1,1.5,15.0,17.4,20.5,5.5,19.2,24.8,"mc_runs=2000; opening dwell days; max prob_over_normal_capacity low=0.000, base=0.000, high=0.000"
+aircraft_mix,"(0.60,0.30,0.10)","(0.47,0.33,0.20)","(0.30,0.35,0.35)",15.4,17.4,20.0,4.6,19.1,25.4,"mc_runs=2000; fleet mix light/midsize/large; max prob_over_normal_capacity low=0.000, base=0.000, high=0.000"
+dep_share_before_peak,0.3,0.5,0.7,18.8,17.4,15.9,2.9,23.3,19.9,"mc_runs=2000; departure share before arrival peak; max prob_over_normal_capacity low=0.000, base=0.000, high=0.000"
+su_large,2.0,2.5,3.0,16.1,17.4,18.5,2.4,20.0,23.1,"mc_runs=2000; large jet space unit footprint; max prob_over_normal_capacity low=0.000, base=0.000, high=0.000"

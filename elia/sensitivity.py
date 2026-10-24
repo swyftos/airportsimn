@@ -313,7 +313,7 @@ def main():
     print("\nCapacity Thresholds (smallest tested capacity where no-prep unaccommodated mean < 0.5):")
     print("-" * 70)
     for (var, scen), cap in thresholds.items():
-        print(f"  {var:20} scenario {scen:6}: {cap:2d} su")
+        print(f"  {var:20} scenario {scen:6}: {cap if cap is not None else 'above all tested'} su")
     print("=" * 70)
 
 
