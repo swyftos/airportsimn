@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "dataset_name": "Super Bowl planning demonstration",
+  "fbo_name": "Pacific Executive FBO",
+  "airport": "LAX",
+  "timezone": "America/Los_Angeles",
+  "window_start": "2027-02-11",
+  "window_end": "2027-02-17",
+  "data_classification": "synthetic",
+  "interval_kind": "assumed_range",
+  "interval_description": "Illustrative arrival ranges, not calibrated statistical intervals. Parking values are daily peak fixtures.",
+  "model_version": "sample-fixtures-1.0",
+  "generated_at": "2026-10-23T12:00:00-07:00",
+  "notes": "Fictional FBO and handcrafted demonstration outputs. No live bookings, actual partner capacity or trained forecast is represented."
+}

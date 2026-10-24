@@ -1,0 +1,7 @@
+id,label,value,unit,classification,source,note
+capacity,Usable FBO capacity,64,parking units,synthetic,Team demonstration fixture,Not measured LAX capacity. The operator must verify usable space.
+units,Aircraft footprint convention,1 / 1.5 / 2.5,light / midsize / large units,assumption,Integration contract example,Scalar units do not establish safe physical positions or clearances.
+price,Illustrative overflow price,45,USD per unit per day,assumption,Team demonstration fixture,No supplier quote or availability has been obtained.
+arrivals,Arrival range,central minus 4 / plus 6,aircraft per day,synthetic,Handcrafted demonstration,Not a prediction interval and not a confidence score.
+fuel,Fuel service example,270,gallons per arriving aircraft,assumption,Supporting sample only,Not a fuel purchase forecast. Replace with Person 3 outputs.
+stays,Parking and delayed departures,daily peak snapshots,parking units,synthetic,Handcrafted standard and delayed fixtures,These snapshots demonstrate the interface; they are not calculated from real visits.

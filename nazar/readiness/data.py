@@ -1,0 +1,44 @@
+"""Explicit source loading. Missing real/team files never become sample data silently."""
+from pathlib import Path
+from .contracts import FILES, ContractError, load_bundle
+
+TEAM_PATHS = {
+    'manifest.json': ('elia','manifest.json'),
+    'baseline.csv': ('alan','baseline.csv'),
+    'assumptions.csv': ('alan','assumptions.csv'),
+    'demand_predictions.csv': ('marvin','demand_predictions.csv'),
+    'uncertainty_results.csv': ('marvin','uncertainty_results.csv'),
+    'resource_requirements.csv': ('elia','resource_requirements.csv'),
+    'scenario_recommendations.json': ('elia','scenario_recommendations.json'),
+}
+
+def read_paths(paths):
+    missing=[name for name,path in paths.items() if not path.is_file()]
+    if missing: raise ContractError('Missing inputs: '+', '.join(missing))
+    files={}
+    for name,path in paths.items():
+        if path.stat().st_size>2_000_000: raise ContractError(f'{name} exceeds 2 MB.')
+        try: files[name]=path.read_text(encoding='utf-8-sig')
+        except UnicodeError: raise ContractError(f'{name} must be UTF-8 text.')
+    return files
+
+def sample_bundle(app_root):
+    return load_bundle(read_paths({n:Path(app_root)/'sample-data'/n for n in FILES}))
+
+def team_paths(repo_root):
+    return {n:Path(repo_root).joinpath(*parts) for n,parts in TEAM_PATHS.items()}
+
+def team_status(repo_root):
+    return [{'file':n,'path':'/'.join(TEAM_PATHS[n]),'present':p.is_file()} for n,p in team_paths(repo_root).items()]
+
+def team_bundle(repo_root):
+    return load_bundle(read_paths(team_paths(repo_root)))
+
+
+def native_bundle(repo_root):
+    from .team_adapter import NATIVE_PATHS, load_native
+    return load_native(read_paths({k:Path(repo_root)/v for k,v in NATIVE_PATHS.items()}))
+
+def native_status(repo_root):
+    from .team_adapter import NATIVE_PATHS
+    return [{'file':k,'path':v,'present':(Path(repo_root)/v).is_file()} for k,v in NATIVE_PATHS.items()]
