@@ -85,6 +85,8 @@ function scenarioNote(day) {
   if (!s.departures) return 'Departures are the same in every scenario; only landings change (the model places the extra event arrivals on this day).';
   return '';
 }
+const WEATHER_NAMES = { clear: 'Clear', rain: 'Rain', heavy_rain: 'Heavy rain', heavy_fog: 'Heavy fog' };
+function weatherName(type) { return WEATHER_NAMES[type] || type; }
 function weatherProbLabel(type) { return `${(state.data.weather.february_probability[type] * 100).toFixed(1)}% of Feb days`; }
 function signedPct(x) { const v = Math.round(x * 100); return `${v >= 0 ? '+' : ''}${v}%`; }
 
@@ -1110,7 +1112,7 @@ function renderDayDetail() {
     if (day.game_day) b.push('<span class="badge badge-restriction">GAME DAY</span>');
     if (day.presidents_day) b.push('<span class="badge badge-peak-dep">PRESIDENTS\' DAY</span>');
     if (isRestrictionDay(day)) b.push(`<span class="badge badge-restriction">PAUSE ${restrictionLabel()} (ASSUMED)</span>`);
-    b.push(`<span class="badge ${impact.weather !== 'clear' ? 'badge-warning' : 'badge-ok'}">Weather: ${impact.weather}</span>`);
+    b.push(`<span class="badge ${impact.weather !== 'clear' ? 'badge-warning' : 'badge-ok'}">Weather: ${weatherName(impact.weather)}</span>`);
     const sens = scenarioSensitivity(day);
     if (!sens.arrivals && !sens.departures) b.push('<span class="badge badge-info">SAME IN ALL SCENARIOS</span>');
     badgesEl.innerHTML = b.join(' ');
@@ -1211,6 +1213,9 @@ function renderNext3HoursRadar(day, impact) {
     if (windowTag) windowTag.textContent = `${formatDateShort(simDate)} ${hhmm(start - startIdx * 24)} – ${endIdx !== startIdx ? endDay + ' ' : ''}${hhmm(endClock)}`;
   }
   if (outside && windowTag && startIdx === -1) windowTag.textContent = 'Outside the planning week';
+  // Booked flights are certain, so the expectation never shows fewer movements than are already booked
+  nextArrExp = Math.max(nextArrExp, nextBookedArr);
+  nextDepExp = Math.max(nextDepExp, nextBookedDep);
 
   statsContainer.innerHTML = `
     <div class="next-stat-box">

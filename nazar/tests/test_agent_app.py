@@ -129,7 +129,11 @@ class DemoInBrowserTests(unittest.TestCase):
     def test_next_three_hours_count_the_booked_landings(self):
         self.assertIn('(0 Booked)',self.r['friday_next_hours_before'])
         self.assertIn('(3 Booked)',self.r['friday_next_hours_after'])  # 10:40, 11:05, 12:20 fall in 10:00-13:00
+        for text in (self.r['friday_next_hours_before'],self.r['friday_next_hours_after']):
+            for expected,booked in re.findall(r'([\d.]+) Exp \w+ \((\d+) Booked\)',text):
+                self.assertGreaterEqual(float(expected),int(booked),text)
     def test_game_day_page_shows_the_pause(self):
+        self.assertIn('Weather: Heavy rain',self.r['sunday_page'])
         self.assertEqual(self.r['saved_weather'],'heavy_rain')
         self.assertIn('Sunday 14 February 2027',self.r['sunday_page']);self.assertIn('14:30–20:30',self.r['sunday_page'])
     def test_proposals_can_be_acknowledged(self):

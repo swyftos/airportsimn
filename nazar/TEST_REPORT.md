@@ -31,8 +31,8 @@ The JavaScript checks need `node`; the browser check also needs Google Chrome (o
 
 ## Feedback: things to fix or decide
 
-1. **Next-3-hours box contradicts itself in the demo (fix before presenting).** Friday 10:00 after logging the demo flights shows "1.8 Exp Landings (3 Booked)". The forecast is lower than what is already booked. Expected should never be below booked: show max(booked, forecast), or "3 booked + ~0 more". A judge will notice. (Nazar)
-2. **Raw key on the game-day page.** It shows "Weather: heavy_rain" instead of "Heavy rain". (Nazar)
+1. **FIXED in this PR. Next-3-hours box contradicted itself in the demo.** Friday 10:00 after logging the demo flights showed "1.8 Exp Landings (3 Booked)". It now shows max(forecast, booked), and a browser test checks expected >= booked.
+2. **FIXED in this PR. Raw key on the game-day page.** It showed "Weather: heavy_rain"; it now shows "Heavy rain" (tested).
 3. **Fog increases traffic in the app.** Measured heavy-fog effect: Part 91 -4.3%, Part 135 **+3.7%** (95% CI +0.2% to +7.3%), so the app adds +0.7% on a fog day and nothing carries over. Is this real (diversions from other airports?) or should fog be 0 when not significant? (Marvin)
 4. **Rain on Wednesday 17 Feb loses flights.** Lost movements move to the next day, but the week ends, so they disappear. Fine, but say so in the app or the Q&A. (Nazar)
 5. **Two test files with the same name.** `marvin/person_2_forecasting/test_forecast_model.py` and `marvin/person_2_part91_part135_forecast/test_forecast_model.py` collide, so `pytest` from the repo root stops with "import file mismatch". Rename one (e.g. `test_part_forecast_model.py`) or add `__init__.py` files. (Marvin)
