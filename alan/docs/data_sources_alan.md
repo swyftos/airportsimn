@@ -36,6 +36,34 @@ Local copies: `../data/raw/alan_5010/LAX_5010_master_record.pdf` (the printed
 5010 record, all 5 pages) and `../data/raw/alan_5010/airnav_lax_excerpt.md`
 (AirNav extraction notes).
 
+## Based-aircraft gap: sources checked and ruled out (2026-10-23)
+
+Before falling back to a tagged assumption, three additional sources were
+checked specifically to fill the based-aircraft gap. All three were dead
+ends — recorded here so nobody else re-does this search:
+
+- **FAA National Based Aircraft Inventory Program** (https://basedaircraft.com) —
+  this is the FAA's purpose-built system for exactly this number, but it is
+  login-gated with no public lookup. The data likely exists behind it but is
+  not accessible without FAA-internal credentials.
+- **California Public Use Airport List** (Caltrans Division of Aeronautics,
+  `capublicuseairports_jul2026_a11y.xlsx`, downloaded and parsed directly) —
+  LAX is listed, but the file only carries identification fields (name,
+  city, county, lat/long, FAA Loc ID, site number, Caltrans area). No
+  based-aircraft column exists in this file at all.
+- **LAWA FBO lease board report** (the same document behind NAZAR-S01,
+  https://lawa.granicus.com/MetaViewer.php?clip_id=689&meta_id=46799&view_id=4) —
+  scanned PDF with no extractable text layer. Would need OCR to search, and
+  even then would only yield leased square footage, not a based-aircraft
+  count or hangar/tiedown capacity number.
+
+Conclusion: based-aircraft count for LAX is not retrievable from any public
+source checked so far. Next step if revisited: OCR the LAWA lease PDF, or
+contact LAWA/FAA directly. Until then, use a tagged **assumption** if the
+model needs a number, reasoning from LAX's near-zero based-GA population
+relative to its commercial traffic and the known FBO footprint (Atlantic,
+Signature) from Nazar's apron research.
+
 ## Known limitations
 
 - Acreage (3,500) is whole-airport, not FBO ramp/apron area — that's
