@@ -89,6 +89,10 @@ def run():
               HERE/'build_event_inputs.py',HERE/'provisional_inputs/event_evidence.json',
               HERE/'test_forecast_model.py',HERE/'forecast_output_contract.json',
               HERE/'provisional_inputs/monthly_reconciliation.csv',
+              ROOT/'alan/elia_output/data/processed/opsnet_lax_monthly.csv',
+              P3/'resource_requirements_security_restriction.csv',
+              P3/'scenario_recommendations_security_restriction.json',
+              ROOT/'alan/data/processed/security_restriction_model_input.csv',
               ROOT/'alan/elia_output/data/processed/superbowl_lvi_surge.csv',
               ROOT/'alan/elia_output/data/processed/superbowl_lvi_daily_profile.csv',
               ROOT/'alan/elia_output/data/processed/opsnet_daily_superbowl.csv',
@@ -104,15 +108,15 @@ def run():
     audit={'release_run_id':manifest['run_id'],
            'files':{str(p.relative_to(ROOT)).replace(chr(92),'/'):digest(p) for p in evidence_paths}}
     (HERE/'event_evidence_manifest.json').write_text(json.dumps(audit,indent=2),encoding='utf-8')
-    # The dashboard validates exactly 12 evidence files; newer inputs and variants get their own sidecar.
-    extra_paths=[ROOT/'alan/elia_output/data/processed/opsnet_lax_monthly.csv',
-                 HERE/'provisional_inputs/holiday_history.csv',HERE/'backtest_metrics.csv',
-                 ROOT/'alan/data/processed/security_restriction_model_input.csv',
+    # The dashboard validates exactly these 16 evidence files (nazar/readiness/release_status.py); newer inputs and
+    # outputs get their own sidecar.
+    extra_paths=[HERE/'provisional_inputs/holiday_history.csv',HERE/'backtest_metrics.csv',
                  ROOT/'marvin/person_2_part91_part135_forecast/results/weather_effect_measured.csv',
-                 *sorted(P3.glob('resource_requirements_*.csv')),*sorted(P3.glob('scenario_recommendations_*.json'))]
+                 P3/'resource_requirements_heavy_rain.csv',P3/'scenario_recommendations_heavy_rain.json',
+                 P3/'slot_advisor.csv',P3/'slot_recommendations.json',
+                 P3/'sensitivity_tornado.csv',P3/'capacity_stress.csv',P3/'sensitivity_share_robustness.csv']
     extra={'release_run_id':manifest['run_id'],
-           'files':{str(p.relative_to(ROOT)).replace(chr(92),'/'):digest(p) for p in extra_paths
-                    if p.name not in ('resource_requirements_departure_delay_24h.csv','scenario_recommendations_departure_delay_24h.json')}}
+           'files':{str(p.relative_to(ROOT)).replace(chr(92),'/'):digest(p) for p in extra_paths}}
     (HERE/'extended_evidence_manifest.json').write_text(json.dumps(extra,indent=2),encoding='utf-8')
     print('Verified schema stability, provenance, monthly conservation, forecast/range consistency and source preservation.')
 if __name__=='__main__': run()
