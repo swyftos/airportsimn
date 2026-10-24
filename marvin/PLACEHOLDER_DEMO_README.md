@@ -1,7 +1,5 @@
-# Person 2 placeholder forecast for PR #27
+# Person 2 forecast package (Part 91 and Part 135)
 
-The reviewable Person 2 package is now in [person_2_part91_part135_forecast/](person_2_part91_part135_forecast/README.md) as individual source, test and result files. Open its [forecast report](person_2_part91_part135_forecast/results/report.html) for the seven-day Low, Medium and High scenarios.
+The package in `person_2_part91_part135_forecast/` forecasts FBO arrivals and departures for February 11–17, 2027 from observed FAA daily counts (general aviation as Part 91, air taxi as Part 135), with measured Super Bowl scenarios, a learned Presidents Day effect and observed NOAA weather effects. Shares, hourly shapes, service times, prices and the VIP pause are assumptions or placeholders; see its README for the full list.
 
-This standalone package includes selected fleets' Part 91 and Part 135 activity and excludes Part 121. It replaces the earlier private-only ZIP demonstration in this PR. Its history and reservations remain synthetic, the Part 91 event profile is illustrative, and the Part 135 event factor transfers the observed 2022 LAX FAA Air Taxi five-day excess by assumption. FAA Air Taxi does not identify selected fleets. The invented 24 stands and inherited 75 space units are labeled sensitivities; the output flags overflow for manager review and never accepts or refuses an aircraft.
-
-From `marvin/person_2_part91_part135_forecast/`, run `python -B run_demo.py` and `python -B -m unittest test_forecast_model test_operations_extension -v`. The package is separate from the shared `marvin/person_2_forecasting/` outputs and Nazar's coordinated dashboard release.
+The live forecast that feeds the parking optimizer and dashboard is still `person_2_forecasting/`. This package reports both parts separately so the team can choose the scope.

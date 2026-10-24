@@ -1,21 +1,29 @@
-# Person 2: selected-fleet Part 91 and Part 135 forecast
+# Person 2: Part 91 and Part 135 forecast with observed weather effects
 
-This standalone **placeholder forecast** covers February 11–17, 2027 for a fictional LAX FBO. It includes selected fleets' Part 91 and Part 135 movements and excludes Part 121 and outside fleets. It does not replace the shared `marvin/person_2_forecasting` release or Nazar's dashboard data.
+Fictional FBO at LAX, Super Bowl week February 11–17, 2027. Open `results/report.html` for the readable report.
 
-Run `python run_demo.py` from this folder and open [results/report.html](results/report.html). Validate with `python -m unittest test_forecast_model test_operations_extension -v`. Python 3.10+ and the standard library suffice. The default seed is 42; `--seed` changes the synthetic history and reservations reproducibly.
+## What is observed and what is assumed
 
-## What the forecast uses
+| Piece | Status | Source |
+|---|---|---|
+| Daily history 2023–2025 | **Observed** FAA tower counts at LAX: general aviation for Part 91, air taxi for Part 135 | FAA ATADS/OPSNET, `alan/elia_output/data/processed/opsnet_lax_daily.csv` |
+| Private-eligible share (50% of each category) | Placeholder. GA also holds training and positioning; air taxi also holds cargo feeders and small commuter flights | none |
+| FBO capture (20%) | Team assumption; 0.50 × 0.20 = `fbo_market_share` 0.10 in `alan/assumptions.csv` | team |
+| Super Bowl scenarios | Measured: Low +3.1% (LAX GA), Medium +15.5% (LAX air taxi), High +31% (2× Medium), five-day excess around Super Bowl LVI | FAA, `superbowl_lvi_surge.csv` |
+| Presidents Day (Mon 2027-02-15) | Learned from the 2023 and 2024 holidays: Part 91 ×1.05, Part 135 ×1.29 | FAA daily counts |
+| Weather effects | **Observed**: NOAA daily weather at LAX joined with FAA counts, 2016–2019 and 2023–2025 | NOAA GHCN-Daily USW00023174, `weather_effect.py` |
+| Hourly curve, service times, parking prices, VIP pause | Synthetic placeholders | none |
+| Parking capacity | Read from `elia/assumptions_p3.csv` (P3 owns parking) | P3 estimate |
 
-- Daily history and reservations are **synthetic**. A 70% Part 91 / 30% Part 135 selected-fleet split, 20% FBO capture and 47/33/20 aircraft-size mix are unmeasured assumptions. The capture is applied to the eligible synthetic pool once; Part 121 never enters it.
-- The Part 91 event profile is illustrative. The Part 135 Medium scenario transfers LAX's **observed +15.5% five-day 2022 FAA Air Taxi excess** to Friday–Tuesday of the 2027 planning week. Low uses 0% and High 31%. This mapping and its use for both arrivals and departures are assumptions. FAA Air Taxi is broader than the selected fleets' Part 135 activity; it does not validate these scenario multipliers.
-- Separate month/weekday models are fitted for each aircraft size, Part and direction using synthetic 2023–2025 history. Reservations are overlapping demand floors, never added twice. The chronological holdout measures synthetic pipeline behavior only. Ordinary 90% ranges and event-scaled ranges are not validated Super Bowl coverage.
+Ordinary demand: 1.8 Part 91 and 3.1 Part 135 arrivals a day. Accuracy on the 2025 holdout days (observed counts): Part 135 errors 10% below a plain average, Part 91 7% below; about 85% of days inside the nominal 90% range. This measures the daily airport pattern, not observed FBO accuracy.
 
-The combined forecast remains in `results/demand_predictions.csv`, `results/daily_totals.csv` and `results/uncertainty_results.csv`. The new `results/part_demand_predictions.csv` and `results/part_daily_totals.csv` show the Part 91/135 components. `results/air_taxi_event_reference.csv` records the observed airport-category signal, repository source path and transfer limit.
+## Weather (observed)
 
-## Planning outputs and decision boundary
+On LAX days with at least 0.5 in of rain, Part 91 operations were 9.8% lower than on comparable dry days (95% range −18% to −1%), Part 135 4.1% lower (range −10% to +2%, not significant). Ordinary rain (0.1 in) and heavy fog show smaller or unclear effects. In February, 12% of LAX days have rain and 9% heavy fog; the week of February 11–17 had 0.75 rain days on average (at most 3) over 2015–2026. These are effects on completed operations; they do not separate cancelled flights from shifted ones. No weather forecast exists for 2027.
 
-`results/capacity_plan.csv` compares forecast demand with an **invented 24-stand** ceiling and an inherited, unverified 75-space-unit estimate. It flags `parking_overflow_to_resolve` for a manager. It makes no landing acceptance, refusal or cancellation decision. `departure_inventory_gap_to_reconcile` flags an aggregate inventory inconsistency; it does not claim aircraft are stuck or identify which departure depends on an arrival. Both ceilings remain placeholders in this standalone sensitivity.
+## Run
 
-The hourly curve, service-stage durations, weather cases and hypothetical presidential movement pauses remain synthetic sensitivities. `results/parking_price_scenarios.csv` now illustrates a 15% early-arrival discount at each scenario level, with no scenario-based price premium. No actual FBO tariff, operational delay, airport closure or presidential visit is asserted.
+    python run_demo.py
+    python -m unittest test_forecast_model test_operations_extension test_weather_effect
 
-The model is reproducible through `run_demo.py`; the SHA-256 file list is in `results/placeholder_manifest.json`. Any operational use needs selected-fleet history and bookings, current PPR capacity, observed service records and human review. Do not publish this standalone package as the coordinated team release.
+`python fetch_noaa_weather.py` refreshes the NOAA file (network). Everything else is offline, standard library only. The model never accepts, refuses or cancels an aircraft; parking overflow is a flag for a manager.

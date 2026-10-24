@@ -1,25 +1,31 @@
 {
-  "status": "PLACEHOLDER",
-  "seed": 42,
-  "scope": "Selected-fleet Part 91 and Part 135; Part 121 and outside fleets excluded",
-  "history": "Seeded synthetic 2016-2025; 2020-2022 excluded; model trained/calibrated/tested on 2023-2025 only",
-  "event_uplift": "Part 91 synthetic profile; Part 135 uses assumed transfer of observed LAX 2022 five-day Air Taxi +15.5% proxy to 2027 Fri-Tue, with Low 0% and High 31% sensitivities",
-  "reservations": "Synthetic FBO-specific bookings; 20% capture is not applied twice",
+  "status": "ESTIMATED_FROM_FAA_COUNTS",
+  "scope": "Part 91 (FAA GA) and Part 135 (FAA air taxi); Part 121 and military excluded",
+  "history": "Observed FAA daily LAX counts 2023-2025; 2020-2022 excluded",
+  "event_uplift": {
+    "low": 0.031,
+    "medium": 0.155,
+    "high": 0.31
+  },
+  "reservations": "None supplied; floors disabled",
   "fbo_capture_share": 0.2,
-  "eligible_pool": "Selected fleets Part 91/135 only; synthetic 70/30 split; no Part 121 or all-airport total multiplied by FBO share",
+  "private_eligible_share": {
+    "part91": 0.5,
+    "part135": 0.5
+  },
   "aircraft_size_mix": {
     "light_jet": 0.47,
     "midsize_jet": 0.33,
     "large_jet": 0.2
   },
-  "presidents_day": "Unmeasured; excluded from primary forecast; sidecar +/-10 percent hypothetical sensitivity only",
+  "presidents_day": "Learned factor applied to baseline; see presidents_day_effect.csv",
   "fbo_ppr_capacity_su": 75.0,
-  "physical_spots_placeholder": 24,
   "assumed_su_per_aircraft": 1.465,
-  "opening_ground": 8,
+  "opening_ground": 5.34,
   "departure_before_arrival_peak": 0.5,
   "same_day_share": 0.4,
-  "evaluation": "Synthetic holdout only; not observed FBO or selected-fleet accuracy",
+  "evaluation": "Chronological holdout on observed daily airport counts; not observed FBO accuracy",
   "uncertainty": "90% nominal baseline prediction intervals; event-adjusted planning ranges are not calibrated",
-  "runway": "No verified residual LAX slot allocation; capacity plan flags illustrative parking overflow for manager review and makes no accept/refuse decisions"
+  "synthetic_layers": "Hourly curve, service times, parking prices and VIP pause remain synthetic placeholders",
+  "runway": "No verified residual LAX slot allocation; capacity plan flags overflow for manager review and makes no accept/refuse decisions"
 }

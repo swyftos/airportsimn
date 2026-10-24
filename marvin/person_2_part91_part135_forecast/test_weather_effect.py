@@ -45,7 +45,7 @@ class WeatherEffectTests(unittest.TestCase):
         self.assertEqual(days[2]['expected_part135_air_taxi'], 250)
 
     def test_effect_intervals_and_dry_reference(self):
-        self.assertEqual(len(self.effects), 20)
+        self.assertEqual(len(self.effects), 24)
         for row in self.effects:
             self.assertLessEqual(float(row['ci_low']), float(row['effect']))
             self.assertLessEqual(float(row['effect']), float(row['ci_high']))
@@ -71,7 +71,7 @@ class WeatherEffectTests(unittest.TestCase):
         weather.main()
         self.assertEqual(first, [p.read_bytes() for p in paths])
         with paths[0].open(newline='') as f:
-            self.assertEqual(len(list(csv.DictReader(f))), 20)
+            self.assertEqual(len(list(csv.DictReader(f))), 24)
 
 
 if __name__ == '__main__':

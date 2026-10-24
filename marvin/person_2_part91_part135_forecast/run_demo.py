@@ -194,6 +194,8 @@ def main():
         synthetic_layers='Hourly curve, service times, parking prices and VIP pause remain synthetic placeholders',
         runway='No verified residual LAX slot allocation; capacity plan flags overflow for manager review and makes no accept/refuse decisions')
     (RESULTS/'private_fleet_run_metadata.json').write_text(json.dumps(private_meta,indent=2)+'\n',encoding='utf-8')
+    import weather_effect
+    weather_effect.main()
     ops=build_operations(RESULTS,args.seed,capacity_su)
     css='body{font:16px system-ui,sans-serif;margin:0;background:#f4f6f8;color:#17263c}main{max-width:1180px;margin:32px auto;padding:20px}.banner{background:#fff0c2;border-left:7px solid #ae7000;padding:18px;border-radius:8px}.card{background:white;margin:22px 0;padding:22px;border:1px solid #dce3eb;border-radius:12px;overflow:auto}table{border-collapse:collapse;width:100%;font-size:13px}td,th{padding:8px;text-align:left;border-bottom:1px solid #dce3eb}th{background:#e9eef5}tr:nth-child(even){background:#f8fafc}a{color:#125b9f}'
     page='<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Person 2 Part 91 and 135 forecast</title><style>'+css+'</style><main>'

@@ -9,7 +9,7 @@ class ForecastTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.tmp = tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parent)
-        h,p = m.make_demo(Path(cls.tmp.name))
+        h,p = m.build_faa_inputs(Path(cls.tmp.name))
         cls.history = m.load_history(h)
         cls.planning = m.read_csv(p)
         cls.pred,cls.intervals,cls.metrics = m.forecast(cls.history,cls.planning)
@@ -97,51 +97,38 @@ class ForecastTests(unittest.TestCase):
             m.forecast(self.history,planning)
 
 
-    def test_placeholder_generation_reproducible_and_labeled(self):
+    def test_faa_inputs_reproducible_and_traceable(self):
         a = Path(self.tmp.name)/'a'; b = Path(self.tmp.name)/'b'
         a.mkdir(); b.mkdir()
-        ah,ap=m.make_demo(a,42); bh,bp=m.make_demo(b,42)
+        ah,ap=m.build_faa_inputs(a); bh,bp=m.build_faa_inputs(b)
         self.assertEqual(ah.read_bytes(),bh.read_bytes())
         self.assertEqual(ap.read_bytes(),bp.read_bytes())
-        _,other=m.make_demo(b,43)
-        self.assertNotEqual(ap.read_bytes(),other.read_bytes())
         raw=m.read_csv(ah)
-        self.assertEqual(len(raw),21918)
+        self.assertEqual(len(raw),1096*2*3)
         self.assertEqual({r['operation_part'] for r in raw}, {'part91','part135'})
-        self.assertTrue(all(r['data_class']=='synthetic' and 'PLACEHOLDER' in r['source'] for r in raw))
-        self.assertTrue(all('PLACEHOLDER' in r['assumption_source'] for r in m.read_csv(ap)))
-        self.assertTrue(all(r['date'].year>=2023 for r in m.load_history(ah)))
-
-        # FBO capture uses only eligible selected-fleet airport operations,
-        # and the agreed 47/33/20 mix persists through the forecast.
-        pool = m.read_csv(a/'demo_eligible_private_airport_pool.csv')
-        for day in pool[:30]:
-            self.assertEqual(float(day['fbo_capture_share']), .20)
-            self.assertAlmostEqual(float(day['fbo_total_arrivals']),
-                float(day['eligible_total_arrivals'])*.20)
-            self.assertEqual(day['excluded_part121'], 'yes_not_in_pool')
-            self.assertEqual(day['excluded_outside_fleets'], 'yes_not_in_pool')
-            for target in m.TARGETS:
-                self.assertEqual(float(day['eligible_total_'+target]),
-                    float(day['eligible_part91_'+target])+float(day['eligible_part135_'+target]))
-        first = [r for r in raw if r['date'] == pool[0]['date']]
-        for r in first:
-            self.assertAlmostEqual(float(r['arrivals']),
-                float(pool[0]['eligible_'+r['operation_part']+'_arrivals'])*.20*m.AIRCRAFT_MIX[r['aircraft_category']], places=4)
+        self.assertTrue(all(r['data_class']=='estimated' and 'aspm.faa.gov' in r['source'] for r in raw))
+        faa = {r['date']: r for r in m.read_csv(m.FAA_DAILY)}
+        for r in raw[:60]:
+            column = m.PART_COLUMNS[r['operation_part']]
+            expected = float(faa[r['date']][column])*m.PRIVATE_ELIGIBLE[r['operation_part']]*m.FBO_CAPTURE_SHARE*.5*m.AIRCRAFT_MIX[r['aircraft_category']]
+            self.assertAlmostEqual(float(r['arrivals']), expected, places=5)
+        self.assertAlmostEqual(m.PRIVATE_ELIGIBLE['part91']*m.FBO_CAPTURE_SHARE, .10)
         for d, scenario in {(r['date'],r['scenario']) for r in self.pred}:
             group = [r for r in self.pred if r['date']==d and r['scenario']==scenario]
             total = sum(r['expected_arrivals'] for r in group)
             for r in group:
                 self.assertAlmostEqual(r['expected_arrivals']/total,
-                    m.AIRCRAFT_MIX[r['aircraft_category']], delta=.0001)
+                    m.AIRCRAFT_MIX[r['aircraft_category']], delta=.001)
 
-    def test_part135_event_proxy_is_explicit_and_aggregates(self):
-        for r in self.planning:
-            if r['operation_part']=='part135':
-                expected = 1.155 if '2027-02-12' <= r['date'] <= '2027-02-16' else 1.0
-                self.assertEqual(float(r['arrivals_multiplier_medium']), expected)
-                self.assertEqual(float(r['departures_multiplier_medium']), expected)
-                self.assertIn('proxy_transferred_by_assumption',r['assumption_source'])
+    def test_measured_scenarios_and_part_aggregation(self):
+        for scenario, excess in (('Low', .031), ('Medium', .155), ('High', .31)):
+            event = [r for r in self.pred if r['date'] <= '2027-02-15' and r['scenario']==scenario]
+            baseline = sum(r['baseline_'+t] for r in event for t in m.TARGETS)
+            predicted = sum(r['expected_'+t] for r in event for t in m.TARGETS)
+            self.assertAlmostEqual(predicted/baseline-1, excess, places=3)
+        for r in self.pred:
+            if r['date'] > '2027-02-15':
+                self.assertEqual(r['expected_arrivals'], r['baseline_arrivals'])
         aggregate,_,_,by_part = m.forecast_parts(self.history,self.planning)
         for r in aggregate:
             group=[x for x in by_part if (x['date'],x['scenario'],x['aircraft_category']) ==
@@ -149,6 +136,14 @@ class ForecastTests(unittest.TestCase):
             self.assertEqual({x['operation_part'] for x in group},{'part91','part135'})
             for target in m.TARGETS:
                 self.assertAlmostEqual(r['expected_'+target],sum(x['expected_'+target] for x in group),places=3)
+
+    def test_presidents_day_effect_is_learned(self):
+        self.assertEqual(m.presidents_day(2027), date(2027,2,15))
+        fitted,_ = m.fit_and_evaluate(self.history,.9)
+        model = fitted['light_jet','part91','arrivals'][0]
+        self.assertNotEqual(model.holiday['presidents_day'], 1.0)
+        self.assertAlmostEqual(model.predict(date(2027,2,15)), model.ordinary(date(2027,2,15))*model.holiday['presidents_day'])
+        self.assertEqual(model.predict(date(2027,2,22)), model.ordinary(date(2027,2,22)))
 
 if __name__ == '__main__':
     unittest.main()

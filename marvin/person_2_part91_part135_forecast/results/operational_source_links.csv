@@ -1,6 +1,7 @@
 name,url,use_and_limit
-FAA weather delay overview,https://www.faa.gov/nextgen/programs/weather/faq,Qualitative reason weather can delay flights; no percentages used as model estimates.
+"NOAA GHCN-Daily, LAX station USW00023174",https://www.ncei.noaa.gov/access/services/data/v1?dataset=daily-summaries&stations=USW00023174,Observed daily rain and fog 2015-2026; joined with FAA daily counts in weather_effect.py.
 FAA VIP/TFR operating restrictions,https://www.faa.gov/uas/getting_started/where_can_i_fly/airspace_restrictions/tfr,"Actual restriction time, area and permitted flights come from the applicable notice; no fixed closure duration."
 FAA LAX capacity profile index,https://www.faa.gov/airports/planning_capacity/profiles,"Airport-wide profile, not available FBO stands or 2027 slots."
-Team assumptions ledger,https://github.com/swyftos/airportsimn/blob/main/assumptions.csv,20% FBO capture and 47/33/20 aircraft mix; both need scope confirmation for selected private fleets.
-Elia parking assumptions,https://github.com/swyftos/airportsimn/blob/main/elia/assumptions_p3.csv,"Inherited 75 space units, unverified as usable FBO/PPR capacity."
+FAA ATADS/OPSNET LAX daily operations,https://www.aspm.faa.gov/opsnet/sys/Airport.asp,Observed GA (Part 91) and air taxi (Part 135) counts; categories are broader than FBO customers.
+Team assumptions ledger,https://github.com/swyftos/airportsimn/blob/main/alan/assumptions.csv,"fbo_market_share 0.10 (50% eligible x 20% capture) and 47/33/20 aircraft mix; assumptions, not measurements."
+Elia parking assumptions,https://github.com/swyftos/airportsimn/blob/main/elia/assumptions_p3.csv,"P3 ramp estimate in space units, unverified as usable FBO/PPR capacity."

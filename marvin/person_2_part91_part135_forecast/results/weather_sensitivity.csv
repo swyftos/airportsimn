@@ -1,64 +1,64 @@
-date,scenario,condition,assumed_airfield_throughput_factor,landing_to_park_minutes,park_to_takeoff_minutes,arrival_delay_vs_clear_minutes,departure_delay_vs_clear_minutes,demand_changed,actual_weather_forecast,classification
-2027-02-11,Low,clear_placeholder,1.0,12.7,13.7,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-11,Low,rain_placeholder,0.85,21.7,25.7,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-11,Low,low_visibility_placeholder,0.65,36.7,43.7,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-11,Medium,clear_placeholder,1.0,12.7,13.7,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-11,Medium,rain_placeholder,0.85,21.7,25.7,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-11,Medium,low_visibility_placeholder,0.65,36.7,43.7,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-11,High,clear_placeholder,1.0,12.7,13.7,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-11,High,rain_placeholder,0.85,21.7,25.7,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-11,High,low_visibility_placeholder,0.65,36.7,43.7,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-12,Low,clear_placeholder,1.0,12.7,13.7,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-12,Low,rain_placeholder,0.85,21.7,25.7,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-12,Low,low_visibility_placeholder,0.65,36.7,43.7,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-12,Medium,clear_placeholder,1.0,13.7,14.7,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-12,Medium,rain_placeholder,0.85,22.7,26.7,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-12,Medium,low_visibility_placeholder,0.65,37.7,44.7,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-12,High,clear_placeholder,1.0,15.2,16.2,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-12,High,rain_placeholder,0.85,24.2,28.2,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-12,High,low_visibility_placeholder,0.65,39.2,46.2,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-13,Low,clear_placeholder,1.0,12.7,13.7,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-13,Low,rain_placeholder,0.85,21.7,25.7,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-13,Low,low_visibility_placeholder,0.65,36.7,43.7,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-13,Medium,clear_placeholder,1.0,15.2,16.2,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-13,Medium,rain_placeholder,0.85,24.2,28.2,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-13,Medium,low_visibility_placeholder,0.65,39.2,46.2,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-13,High,clear_placeholder,1.0,17.7,18.7,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-13,High,rain_placeholder,0.85,26.7,30.7,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-13,High,low_visibility_placeholder,0.65,41.7,48.7,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-14,Low,clear_placeholder,1.0,13.2,14.2,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-14,Low,rain_placeholder,0.85,22.2,26.2,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-14,Low,low_visibility_placeholder,0.65,37.2,44.2,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-14,Medium,clear_placeholder,1.0,17.2,18.2,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-14,Medium,rain_placeholder,0.85,26.2,30.2,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-14,Medium,low_visibility_placeholder,0.65,41.2,48.2,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-14,High,clear_placeholder,1.0,20.7,21.7,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-14,High,rain_placeholder,0.85,29.7,33.7,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-14,High,low_visibility_placeholder,0.65,44.7,51.7,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-15,Low,clear_placeholder,1.0,12.7,13.7,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-15,Low,rain_placeholder,0.85,21.7,25.7,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-15,Low,low_visibility_placeholder,0.65,36.7,43.7,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-15,Medium,clear_placeholder,1.0,13.2,14.2,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-15,Medium,rain_placeholder,0.85,22.2,26.2,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-15,Medium,low_visibility_placeholder,0.65,37.2,44.2,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-15,High,clear_placeholder,1.0,14.2,15.2,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-15,High,rain_placeholder,0.85,23.2,27.2,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-15,High,low_visibility_placeholder,0.65,38.2,45.2,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-16,Low,clear_placeholder,1.0,12.7,13.7,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-16,Low,rain_placeholder,0.85,21.7,25.7,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-16,Low,low_visibility_placeholder,0.65,36.7,43.7,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-16,Medium,clear_placeholder,1.0,12.7,13.7,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-16,Medium,rain_placeholder,0.85,21.7,25.7,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-16,Medium,low_visibility_placeholder,0.65,36.7,43.7,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-16,High,clear_placeholder,1.0,12.7,13.7,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-16,High,rain_placeholder,0.85,21.7,25.7,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-16,High,low_visibility_placeholder,0.65,36.7,43.7,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-17,Low,clear_placeholder,1.0,12.7,13.7,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-17,Low,rain_placeholder,0.85,21.7,25.7,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-17,Low,low_visibility_placeholder,0.65,36.7,43.7,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-17,Medium,clear_placeholder,1.0,12.7,13.7,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-17,Medium,rain_placeholder,0.85,21.7,25.7,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-17,Medium,low_visibility_placeholder,0.65,36.7,43.7,24,30,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-17,High,clear_placeholder,1.0,12.7,13.7,0,0,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-17,High,rain_placeholder,0.85,21.7,25.7,9,12,no,not_supplied,synthetic_sensitivity_not_observed
-2027-02-17,High,low_visibility_placeholder,0.65,36.7,43.7,24,30,no,not_supplied,synthetic_sensitivity_not_observed
+date,scenario,condition,february_day_probability,part91_effect,part91_effect_ci,part135_effect,part135_effect_ci,expected_movements,movements_change_if_condition,actual_weather_forecast,classification,note
+2027-02-11,Low,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,10.935,-0.367,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-11,Low,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,10.935,-0.679,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-11,Low,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,10.935,0.082,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-11,Medium,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,11.619,-0.389,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-11,Medium,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,11.619,-0.721,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-11,Medium,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,11.619,0.087,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-11,High,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,12.472,-0.418,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-11,High,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,12.472,-0.774,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-11,High,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,12.472,0.093,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-12,Low,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,10.592,-0.357,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-12,Low,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,10.592,-0.661,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-12,Low,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,10.592,0.074,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-12,Medium,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,12.344,-0.416,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-12,Medium,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,12.344,-0.771,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-12,Medium,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,12.344,0.086,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-12,High,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,14.533,-0.49,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-12,High,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,14.533,-0.907,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-12,High,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,14.533,0.101,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-13,Low,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,7.528,-0.252,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-13,Low,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,7.528,-0.466,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-13,Low,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,7.528,0.058,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-13,Medium,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,7.858,-0.263,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-13,Medium,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,7.858,-0.487,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-13,Medium,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,7.858,0.06,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-13,High,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,8.269,-0.276,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-13,High,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,8.269,-0.512,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-13,High,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,8.269,0.063,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-14,Low,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,9.904,-0.324,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-14,Low,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,9.904,-0.602,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-14,Low,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,9.904,0.092,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-14,Medium,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,10.622,-0.348,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-14,Medium,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,10.622,-0.646,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-14,Medium,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,10.622,0.098,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-14,High,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,11.519,-0.377,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-14,High,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,11.519,-0.701,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-14,High,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,11.519,0.106,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-15,Low,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,12.939,-0.421,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-15,Low,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,12.939,-0.783,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-15,Low,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,12.939,0.125,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-15,Medium,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,15.703,-0.511,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-15,Medium,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,15.703,-0.95,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-15,Medium,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,15.703,0.152,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-15,High,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,19.155,-0.623,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-15,High,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,19.155,-1.158,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-15,High,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,19.155,0.186,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-16,Low,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,8.406,-0.296,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-16,Low,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,8.406,-0.545,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-16,Low,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,8.406,0.031,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-16,Medium,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,8.406,-0.296,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-16,Medium,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,8.406,-0.545,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-16,Medium,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,8.406,0.031,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-16,High,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,8.406,-0.296,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-16,High,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,8.406,-0.545,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-16,High,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,8.406,0.031,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-17,Low,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,9.24,-0.316,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-17,Low,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,9.24,-0.583,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-17,Low,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,9.24,0.055,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-17,Medium,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,9.24,-0.316,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-17,Medium,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,9.24,-0.583,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-17,Medium,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,9.24,0.055,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-17,High,rain,0.1209,-0.056,-0.114 to +0.005,-0.0205,-0.062 to +0.025,9.24,-0.316,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-17,High,heavy_rain,0.0501,-0.0983,-0.183 to -0.006,-0.0411,-0.101 to +0.019,9.24,-0.583,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."
+2027-02-17,High,heavy_fog,0.0885,-0.0432,-0.093 to +0.010,0.0368,+0.002 to +0.073,9.24,0.055,not_available_for_2027,observed_NOAA_x_FAA_effect_applied_to_forecast,"Effect on completed airport operations on such days vs dry days of the same weekday and month (2016-2019, 2023-2025)."

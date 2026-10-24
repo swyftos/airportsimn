@@ -1,14 +1,14 @@
 {
-  "status": "PLACEHOLDER",
+  "status": "MIXED_OBSERVED_AND_PLACEHOLDER",
   "seed": 42,
-  "scope": "Selected-fleet Part 91 and Part 135; Part 121 excluded",
-  "hourly_curve": "Fitted hourly shares from seeded synthetic 2023-2025 FBO history; weekday/weekend curves",
+  "scope": "Part 91 (FAA GA) and Part 135 (FAA air taxi); Part 121 excluded",
+  "hourly_curve": "Synthetic hour shares (no observed hourly data) applied to the FAA-based daily forecast",
   "hourly_formula": "expected hourly movements = expected daily arrivals x fitted arrival hour share + expected daily departures x fitted departure hour share",
   "timing": "720 seeded synthetic category turnaround samples; stages are sequential minimum service times, not full dwell or ATC slot times",
-  "weather": "Clear/rain/low visibility effects and throughput factors are unmeasured sensitivity assumptions; no actual forecast",
-  "parking": "24 physical spots invented; 75 ramp space units inherited but unverified; price slot incentive invented; overflow requires manager review",
+  "weather": "Observed NOAA x FAA effects of rain, heavy rain and heavy fog on completed operations (weather_effect_measured.csv), with February probabilities; no 2027 weather forecast exists",
+  "parking": "P3 ramp estimate read from elia/assumptions_p3.csv; price slot incentive invented (early = Feb 11-12); overflow requires manager review",
   "presidential_visit": "No visit assumed; 0/2/4-hour full-pause stress tests on Feb 14 are not FAA closure requirements; actual notice controls",
-  "primary_event_uplift": "Synthetic Low/Medium/High factors in demo_planning_inputs.csv",
-  "evaluation": "Synthetic-only holdout; no measured private-FBO accuracy",
+  "primary_event_uplift": "Measured FAA Super Bowl LVI excess; per-day factors in planning_inputs.csv",
+  "evaluation": "Holdout on observed FAA daily counts; not observed FBO accuracy",
   "source_links": "operational_source_links.csv"
 }

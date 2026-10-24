@@ -1,0 +1,4 @@
+scenario,metric,factor,five_day_excess,source_repo_path,method
+low,general_aviation,1,0.031,alan/elia_output/data/processed/superbowl_lvi_surge.csv,"FAA counts Thu-Mon around Super Bowl LVI vs same weekdays, divided by control years 2019, 2023, 2024"
+medium,air_taxi,1,0.155,alan/elia_output/data/processed/superbowl_lvi_surge.csv,"FAA counts Thu-Mon around Super Bowl LVI vs same weekdays, divided by control years 2019, 2023, 2024"
+high,air_taxi,2,0.31,alan/elia_output/data/processed/superbowl_lvi_surge.csv,"FAA counts Thu-Mon around Super Bowl LVI vs same weekdays, divided by control years 2019, 2023, 2024"
