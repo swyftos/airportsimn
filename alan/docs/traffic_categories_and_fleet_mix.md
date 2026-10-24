@@ -56,6 +56,19 @@ do not include charter flights, only private" — Alan, mid-project). Part
 135/air_taxi is excluded from the current baseline (`alan/baseline.csv`)
 and from Marvin's `private_only_review/` folder.
 
+**Real Part 135 records do exist in the repo, kept deliberately
+separate**: Elia's `alan/elia_output/data/processed/opsnet_lax_daily.csv`
+already has a full daily `air_taxi` column (FAA ATADS/OPSNET,
+`verified_public`) for the same 2015-2025 window as the GA data,
+cross-checked 132/132 months against `opsnet_lax_daily_check.csv`.
+`alan/scripts/build_historical_traffic_air_taxi.py` turns this into
+`alan/data/processed/historical_traffic_air_taxi_interim.csv` using the
+same daily-direct method as the Part 91 pipeline. **This output does not
+feed `alan/baseline.csv`** and is not meant to — it exists only for
+comparison/context, e.g. grounding the Medium forecast scenario's
+air-taxi-derived event-size uplift (+15.5%, confirmed with Marvin) in a
+real measured air-taxi baseline instead of an unsourced number.
+
 ### 1.3 Part 91 — general_aviation
 
 **FAA definition**: the general operating and flight rules that apply to
