@@ -17,14 +17,14 @@ Event evidence: the same FAA source, daily counts around Super Bowl LVI:
 | Driver | Value | Meaning |
 | --- | --- | --- |
 | Scope | LAX itinerant general aviation (Part 91) | Includes some non-FBO flying (training, positioning); FAA does not split it further |
-| FBO capture | 20% of GA | Team ledger value ALAN-fbo_market_share; one setting, FBO_SHARE in convert_monthly_to_daily.py |
+| FBO share | 10% of GA | fbo_market_share in alan/assumptions.csv: 50% private-eligible x 20% capture, range 5–15%; one setting, FBO_SHARE in convert_monthly_to_daily.py |
 | Direction split | 50% arrivals / 50% departures | Assumed |
 | Category mix | 47% light, 33% midsize, 20% large | Team assumption; no official source found (alan/docs/traffic_categories_and_fleet_mix.md) |
 | Daily pattern | Observed day by day | Weekday and holiday variation comes from the data |
 | Provenance | estimated on every history row | Observed airport counts times assumed shares are not observed FBO counts |
 | Reservations | Zero synthetic placeholders; show rate zero | No booking data supplied |
 
-The 20% share now matches Alan's baseline policy, so nazar/scripts/release_team.py reports no share or window mismatch. Marvin's private_only_review applies a further 50% private-eligibility filter (effective 10%). That filter is a placeholder and is not used here; if the team adopts it, change FBO_SHARE once.
+The 10% share is the value in Alan's ledger, so nazar/scripts/release_team.py reports no share or window mismatch. Both factors are assumptions: the 50% private-eligible fraction is a placeholder from Marvin's sensitivity table, and the 20% capture is team judgment.
 
 ## Presidents' Day
 
@@ -61,7 +61,7 @@ This is the accuracy of the airport-level daily pattern; the FBO share is a cons
 
 ## Matching parking outputs
 
-Elia's optimizer is rerun on this release. Opening inventory is recomputed as first-day baseline arrivals times the 1.1-day dwell assumption (4.3 aircraft). Ramp capacity and other operating assumptions are unchanged.
+Elia's optimizer is rerun on this release. Opening inventory is recomputed as first-day baseline arrivals times the 1.1-day dwell assumption (2.2 aircraft). Ramp capacity and other operating assumptions are unchanged.
 
 ## Release and review
 
@@ -71,4 +71,4 @@ Run from the repository root, using Python with numpy and pandas:
 
     python marvin/person_2_forecasting/run_provisional.py
 
-Alan: confirm the 20% share for GA-only scope and the air-taxi analog for Medium. Passing integration tests is not model validation.
+Alan: confirm the air-taxi analog for Medium. Passing integration tests is not model validation.

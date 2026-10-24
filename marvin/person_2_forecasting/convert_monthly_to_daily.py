@@ -13,7 +13,7 @@ ROOT = HERE.parents[1]
 SOURCE = ROOT / 'alan/elia_output/data/processed/opsnet_lax_daily.csv'
 MONTHLY = ROOT / 'alan/elia_output/data/processed/opsnet_lax_monthly.csv'
 MIX = {'light_jet': .47, 'midsize_jet': .33, 'large_jet': .20}
-FBO_SHARE = .20  # ALAN-fbo_market_share (alan/assumptions.csv); one setting for the whole team
+FBO_SHARE = .10  # fbo_market_share in alan/assumptions.csv: 50% private-eligible x 20% capture; one setting for the whole team
 ARRIVAL_SHARE = .5
 YEARS = (2023, 2024, 2025)
 
