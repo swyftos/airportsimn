@@ -17,7 +17,7 @@ def convert(source=SOURCE):
     rows, checks, seen = [], [], set()
     for month in months:
         year, mon = int(month['year']), int(month['month'])
-        if not 2016 <= year <= 2025 or year in {2020, 2021, 2022}:
+        if not 2023 <= year <= 2025:
             continue
         key = (year, mon)
         if key in seen:
@@ -38,7 +38,7 @@ def convert(source=SOURCE):
         checks.append(dict(month=f'{year:04}-{mon:02}', days=days,
             airport_ga_air_taxi=movements, assumed_fbo_movements=monthly_fbo,
             allocation='uniform_calendar_day', data_class='estimated'))
-    expected = {(y,m) for y in (2016,2017,2018,2019,2023,2024,2025) for m in range(1,13)}
+    expected = {(y,m) for y in (2023,2024,2025) for m in range(1,13)}
     if seen != expected:
         raise ValueError('Missing or unexpected baseline months')
     return rows, checks
@@ -55,13 +55,11 @@ def main():
     rows,checks=convert()
     write(dest/'historical_traffic.csv',rows)
     write(dest/'monthly_reconciliation.csv',checks)
-    with (HERE/'demo_planning_inputs.csv').open(newline='',encoding='utf-8-sig') as f:
-        planning=list(csv.DictReader(f))
-    for row in planning:
-        row['assumption_source']='PROVISIONAL_ASSUMPTIONS.md; illustrative event uplift; not empirically estimated'
+    from build_event_inputs import build
+    planning, evidence = build(dest/'historical_traffic.csv')
+    (dest/'event_evidence.json').write_text(json.dumps(evidence,indent=2),encoding='utf-8')
     write(dest/'planning_inputs.csv',planning)
     print(f'{len(rows)} estimated rows; {len(checks)} months; original monthly source unchanged.')
 
 if __name__=='__main__':
     main()
-

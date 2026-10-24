@@ -11,6 +11,10 @@ owner's own doc — this file is the merged index:
 - `alan/docs/data_sources_alan.md` — FAA 5010 master record
 - `alan/docs/data_sources_nazar.md` — LAX apron/ramp area
 - `alan/elia_output/data_sources_lawa_bts.md` — LAWA TCOM + FAA OPSNET + BTS
+- `alan/docs/super_bowl_surge_benchmark.md` — Super Bowl LVI/LVII/LVIII surge benchmark (Step 4)
+- `alan/docs/lax_private_capacity_and_cost_research.md` — LAX private-aircraft capacity and landing cost research (Items 1 & 2)
+- `alan/docs/vip_tfr_operational_impact.md` — VIP/high-security TFR operational impact (Item 5)
+- `alan/docs/traffic_categories_and_fleet_mix.md` — traffic categories, fleet-mix and FBO-share evidence, operations-vs-visits
 
 ---
 
@@ -47,7 +51,7 @@ Archived sources: `alan/data/raw/nazar_apron/`.
 
 | ID | Source | What it supports | Confidence |
 |---|---|---|---|
-| L1 | LAWA Traffic Comparison (TCOM), monthly | LAX movements by category (air carrier, air taxi, GA, military), Jan 2015-Aug 2026 | High |
+| L1 | LAWA Traffic Comparison (TCOM), monthly | LAX private-aviation movements (air taxi, GA; air carrier and military excluded), Jan 2015-Aug 2026 | High |
 | L2 | LAWA Ten Year Summary of FAA Aircraft Movements | Annual totals 2008-2025, validates L1 | High |
 | L3 | LAWA FBO rental car services page | Checked, not used — car-rental data, not aircraft activity | n/a |
 | B1 | BTS T-100 Air Carrier Statistics | Checked, not usable — covers certificated airlines only, not GA/air-taxi | n/a |

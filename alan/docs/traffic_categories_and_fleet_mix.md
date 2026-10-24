@@ -1,0 +1,270 @@
+# Traffic categories, fleet mix, and FBO share
+
+Prepared by Alan, per Nazar's request: "Document which traffic categories
+we include, what other activity they may contain, and the evidence for
+aircraft-size mix and our FBO's share. Keep airport operations separate
+from aircraft visits... Mark unsupported values as assumptions."
+
+This doc describes the project **as it currently stands**, including a
+known scope inconsistency (section 1.4) — it does not resolve that
+inconsistency or force a single team decision.
+
+## 1. Traffic categories
+
+FAA/LAWA/OPSNET movement data classifies every tower operation into one of
+four categories. Military is excluded from this project throughout and is
+not discussed further.
+
+### 1.1 Part 121 — air_carrier
+
+**FAA definition**: scheduled, large-aircraft commercial air transportation
+(14 CFR Part 121) — the airlines. Includes nearly all mainline passenger
+and cargo flights at a hub like LAX.
+
+**Project scope**: excluded entirely. LAX's Part 121 traffic has no
+plausible path to this fictional FBO's ramp — airlines use terminal gates,
+not FBO ramps.
+
+**Contamination beyond the textbook definition**: historically, some
+scheduled small-aircraft commuter flights were certificated under Part 135
+rather than 121. The FAA's 1997 "Commuter Rule" (14 CFR 119, effective
+1997) moved most scheduled passenger operations using aircraft with 10+
+seats or turbojet power into Part 121, narrowing what stays in Part 135.
+This is relevant context for section 1.2's boundary, not for 121 itself.
+
+### 1.2 Part 135 — air_taxi
+
+**FAA definition** (14 CFR 119.3, 110.2): on-demand charter AND scheduled
+commuter operations, specifically scheduled passenger service operating
+up to 5 round trips per week between two or more points according to
+published schedules, using either non-turbojet aircraft with a maximum of
+9 passenger seats, or any rotorcraft. On-demand (charter, air ambulance,
+cargo) has no seat/schedule ceiling in the same way.
+
+**What this means for "air_taxi" as a label**: it is not purely "private
+charter jets." It legally bundles:
+- On-demand charter (the category most people picture)
+- Scheduled small commuter/commuter-rotorcraft service (airline-like,
+  just below the Part 121 schedule/size threshold)
+- Air ambulance and other on-demand operations when flown under Part 135
+  certification
+
+**Project scope**: the project initially considered including Part 135
+(see the original 47/33/20-style broader scope and Marvin's early
+provisional work), then **explicitly narrowed to Part 91 only** ("please
+do not include charter flights, only private" — Alan, mid-project). Part
+135/air_taxi is excluded from the current baseline (`alan/baseline.csv`)
+and from Marvin's `private_only_review/` folder.
+
+### 1.3 Part 91 — general_aviation
+
+**FAA definition**: the general operating and flight rules that apply to
+virtually all non-commercial flying — there is no single certificate
+describing "Part 91 operators" the way Part 121/135 describe airlines and
+charter operators. It is the default rule set for anyone not operating
+under another part.
+
+**What this means for "general_aviation" as a label** — this is the
+single biggest source of contamination in the project's numbers, because
+FAA/LAWA movement counts report one `general_aviation` total with no
+further split:
+- **Personal/business flying** — the use case this project actually cares
+  about (an owner or company flying their own aircraft to the Super Bowl)
+- **Flight training** — instructional flights, touch-and-goes, practice
+  approaches. The FAA's own Student Pilot/private pilot guidance (e.g.
+  FAA-H-8083-27A) confirms training flights are flown and logged under
+  Part 91 like any other GA flight. A training-heavy local airport's GA
+  count can be dominated by touch-and-go patterns that never involve an
+  FBO ramp at all.
+- **Recreational/personal flying** that never touches an FBO (based
+  owner flying their own hangar, local sightseeing, etc.)
+- **Business aviation support flights** — positioning, maintenance,
+  ferry flights — that generate a movement but not a "visit" with a
+  passenger needing FBO services.
+
+**Project scope**: this is the category the project's narrowed, private-
+only baseline is built on (`alan/scripts/build_historical_traffic.py`,
+`alan/scripts/build_baseline.py`). The project does **not** have a way to
+strip training/positioning/non-FBO flights out of the raw `general_
+aviation` movement counts — LAWA/OPSNET do not report that sub-split
+publicly. This means the baseline's `general_aviation` input is a ceiling
+on true private, FBO-relevant traffic, not a clean measurement of it. This
+is a known limitation, carried forward from `data_sources.md`'s
+cross-cutting limitations section, stated here explicitly rather than
+implicitly.
+
+### 1.4 Known scope inconsistency across the project (stated as-is)
+
+The project narrowed to Part 91-only partway through. That change is not
+uniformly applied everywhere:
+
+| File | Scope used |
+|---|---|
+| `alan/baseline.csv`, `alan/scripts/build_baseline.py` | Part 91 (general_aviation) + Part 135 (air_taxi) combined, then scaled by `FBO_MARKET_SHARE` — **not yet narrowed to Part 91 only** at the code level (see note below) |
+| `marvin/person_2_forecasting/private_only_review/*` | Part 91 only, via `private_eligible_ga_fraction` applied on top of the raw `general_aviation` count |
+| `marvin/person_2_forecasting/demand_predictions.csv` (live dashboard-facing file) | Still uses the **older mixed Part 91 + Part 135 scope** ("25% air-taxi eligibility"-style assumption), not the private-only numbers from Marvin's own `private_only_review/` folder |
+
+**Correction found while writing this doc**: re-reading `build_baseline.py`
+(see `alan/scripts/build_baseline.py` docstring and `historical_base`
+input) confirms the **current** `alan/baseline.csv` is built from
+`historical_traffic_interim.csv`, whose upstream source
+(`lax_monthly_movements.csv`) is itself `air_taxi + general_aviation`
+combined — i.e. Alan's own baseline still carries Part 135 in its inputs,
+scaled only by the flat `FBO_MARKET_SHARE` constant, with no Part 91/135
+split applied anywhere in `build_historical_traffic.py` or
+`build_baseline.py`. This is the same inconsistency as Marvin's dashboard
+file, just less visible because Alan's output is a single blended total
+rather than a column labeled by scope.
+
+**This doc does not fix this.** Per Nazar's request and the team's
+decision, it is documented neutrally as the current reality: *the private-
+only scope decision has been applied in Marvin's `private_only_review/`
+work, but not yet in Alan's `baseline.csv`/`build_baseline.py` pipeline or
+in Marvin's live `demand_predictions.csv`.* Resolving it is a team
+decision outside this doc's scope (see the repo audit finding from
+earlier in the project, "issue number 1/2" context).
+
+## 2. Aircraft-size mix (47% light / 33% midsize / 20% large)
+
+**Evidence search performed**: the FAA/TetraTech "General Aviation and
+Part 135 Activity Survey" (the official annual survey of U.S. GA fleet
+activity — the right government source family for this question) was
+checked directly. Its publicly posted tables (checked: CY2005/CY2006
+chapters, and the survey's general methodology) break turbine aircraft
+down by engine count and, in some years, by seat count (e.g. "1-12 seats"
+vs "13+ seats" for twin turboprops) — **not** by a light/midsize/large
+weight class. Separately, the FAA's ATC weight-class terminology (Small
+≤41,000 lb / Large 41,000-300,000 lb / Heavy ≥300,000 lb, from air traffic
+control separation rules) uses different category names and boundaries
+than the project's light/midsize/large business-jet categories, and isn't
+a fleet-mix survey in the first place — it would be the wrong source even
+if the names matched.
+
+**Conclusion**: no official light/midsize/large (or equivalent) weight-
+class breakdown for the GA fleet was found in this pass, consistent with
+the team's earlier findings (`ELIA-mix_light/midsize/large`, `MARVIN-mix-
+light/midsize/large` are already labeled "not FAA aircraft observations").
+
+**Per Nazar's instruction, this is marked as an unsupported assumption and
+not pursued further.** The 47/33/20 split should continue to be treated
+as a team-chosen illustrative mix, not a measured one.
+
+## 3. FBO market share (currently 20%)
+
+**Evidence search performed**: the project already has real, government-
+sourced data comparing the two actual incumbent FBOs at LAX (from Nazar's
+apron research, `NAZAR-S01`, a 2020-11-19 LAWA Board report):
+
+- Atlantic Aviation leased land: **666,502.84 sq ft**
+- Signature Flight Support leased land: **527,795 sq ft** (128,400 sq ft
+  building)
+
+This gives Atlantic roughly **55.8%** and Signature roughly **44.2%** of
+the two real incumbents' combined leased footprint — real evidence, but
+it answers a different question than "what share would a new, third,
+fictional FBO capture," since the fictional FBO has no comparable lease
+record to measure.
+
+A further search for Signature's own LAX-specific square footage (to
+sharpen this ratio) and for any FAA/LAWA source on *traffic* share (as
+opposed to land share) by FBO came up empty — searches returned only
+Signature's Van Nuys (~1,170,000 sq ft, a 2013 figure) and Stewart, NY
+figures, neither comparable to LAX. No public source reports FBO-level
+traffic share (operations or based-aircraft count by FBO) at LAX at all.
+
+**Conclusion**: the real Atlantic/Signature land-share ratio above is
+useful context (it shows the two real incumbents are not evenly split
+either — roughly 56/44, not 50/50), but it cannot be converted into a
+hard number for a fictional third entrant's traffic share without a
+further assumption about that FBO's relative size, which is exactly the
+kind of extra assumption Nazar's instruction says not to force. **The 20%
+`FBO_MARKET_SHARE` figure is marked as an unsupported assumption** (as
+`alan/assumptions.csv`'s `ALAN-fbo_market_share` row already stated) and
+not pursued further, now with the added context above on what evidence
+does and doesn't exist.
+
+**Relationship to Marvin's private-only numbers**: Marvin's
+`private_only_review/` work uses two separate factors that both bear on
+"FBO share" but are not the same number as Alan's `FBO_MARKET_SHARE`:
+
+| Factor | Value | What it represents |
+|---|---|---|
+| `ALAN-fbo_market_share` | 0.20 | This fictional FBO's share of **all** LAX GA + air-taxi traffic |
+| `MARVIN-private-eligibility` | 0.50 | Fraction of the raw `general_aviation` FAA category that is actually private-eligible traffic (i.e. excludes training/positioning/non-FBO flying — see section 1.3) |
+| `MARVIN-FBO-share` | 0.20 | FBO capture **of that already-filtered, private-eligible** GA traffic |
+
+These are not interchangeable: Alan's 20% is applied to the raw combined
+GA+air-taxi total; Marvin's 20% is applied *after* a separate 50% private-
+eligibility filter is applied first. Multiplying Marvin's two factors
+(0.50 x 0.20 = 0.10) gives a materially different effective share than
+Alan's single 0.20 factor applied to the unfiltered total — another
+concrete expression of the same section-1.4 scope inconsistency, not a
+new problem. Both are already labeled `assumption`/`low confidence` in
+`assumptions.csv`; this doc does not change that, only documents how they
+relate.
+
+## 4. Operations vs. aircraft visits
+
+**FAA/LAWA/OPSNET movement counts are operations, not aircraft visits.**
+One aircraft landing and later departing generates **two** recorded
+operations (one arrival, one departure) — not one "visit." This applies
+to every raw count used anywhere in this project (`lax_monthly_movements.
+csv`, OPSNET pulls, LAWA TCOM reports).
+
+**Conversion**, under the simplest possible assumption (every aircraft
+that arrives also departs within the same observation window, i.e. no
+multi-day stays crossing a period boundary):
+
+```
+aircraft_visits ≈ operations / 2
+            ≈ (arrivals + departures) / 2
+```
+
+Caveats:
+- This undercounts true visit duration information — it tells you how
+  many aircraft came and went, not how many were present on any given
+  day (occupancy).
+- It breaks down at period boundaries for multi-day stays: an aircraft
+  that arrives on day N and departs on day N+3 contributes one arrival
+  operation to day N's count and one departure operation to day N+3's
+  count — the two halves of that visit are not even in the same daily
+  bucket, so simple same-day division understates visits at a daily
+  grain and must not be used to estimate daily occupancy.
+- **Occupancy (parking_units) is a different, correct calculation already
+  used in this project**: `alan/scripts/build_baseline.py` computes
+  `parking_units = arrivals_fbo x avg_dwell_days` (Little's Law), which
+  correctly derives how many aircraft are present on an average day from
+  the arrival rate and average length of stay — it does not divide
+  operations by two or treat operations as visits. This is the right
+  approach, not an error to fix.
+
+### 4.1 Audit of existing files for operations/visits conflation
+
+Checked: `alan/scripts/build_historical_traffic.py`,
+`alan/scripts/build_baseline.py`, every CSV header under
+`alan/elia_output/data/processed/`, `marvin/person_2_forecasting/` (all
+files, including `private_only_review/`), and the project's docs
+(`alan/docs/*.md`, `data_sources.md`).
+
+**No conflation found.** Every file consistently uses `arrivals` and
+`departures` as separate operation counts (never a combined "visits"
+column), and the one place occupancy is computed
+(`build_baseline.py`'s `parking_units`) uses the correct Little's Law
+relationship rather than dividing operations by two. Marvin's
+`aircraft_remaining_end_day` column (in `daily_private_only_plan.csv`)
+is also a correctly-distinct occupancy figure, not an operations count
+mislabeled as a visit count.
+
+Since no conflation was found, no code or data fix was needed for this
+section — the audit requested in the spec is recorded here as a result
+(clean), not skipped.
+
+## 5. Summary of findings
+
+| Item | Resolution |
+|---|---|
+| Traffic categories (121/135/91) | Documented, including Part 91's training/positioning contamination and Part 135's commuter-vs-charter split — new detail beyond what was previously in the repo |
+| Scope inconsistency (91-only vs mixed) | Documented as-is, including a previously-unflagged instance in Alan's own `build_baseline.py` (see section 1.4) — not resolved here, by design |
+| Aircraft-size mix (47/33/20) | No official evidence found (FAA GA Survey checked directly); confirmed as an unsupported assumption, not pursued further |
+| FBO market share (20%) | Real Atlantic/Signature land-share evidence exists (~56/44) but doesn't resolve a fictional entrant's share; confirmed as an unsupported assumption, not pursued further; relationship to Marvin's two-factor approach documented |
+| Operations vs. visits | Explained with conversion math and caveats; full-repo audit found no existing conflation, so no fix was required |

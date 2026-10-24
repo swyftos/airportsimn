@@ -5,7 +5,7 @@ m2_per_su,600,m2 per space unit,estimate,Light-jet position (Citation CJ3 16.3 m
 usable_parking_share,0.85,share of ramp,estimate,Ramp left for parking after fuel-truck lanes hangar fronts and ground equipment areas
 overflow_capacity_su,40,space units,synthetic,Fictional remote apron that can be leased for the event week. Activation needs management approval
 tow_packing_gain,0.10,share of ramp,estimate,Tighter tow-in packing when aircraft stay several nights. Planning estimate to be confirmed with ops
-initial_transient_aircraft,22.2,aircraft,estimate,Opening inventory on 2027-02-11 morning = P2 baseline arrivals on 2027-02-11 (20.14) x opening_dwell_days (Little's law). Recompute when P2 changes; test_opening_inventory_follows_p2_baseline fails otherwise
+initial_transient_aircraft,13.0,aircraft,estimate,"P2 ordinary arrivals 11.788 x opening_dwell_days 1.1; derived estimate refreshed with this release, not observed inventory."
 opening_dwell_days,1.1,days,benchmark,Average ordinary dwell used to set initial_transient_aircraft. Value from Alan's ledger avg_dwell_days (40 % turns / 45 % overnight / 15 % multi-day)
 mix_light,0.47,share,estimate,Category share of the initial parked aircraft. Matches P2 forecast mix
 mix_midsize,0.33,share,estimate,Category share of the initial parked aircraft. Matches P2 forecast mix

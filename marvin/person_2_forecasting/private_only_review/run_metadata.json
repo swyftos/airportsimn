@@ -1,0 +1,22 @@
+{
+  "status": "LOCAL_REVIEW_ONLY",
+  "scope": "Modeled Part91 private-only; zero charter or air-taxi input",
+  "observed_scope": "FAA GA airport category only, not verified private-fleet or FBO",
+  "private_eligible_GA_fraction": 0.5,
+  "eligibility_provenance": "synthetic placeholder",
+  "fbo_capture_share": 0.2,
+  "aircraft_size_mix": {
+    "light": 0.47,
+    "midsize": 0.33,
+    "large": 0.2
+  },
+  "capacity_su": 75,
+  "mean_su": 1.465,
+  "ga_2025_operations": 12234,
+  "conditional_baseline_arrivals": 1.6758904109589043,
+  "event_multipliers": "synthetic and explicit in daily_private_only_plan.csv",
+  "presidents_day": "unmeasured; no primary effect; +/-10% hypothetical sidecar only",
+  "covid_years": "2020-2022 omitted from normal 2023-2025 analog; 2022 LVI descriptive only",
+  "runway": "2014 FAA gross airport rate; residual slots unknown",
+  "source_links": "source_links.csv"
+}
