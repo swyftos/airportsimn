@@ -104,11 +104,11 @@ def run():
               'reservation_class':'synthetic','event_multipliers':'FAA_ATADS_OPSNET_anchored_FBO_transfer_assumption',
               'files':{str(p.relative_to(ROOT)).replace(chr(92),'/'):digest(p) for p in paths}}
     manifest['run_id']=hashlib.sha256(json.dumps(manifest['files'],sort_keys=True).encode()).hexdigest()
-    (HERE/'release_manifest.json').write_text(json.dumps(manifest,indent=2),encoding='utf-8')
+    (HERE/'release_manifest.json').write_text(json.dumps(manifest,indent=2),encoding='utf-8',newline='\n')
     # Keep Nazar's exact 21-file manifest contract. Additional evidence has a separate audit sidecar.
     audit={'release_run_id':manifest['run_id'],
            'files':{str(p.relative_to(ROOT)).replace(chr(92),'/'):digest(p) for p in evidence_paths}}
-    (HERE/'event_evidence_manifest.json').write_text(json.dumps(audit,indent=2),encoding='utf-8')
+    (HERE/'event_evidence_manifest.json').write_text(json.dumps(audit,indent=2),encoding='utf-8',newline='\n')
     # The dashboard validates exactly these 16 evidence files (nazar/readiness/release_status.py); newer inputs and
     # outputs get their own sidecar.
     extra_paths=[HERE/'provisional_inputs/holiday_history.csv',HERE/'backtest_metrics.csv',
@@ -118,6 +118,6 @@ def run():
                  P3/'sensitivity_tornado.csv',P3/'capacity_stress.csv',P3/'sensitivity_share_robustness.csv']
     extra={'release_run_id':manifest['run_id'],
            'files':{str(p.relative_to(ROOT)).replace(chr(92),'/'):digest(p) for p in extra_paths}}
-    (HERE/'extended_evidence_manifest.json').write_text(json.dumps(extra,indent=2),encoding='utf-8')
+    (HERE/'extended_evidence_manifest.json').write_text(json.dumps(extra,indent=2),encoding='utf-8',newline='\n')
     print('Verified schema stability, provenance, monthly conservation, forecast/range consistency and source preservation.')
 if __name__=='__main__': run()

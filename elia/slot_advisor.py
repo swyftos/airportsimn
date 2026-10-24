@@ -158,7 +158,7 @@ def main():
             "ramp_capacity_su": a["ramp_capacity_su"], "mc_runs": int(a["mc_runs"]),
             "human_in_command": "Offers only. Every action needs approval by the named role. The system never "
                                 "accepts, rejects or cancels an individual aircraft."}
-    (po.HERE / "slot_recommendations.json").write_text(json.dumps({"meta": meta, "scenarios": recs}, indent=2))
+    (po.HERE / "slot_recommendations.json").write_text(json.dumps({"meta": meta, "scenarios": recs}, indent=2), newline="\n")
     for s, r in recs.items():
         print(f"{s:7} no action: {r['no_action']['unaccommodated_mean']:.1f} unaccommodated; "
               f"actions {[x['id'] for x in r['actions']]}")
