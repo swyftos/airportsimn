@@ -1,0 +1,343 @@
+{
+  "meta": {
+    "demand_source": "/Users/elia/Desktop/hackathon/airportsimn/elia/stub_demand_predictions.csv",
+    "demand_is_synthetic": true,
+    "assumptions_file": "assumptions_p3.csv",
+    "planning_rules": "Parking sized on P90 demand path, staffing and fuel on P50 plus buffer. Impact compares the normal plan with the prepared plan under P10, P50 and P90 outcomes.",
+    "human_in_command": "Recommendations only. Every action needs approval by the named role. The system never accepts, rejects or cancels an individual aircraft reservation."
+  },
+  "scenarios": {
+    "high": {
+      "summary": {
+        "peak_day": "2027-02-14",
+        "peak_parking_demand_su_p50": 166.8,
+        "peak_parking_demand_su_p90": 203.6,
+        "normal_capacity_su": 90.0,
+        "max_prepared_capacity_su": 139.0,
+        "risk_days": [
+          "2027-02-13",
+          "2027-02-14",
+          "2027-02-15"
+        ],
+        "overall_risk": "High"
+      },
+      "actions": [
+        {
+          "id": "tow_packing",
+          "category": "parking",
+          "action": "Switch to tight tow-in packing on the main ramp for multi-night stays",
+          "dates": [
+            "2027-02-13",
+            "2027-02-14",
+            "2027-02-15"
+          ],
+          "rationale": "P90 peak reaches 204 su vs 90 su ramp",
+          "cost_usd": 0,
+          "requires_human_approval": true,
+          "approver": "Line service manager"
+        },
+        {
+          "id": "overflow_apron",
+          "category": "parking",
+          "action": "Lease the remote overflow apron (+40 su)",
+          "dates": [
+            "2027-02-12",
+            "2027-02-13",
+            "2027-02-14",
+            "2027-02-15"
+          ],
+          "rationale": "P90 peak exceeds packed ramp (99 su) on 3 day(s)",
+          "cost_usd": 16000.0,
+          "requires_human_approval": true,
+          "approver": "FBO general manager"
+        },
+        {
+          "id": "ppr_and_referrals",
+          "category": "contingency",
+          "action": "Require prior reservations (PPR) for arrivals and prepare a referral list of partner FBOs at VNY and BUR. Staff decide case by case; the system never refuses an aircraft",
+          "dates": [
+            "2027-02-11",
+            "2027-02-12",
+            "2027-02-13"
+          ],
+          "rationale": "P90 peak 204 su exceeds all prepared capacity (139 su)",
+          "cost_usd": 0,
+          "requires_human_approval": true,
+          "approver": "FBO general manager"
+        },
+        {
+          "id": "extra_line_staff",
+          "category": "staffing",
+          "action": "Schedule 20 additional technician shifts over the week (see daily table)",
+          "dates": [
+            "2027-02-12",
+            "2027-02-13",
+            "2027-02-14",
+            "2027-02-15",
+            "2027-02-16"
+          ],
+          "rationale": "P50 movements plus buffer exceed normal crew of 3 per shift",
+          "cost_usd": 12000.0,
+          "requires_human_approval": true,
+          "approver": "FBO general manager"
+        }
+      ],
+      "preparation_cost_usd": 28000.0,
+      "impact": {
+        "p10": {
+          "no_preparation": {
+            "unaccommodated_aircraft": 28.4,
+            "delayed_turns": 19.8,
+            "peak_utilization": 1.0,
+            "total_cost_usd": 71049
+          },
+          "ai_preparation": {
+            "unaccommodated_aircraft": 0.0,
+            "delayed_turns": 0.0,
+            "peak_utilization": 0.989,
+            "total_cost_usd": 28000
+          },
+          "aircraft_accommodated_gain": 28.4,
+          "net_benefit_usd": 43049
+        },
+        "p50": {
+          "no_preparation": {
+            "unaccommodated_aircraft": 45.9,
+            "delayed_turns": 53.8,
+            "peak_utilization": 1.0,
+            "total_cost_usd": 118161
+          },
+          "ai_preparation": {
+            "unaccommodated_aircraft": 16.6,
+            "delayed_turns": 0.0,
+            "peak_utilization": 1.0,
+            "total_cost_usd": 67876
+          },
+          "aircraft_accommodated_gain": 29.3,
+          "net_benefit_usd": 50285
+        },
+        "p90": {
+          "no_preparation": {
+            "unaccommodated_aircraft": 67.8,
+            "delayed_turns": 113.1,
+            "peak_utilization": 1.0,
+            "total_cost_usd": 179727
+          },
+          "ai_preparation": {
+            "unaccommodated_aircraft": 38.6,
+            "delayed_turns": 4.0,
+            "peak_utilization": 1.0,
+            "total_cost_usd": 121150
+          },
+          "aircraft_accommodated_gain": 29.2,
+          "net_benefit_usd": 58577
+        }
+      }
+    },
+    "low": {
+      "summary": {
+        "peak_day": "2027-02-14",
+        "peak_parking_demand_su_p50": 74.0,
+        "peak_parking_demand_su_p90": 87.4,
+        "normal_capacity_su": 90.0,
+        "max_prepared_capacity_su": 90.0,
+        "risk_days": [],
+        "overall_risk": "Low"
+      },
+      "actions": [
+        {
+          "id": "extra_line_staff",
+          "category": "staffing",
+          "action": "Schedule 4 additional technician shifts over the week (see daily table)",
+          "dates": [
+            "2027-02-13",
+            "2027-02-15"
+          ],
+          "rationale": "P50 movements plus buffer exceed normal crew of 3 per shift",
+          "cost_usd": 2400.0,
+          "requires_human_approval": true,
+          "approver": "FBO general manager"
+        }
+      ],
+      "preparation_cost_usd": 2400.0,
+      "impact": {
+        "p10": {
+          "no_preparation": {
+            "unaccommodated_aircraft": 0.0,
+            "delayed_turns": 0.0,
+            "peak_utilization": 0.704,
+            "total_cost_usd": 0
+          },
+          "ai_preparation": {
+            "unaccommodated_aircraft": 0.0,
+            "delayed_turns": 0.0,
+            "peak_utilization": 0.704,
+            "total_cost_usd": 2400
+          },
+          "aircraft_accommodated_gain": 0.0,
+          "net_benefit_usd": -2400
+        },
+        "p50": {
+          "no_preparation": {
+            "unaccommodated_aircraft": 0.0,
+            "delayed_turns": 0.0,
+            "peak_utilization": 0.823,
+            "total_cost_usd": 0
+          },
+          "ai_preparation": {
+            "unaccommodated_aircraft": 0.0,
+            "delayed_turns": 0.0,
+            "peak_utilization": 0.823,
+            "total_cost_usd": 2400
+          },
+          "aircraft_accommodated_gain": 0.0,
+          "net_benefit_usd": -2400
+        },
+        "p90": {
+          "no_preparation": {
+            "unaccommodated_aircraft": 0.0,
+            "delayed_turns": 11.8,
+            "peak_utilization": 0.971,
+            "total_cost_usd": 1764
+          },
+          "ai_preparation": {
+            "unaccommodated_aircraft": 0.0,
+            "delayed_turns": 0.4,
+            "peak_utilization": 0.971,
+            "total_cost_usd": 2460
+          },
+          "aircraft_accommodated_gain": 0.0,
+          "net_benefit_usd": -696
+        }
+      }
+    },
+    "medium": {
+      "summary": {
+        "peak_day": "2027-02-14",
+        "peak_parking_demand_su_p50": 116.2,
+        "peak_parking_demand_su_p90": 140.3,
+        "normal_capacity_su": 90.0,
+        "max_prepared_capacity_su": 139.0,
+        "risk_days": [
+          "2027-02-13",
+          "2027-02-14",
+          "2027-02-15"
+        ],
+        "overall_risk": "High"
+      },
+      "actions": [
+        {
+          "id": "tow_packing",
+          "category": "parking",
+          "action": "Switch to tight tow-in packing on the main ramp for multi-night stays",
+          "dates": [
+            "2027-02-13",
+            "2027-02-14",
+            "2027-02-15"
+          ],
+          "rationale": "P90 peak reaches 140 su vs 90 su ramp",
+          "cost_usd": 0,
+          "requires_human_approval": true,
+          "approver": "Line service manager"
+        },
+        {
+          "id": "overflow_apron",
+          "category": "parking",
+          "action": "Lease the remote overflow apron (+40 su)",
+          "dates": [
+            "2027-02-12",
+            "2027-02-13",
+            "2027-02-14",
+            "2027-02-15"
+          ],
+          "rationale": "P90 peak exceeds packed ramp (99 su) on 3 day(s)",
+          "cost_usd": 16000.0,
+          "requires_human_approval": true,
+          "approver": "FBO general manager"
+        },
+        {
+          "id": "ppr_and_referrals",
+          "category": "contingency",
+          "action": "Require prior reservations (PPR) for arrivals and prepare a referral list of partner FBOs at VNY and BUR. Staff decide case by case; the system never refuses an aircraft",
+          "dates": [
+            "2027-02-11",
+            "2027-02-12",
+            "2027-02-13",
+            "2027-02-14"
+          ],
+          "rationale": "P90 peak 140 su exceeds all prepared capacity (139 su)",
+          "cost_usd": 0,
+          "requires_human_approval": true,
+          "approver": "FBO general manager"
+        },
+        {
+          "id": "extra_line_staff",
+          "category": "staffing",
+          "action": "Schedule 14 additional technician shifts over the week (see daily table)",
+          "dates": [
+            "2027-02-12",
+            "2027-02-13",
+            "2027-02-14",
+            "2027-02-15",
+            "2027-02-16"
+          ],
+          "rationale": "P50 movements plus buffer exceed normal crew of 3 per shift",
+          "cost_usd": 8400.0,
+          "requires_human_approval": true,
+          "approver": "FBO general manager"
+        }
+      ],
+      "preparation_cost_usd": 24400.0,
+      "impact": {
+        "p10": {
+          "no_preparation": {
+            "unaccommodated_aircraft": 4.3,
+            "delayed_turns": 0.7,
+            "peak_utilization": 1.0,
+            "total_cost_usd": 10353
+          },
+          "ai_preparation": {
+            "unaccommodated_aircraft": 0.0,
+            "delayed_turns": 0.0,
+            "peak_utilization": 0.699,
+            "total_cost_usd": 24400
+          },
+          "aircraft_accommodated_gain": 4.3,
+          "net_benefit_usd": -14047
+        },
+        "p50": {
+          "no_preparation": {
+            "unaccommodated_aircraft": 15.7,
+            "delayed_turns": 16.5,
+            "peak_utilization": 1.0,
+            "total_cost_usd": 40077
+          },
+          "ai_preparation": {
+            "unaccommodated_aircraft": 0.0,
+            "delayed_turns": 0.0,
+            "peak_utilization": 0.836,
+            "total_cost_usd": 24400
+          },
+          "aircraft_accommodated_gain": 15.7,
+          "net_benefit_usd": 15677
+        },
+        "p90": {
+          "no_preparation": {
+            "unaccommodated_aircraft": 30.0,
+            "delayed_turns": 55.3,
+            "peak_utilization": 1.0,
+            "total_cost_usd": 80337
+          },
+          "ai_preparation": {
+            "unaccommodated_aircraft": 0.8,
+            "delayed_turns": 0.0,
+            "peak_utilization": 1.0,
+            "total_cost_usd": 26236
+          },
+          "aircraft_accommodated_gain": 29.2,
+          "net_benefit_usd": 54101
+        }
+      }
+    }
+  }
+}

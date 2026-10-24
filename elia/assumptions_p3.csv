@@ -1,0 +1,32 @@
+parameter,value,unit,classification,source_or_rationale
+ramp_capacity_su,90,space units,synthetic,Fictional FBO main ramp. 1 space unit (su) = one light jet parking spot
+overflow_capacity_su,40,space units,synthetic,Fictional remote apron that can be leased for the event week. Activation needs management approval
+tow_packing_gain,0.10,share of ramp,estimate,Tighter tow-in packing when aircraft stay several nights. Planning estimate to be confirmed with ops
+initial_transient_aircraft,12,aircraft,synthetic,Transient aircraft already parked on Feb 11 morning
+mix_light,0.25,share,estimate,Light jets and turboprops share of transient arrivals. To be replaced by P2 categories if provided
+mix_midsize,0.45,share,estimate,Midsize and super-midsize jets share
+mix_heavy,0.30,share,estimate,Large-cabin jets share. Event traffic skews to large cabin
+su_light,1.0,space units,estimate,Footprint relative to a light jet
+su_midsize,1.5,space units,estimate,Footprint relative to a light jet
+su_heavy,2.5,space units,estimate,Footprint relative to a light jet (G650 / Global class)
+shift_share_morning,0.40,share of daily movements,estimate,06:00-14:00
+shift_share_day,0.40,share of daily movements,estimate,14:00-22:00
+shift_share_night,0.20,share of daily movements,estimate,22:00-06:00
+movements_per_tech_shift,6,movements,estimate,Arrivals or departures one line technician can handle in an 8 h shift including towing and servicing
+normal_techs_per_shift,3,technicians,synthetic,Normal operating plan of the fictional FBO
+staffing_buffer,0.15,share,estimate,Buffer above P50 workload when staffing the prepared plan
+fuel_uplift_rate,0.85,share of departures,estimate,Departures that take fuel at the FBO
+gal_light,150,gallons,estimate,Typical uplift per departure
+gal_midsize,400,gallons,estimate,Typical uplift per departure
+gal_heavy,1000,gallons,estimate,Typical uplift per departure
+truck_capacity_gal,5000,gallons,estimate,Jet-A refueler capacity
+truck_loads_per_shift,3,loads,estimate,Refill cycles per truck per 8 h shift
+normal_fuel_trucks,2,trucks,synthetic,Normal operating plan of the fictional FBO
+revenue_per_aircraft_usd,2400,USD,estimate,Lost revenue per aircraft that cannot be accommodated (parking fees for ~3 nights plus fuel margin). Explicit cost assumption
+extra_tech_shift_cost_usd,600,USD,estimate,Cost of one additional technician shift (overtime or agency)
+overflow_cost_per_day_usd,4000,USD,estimate,Lease of the remote apron per day once activated
+extra_truck_cost_per_day_usd,1500,USD,estimate,Rental refueler with driver per day
+delayed_turn_cost_usd,150,USD,estimate,Service cost of a turn handled late because of understaffing
+risk_medium_threshold,0.85,utilization,estimate,Utilization above which a day is Medium risk
+risk_high_threshold,1.00,utilization,estimate,Utilization above which a day is High risk
+dep_share_before_peak,0.5,share of daily departures,estimate,Departures that leave before the daily arrival peak
