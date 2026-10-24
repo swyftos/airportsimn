@@ -2,10 +2,12 @@
 INTEGRATION.md contract) expects, plus alan/assumptions.csv.
 
 Input:  alan/data/processed/historical_traffic_interim.csv
-        (airport-wide, daily, Part 91 general_aviation ONLY -- air_taxi
-        dropped per the team's private-only scope decision -- 50/50
+        (airport-wide, daily, Part 91 general_aviation, 50/50
         arrivals/departures split -- built by build_historical_traffic.py
         from Marvin's verified daily GA extract, not a monthly spread)
+        plus alan/data/processed/historical_traffic_air_taxi_interim.csv
+        (same layout, Part 135 air_taxi, build_historical_traffic_air_taxi.py),
+        summed per day: the team scope is Part 91 + Part 135.
 
 Output: alan/baseline.csv       -- exactly 7 rows, one per planning date
         alan/assumptions.csv    -- the assumption ledger behind those rows
@@ -67,6 +69,8 @@ from pathlib import Path
 
 HERE = Path(__file__).parent
 IN_PATH = HERE.parent / "data" / "processed" / "historical_traffic_interim.csv"
+# Part 135 (FAA air taxi) daily history, added to Part 91 GA per the team's Part 91 + 135 scope
+AIR_TAXI_PATH = HERE.parent / "data" / "processed" / "historical_traffic_air_taxi_interim.csv"
 BASELINE_OUT = HERE.parent / "baseline.csv"
 ASSUMPTIONS_OUT = HERE.parent / "assumptions.csv"
 
@@ -91,24 +95,10 @@ AVG_DWELL_DAYS = 1.10
 # reference/audit data; they are just excluded from this average.
 BASELINE_YEARS = {2023, 2024, 2025}
 
-# Day-of-week multiplier applied to the flat monthly average (the interim
-# historical file has no day-of-week signal -- it was built by spreading
-# each month's total evenly across its days). This is an ILLUSTRATIVE
-# BENCHMARK, not measured for this FBO: typical general aviation / business
-# jet traffic skews weekday-heavy with a Saturday trough and a partial
-# Sunday rebound (return travel). Multipliers are normalized to average
-# exactly 1.0 across the week, so the weekly total is unchanged -- only its
-# daily distribution shifts.
-WEEKDAY_MULTIPLIERS = {
-    "Monday": 1.08,
-    "Tuesday": 1.12,
-    "Wednesday": 1.12,
-    "Thursday": 1.08,
-    "Friday": 1.00,
-    "Saturday": 0.65,
-    "Sunday": 0.95,
-}
-assert abs(sum(WEEKDAY_MULTIPLIERS.values()) / 7 - 1.0) < 1e-9, "weekday multipliers must average to 1.0"
+# No separate day-of-week multiplier: the interim histories are observed daily
+# counts, so the weekday-matched average below already carries the real weekday
+# pattern. (The earlier illustrative multipliers were for a monthly-spread file
+# and would now count the weekday effect twice.)
 
 # Planning week and its weekday sequence (fixed by the team's dashboard contract)
 PLANNING_DATES = [
@@ -125,6 +115,12 @@ def weekday_name(date_str):
 def main():
     with open(IN_PATH, newline="") as f:
         rows = list(csv.DictReader(f))
+    with open(AIR_TAXI_PATH, newline="") as f:
+        air_taxi = {r["date"]: r for r in csv.DictReader(f)}
+    if set(air_taxi) != {r["date"] for r in rows}:
+        raise ValueError("GA and air-taxi histories cover different dates")
+    rows = [dict(r, arrivals=float(r["arrivals"]) + float(air_taxi[r["date"]]["arrivals"]),
+                 departures=float(r["departures"]) + float(air_taxi[r["date"]]["departures"])) for r in rows]
 
     # Ordinary February days: month == 2, not flagged excluded_covid (covers
     # 2020/2021/2022, which also removes the Super Bowl LVI event month),
@@ -153,9 +149,8 @@ def main():
         avg_arrivals_airportwide = sum(float(r["arrivals"]) for r in matches) / len(matches)
         avg_departures_airportwide = sum(float(r["departures"]) for r in matches) / len(matches)
 
-        dow_mult = WEEKDAY_MULTIPLIERS[wd]
-        arrivals_fbo = avg_arrivals_airportwide * dow_mult * EFFECTIVE_SHARE
-        departures_fbo = avg_departures_airportwide * dow_mult * EFFECTIVE_SHARE
+        arrivals_fbo = avg_arrivals_airportwide * EFFECTIVE_SHARE
+        departures_fbo = avg_departures_airportwide * EFFECTIVE_SHARE
         parking_units = arrivals_fbo * AVG_DWELL_DAYS
 
         baseline_rows.append(
@@ -180,7 +175,7 @@ def main():
             # and its derivation changed (unified with Marvin's eligibility x
             # capture figure); keeping the id avoids breaking that pipeline.
             "id": "fbo_market_share",
-            "label": "Combined private-eligible x FBO-capture share of LAX Part 91 GA traffic",
+            "label": "Combined private-eligible x FBO-capture share of LAX Part 91 GA + Part 135 air-taxi traffic",
             "value": EFFECTIVE_SHARE,
             "unit": "fraction",
             "classification": "assumption",
@@ -217,11 +212,11 @@ def main():
         {
             "id": "historical_base",
             "label": "Underlying airport-wide movement data",
-            "value": "FAA ATADS/OPSNET LAX GA-category daily operations, Feb (ordinary years)",
+            "value": "FAA ATADS/OPSNET LAX GA + air-taxi daily operations, Feb (ordinary years)",
             "unit": "n/a",
             "classification": "benchmark",
-            "source": "Marvin (private_only_review/ga_only_daily_source.csv, verified_public_FAA_GA_category_not_private_fleet) via Alan's build_historical_traffic.py (daily-direct, 50/50 arrivals/departures, Part 91 GA only -- air_taxi dropped)",
-            "note": "Weekday-matched February average across ordinary (non-COVID, non-2022) years; see alan/scripts/build_baseline.py docstring for full methodology. Switched from a monthly-spread air_taxi+GA source to this daily-resolution GA-only source per the team's private-only scope decision -- see alan/docs/traffic_categories_and_fleet_mix.md section 1.4.",
+            "source": "FAA ATADS/OPSNET daily LAX operations: general aviation (Part 91) via build_historical_traffic.py plus air taxi (Part 135) via build_historical_traffic_air_taxi.py, summed per day (daily-direct, 50/50 arrivals/departures)",
+            "note": "Weekday-matched February average across ordinary (non-COVID, non-2022) years; see alan/scripts/build_baseline.py docstring for full methodology. Daily-resolution FAA counts; Part 135 air taxi added back to Part 91 GA when the team scope became Part 91 + 135 -- see alan/docs/traffic_categories_and_fleet_mix.md section 1.4.",
         },
     ]
 
@@ -252,12 +247,12 @@ def main():
     assumptions_rows.append(
         {
             "id": "weekday_multiplier",
-            "label": "Day-of-week traffic multiplier applied to flat monthly average",
-            "value": str(WEEKDAY_MULTIPLIERS),
+            "label": "Day-of-week traffic pattern",
+            "value": "observed (no separate multiplier)",
             "unit": "ratio per weekday",
-            "classification": "benchmark",
-            "source": "Illustrative general aviation/business-jet weekly pattern (weekday-heavy, Saturday trough, partial Sunday rebound)",
-            "note": "Not measured for this FBO or LAX specifically; the underlying historical file has no native day-of-week signal (monthly totals were spread evenly across days). Multipliers average to 1.0, so weekly totals are unchanged. See alan/scripts/build_baseline.py.",
+            "classification": "public data",
+            "source": "Weekday-matched averages of observed FAA daily counts",
+            "note": "The interim histories are daily FAA counts, so the weekday pattern is observed. The earlier illustrative multipliers (Sat 0.65 etc.) were for monthly-spread data and are no longer applied, to avoid counting the weekday effect twice.",
         }
     )
 

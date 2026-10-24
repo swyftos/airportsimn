@@ -1,7 +1,7 @@
 aircraft_category,target,data_class,evaluation_type,train_rows,calibration_rows,test_rows,train_end,calibration_start,test_start,model_mae,historical_mean_mae,improvement_percent,nominal_coverage,test_coverage,baseline_radius
-large_jet,arrivals,estimated,non_observed_demonstration,657,219,220,2024-10-18,2024-10-19,2025-05-26,0.0819,0.0881,7.06,0.9,0.8545,0.1479
-large_jet,departures,estimated,non_observed_demonstration,657,219,220,2024-10-18,2024-10-19,2025-05-26,0.0819,0.0881,7.06,0.9,0.8545,0.1479
-light_jet,arrivals,estimated,non_observed_demonstration,657,219,220,2024-10-18,2024-10-19,2025-05-26,0.1925,0.2071,7.06,0.9,0.8545,0.3475
-light_jet,departures,estimated,non_observed_demonstration,657,219,220,2024-10-18,2024-10-19,2025-05-26,0.1925,0.2071,7.06,0.9,0.8545,0.3475
-midsize_jet,arrivals,estimated,non_observed_demonstration,657,219,220,2024-10-18,2024-10-19,2025-05-26,0.1351,0.1454,7.06,0.9,0.8545,0.244
-midsize_jet,departures,estimated,non_observed_demonstration,657,219,220,2024-10-18,2024-10-19,2025-05-26,0.1351,0.1454,7.06,0.9,0.8545,0.244
+large_jet,arrivals,estimated,non_observed_demonstration,657,219,220,2024-10-18,2024-10-19,2025-05-26,0.1541,0.1778,13.33,0.9,0.8682,0.3094
+large_jet,departures,estimated,non_observed_demonstration,657,219,220,2024-10-18,2024-10-19,2025-05-26,0.1541,0.1778,13.33,0.9,0.8682,0.3094
+light_jet,arrivals,estimated,non_observed_demonstration,657,219,220,2024-10-18,2024-10-19,2025-05-26,0.3622,0.4179,13.33,0.9,0.8682,0.7272
+light_jet,departures,estimated,non_observed_demonstration,657,219,220,2024-10-18,2024-10-19,2025-05-26,0.3622,0.4179,13.33,0.9,0.8682,0.7272
+midsize_jet,arrivals,estimated,non_observed_demonstration,657,219,220,2024-10-18,2024-10-19,2025-05-26,0.2543,0.2935,13.33,0.9,0.8682,0.5106
+midsize_jet,departures,estimated,non_observed_demonstration,657,219,220,2024-10-18,2024-10-19,2025-05-26,0.2543,0.2935,13.33,0.9,0.8682,0.5106

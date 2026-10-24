@@ -77,8 +77,8 @@ class TeamReleaseTests(unittest.TestCase):
     def test_actual_policy_comparison_reports_both_conflicts(self):
         self.write(self.stage,'alan/assumptions.csv','id,value\nbaseline_training_window,"[2023, 2024, 2025]"\nfbo_market_share,0.2\n')
         self.write(self.stage,r.P2+'provisional_inputs/historical_traffic.csv','date\n2016-01-01\n2023-01-01\n')
-        self.write(self.stage,r.P2+'provisional_inputs/monthly_reconciliation.csv','assumed_fbo_movements,airport_ga_ops\n25,100\n')
+        self.write(self.stage,r.P2+'provisional_inputs/monthly_reconciliation.csv','assumed_fbo_movements,airport_private_ops\n25,100\n')
         self.assertEqual(len(r.assumption_mismatches(self.stage)),2)
         self.write(self.stage,r.P2+'provisional_inputs/historical_traffic.csv','date\n2023-01-01\n2024-01-01\n2025-01-01\n')
-        self.write(self.stage,r.P2+'provisional_inputs/monthly_reconciliation.csv','assumed_fbo_movements,airport_ga_ops\n20,100\n')
+        self.write(self.stage,r.P2+'provisional_inputs/monthly_reconciliation.csv','assumed_fbo_movements,airport_private_ops\n20,100\n')
         self.assertEqual(r.assumption_mismatches(self.stage),[])

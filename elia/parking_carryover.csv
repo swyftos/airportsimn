@@ -1,8 +1,8 @@
 variant,scenario,opening_aircraft,aircraft_remaining_p10,aircraft_remaining_p50,aircraft_remaining_p90,parking_su_remaining_p50,departures_pushed_past_window_p50,data_status
-ordinary,ordinary,2.2,1.4,2.2,3.0,3.2,0.0,provisional
-standard,Low,2.2,1.1,2.4,4.2,3.6,0.0,provisional
-standard,Medium,2.2,1.1,2.5,4.5,3.6,0.0,provisional
-standard,High,2.2,1.1,2.6,4.6,3.8,0.0,provisional
-departure_delay_24h,Low,2.2,2.6,4.0,6.5,5.9,1.8,provisional
-departure_delay_24h,Medium,2.2,2.4,4.1,6.9,6.0,1.8,provisional
-departure_delay_24h,High,2.2,2.5,4.2,6.8,6.1,1.8,provisional
+ordinary,ordinary,5.9,4.2,5.9,7.6,8.6,0.0,provisional
+standard,Low,5.9,3.1,5.9,9.0,8.7,0.0,provisional
+standard,Medium,5.9,3.1,6.0,9.0,8.8,0.0,provisional
+standard,High,5.9,3.3,6.4,9.9,9.5,0.0,provisional
+departure_delay_24h,Low,5.9,7.2,10.3,14.0,15.2,4.6,provisional
+departure_delay_24h,Medium,5.9,7.3,10.4,13.9,15.2,4.6,provisional
+departure_delay_24h,High,5.9,7.3,10.9,14.9,15.9,4.7,provisional

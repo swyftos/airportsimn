@@ -60,9 +60,9 @@ def assumption_mismatches(root):
     years = sorted({int(r['date'][:4]) for r in rows(root/(P2+'provisional_inputs/historical_traffic.csv'))})
     alan_years = sorted(json.loads(ledger['baseline_training_window']))
     alan_share = float(ledger['fbo_market_share'])
-    actual_shares = {round(float(r['assumed_fbo_movements'])/float(r['airport_ga_ops']), 8)
+    actual_shares = {round(float(r['assumed_fbo_movements'])/float(r['airport_private_ops']), 8)
                      for r in rows(root/(P2+'provisional_inputs/monthly_reconciliation.csv'))
-                     if float(r['airport_ga_ops']) > 0}
+                     if float(r['airport_private_ops']) > 0}
     issues = []
     if years != alan_years:
         issues.append(f'History years differ: Alan {alan_years}; Marvin converted history {years}. This compares input windows, not the fitted train/calibration/test split.')
