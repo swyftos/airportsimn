@@ -55,6 +55,18 @@ ASSUMPTIONS_OUT = HERE.parent / "assumptions.csv"
 FBO_MARKET_SHARE = 0.20
 AVG_DWELL_DAYS = 1.10
 
+# Training window for the ordinary-week baseline. LAX GA + air-taxi traffic
+# shows a large structural break across COVID: February daily averages run
+# ~175/day pre-COVID (2016-2019) vs. ~98/day post-COVID (2023-2025) -- a
+# ~45% drop, not noise. The forecast target (Feb 2027) is a post-COVID year,
+# so blending pre- and post-COVID years without a level-shift adjustment
+# would overstate today's actual traffic by roughly 45%. Restricting to
+# post-COVID years only is the simpler, more defensible fix versus applying
+# an unvalidated level-shift correction factor to the older years.
+# Pre-COVID years (2016-2019) stay in historical_traffic_interim.csv as
+# reference/audit data; they are just excluded from this average.
+BASELINE_YEARS = {2023, 2024, 2025}
+
 # Day-of-week multiplier applied to the flat monthly average (the interim
 # historical file has no day-of-week signal -- it was built by spreading
 # each month's total evenly across its days). This is an ILLUSTRATIVE
@@ -91,8 +103,15 @@ def main():
         rows = list(csv.DictReader(f))
 
     # Ordinary February days: month == 2, not flagged excluded_covid (covers
-    # 2020/2021/2022, which also removes the Super Bowl LVI event month).
-    feb_ordinary = [r for r in rows if r["date"][5:7] == "02" and r["excluded_covid"] == "False"]
+    # 2020/2021/2022, which also removes the Super Bowl LVI event month),
+    # AND restricted to BASELINE_YEARS to avoid blending pre-/post-COVID
+    # traffic levels (see constant comment above).
+    feb_ordinary = [
+        r for r in rows
+        if r["date"][5:7] == "02"
+        and r["excluded_covid"] == "False"
+        and int(r["date"][:4]) in BASELINE_YEARS
+    ]
 
     by_weekday = {}
     for r in feb_ordinary:
@@ -167,6 +186,18 @@ def main():
             "note": "Weekday-matched February average across ordinary (non-COVID, non-2022) years; see alan/scripts/build_baseline.py docstring for full methodology.",
         },
     ]
+
+    assumptions_rows.append(
+        {
+            "id": "baseline_training_window",
+            "label": "Years used for the ordinary-week baseline average",
+            "value": str(sorted(BASELINE_YEARS)),
+            "unit": "years",
+            "classification": "assumption",
+            "source": "Alan's analysis of alan/elia_output lax_monthly_movements.csv",
+            "note": "Restricted to post-COVID years only. Feb daily mean: ~175/day in 2016-2019 vs ~98/day in 2023-2025 (~45% drop, structural break not noise). Blending both without a level-shift would overstate 2027 ordinary traffic. 2016-2019 remain in historical_traffic_interim.csv as reference data, excluded only from this baseline average. See issue #10.",
+        }
+    )
 
     assumptions_rows.append(
         {
