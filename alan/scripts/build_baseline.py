@@ -184,12 +184,12 @@ def main():
         },
         {
             "id": "fbo_capacity_su",
-            "label": "Fictional FBO's parking/hangar capacity ceiling",
+            "label": "Atlantic Aviation's own full facility capacity (hangar + whole reference ramp)",
             "value": 87.5,
             "unit": "space units",
             "classification": "benchmark",
             "source": "Hangar: Atlantic Aviation LAX corporate hangar, confirmed built 2016 (alan/docs/lax_private_capacity_and_cost_research.md Item 1a), 5 large-cabin jets x 2.5 su/large jet (Elia's su_large) = 12.5 su. Ramp: Elia's P3 ramp model (elia/assumptions_p3.csv, ramp_capacity_su), Atlantic's 2008 13-acre ramp benchmark = 75 su (range 61-91).",
-            "note": "Replaces MARVIN-ramp's placeholder 75 su (\"replace_with_Alan_capacity\") with hangar + ramp combined: 12.5 (hangar, public/high-confidence, confirmed as-built) + 75 (ramp, benchmark/low-confidence, 2008 figure) = 87.5 su point estimate. Range 73.5-103.5 su using Elia's documented ramp range (61-91) with the hangar held fixed. Does not include Elia's optional +40 su overflow apron or +10% tow-packing gain, which remain separate, explicitly activation-gated assumptions.",
+            "note": "NOT this fictional FBO's own capacity ceiling -- describes Atlantic's entire reference facility (correctly flagged by Elia's elia/PARKING_ASSUMPTIONS.md: \"that describes Atlantic's facility, not a share-sized one, and is not used\"). This fictional FBO's actual, share-sized ramp is elia/assumptions_p3.csv's ramp_capacity_su = reference_ramp_su x fbo_market_share / reference_traffic_share (15 su at the current 10% share) -- use that figure for this FBO's capacity, not this row. Kept here only as the underlying reference-facility benchmark those two factors are derived from. Range 73.5-103.5 su using Elia's documented ramp range (61-91) with the hangar held fixed; does not include Elia's optional +40 su overflow apron or +10% tow-packing gain.",
         },
         {
             "id": "avg_dwell_days",
