@@ -8,6 +8,8 @@ A working local readiness desk for a fictional **Pacific Executive FBO at LAX**.
 
 The default app now follows the supplied seven-page HTML design: Sign in, Overview, Day, Plan, Bookings, Ramp and Numbers. See [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md) for the current interaction map, data boundaries and verification. The original technical dashboard remains at `/legacy` for recovery; it is no longer the main interface.
 
+The FBO agent view now labels navigation as **Overview, Action plan, Visits, Ramp capacity, Evidence**. Overview includes a seven-day operations board for parking, arrivals/departures, staffing, fuel and capacity risk; Day provides the selected shift's resource brief. [FBO_DESIGN_NOTES.md](FBO_DESIGN_NOTES.md) maps the interface to agent decisions and the model's evidence boundaries.
+
 ## Run it
 
 From the shared repository root, with Python **3.10 or newer**:

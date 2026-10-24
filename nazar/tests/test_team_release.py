@@ -45,7 +45,7 @@ class TeamReleaseTests(unittest.TestCase):
         self.assertTrue((self.repo/r.MANIFEST).read_text().startswith('previous'))
     def test_publish_writes_manifest_last(self):
         hashes=self.releases();order=[];original=r.replace_bytes
-        def record(path,content):order.append(str(path.relative_to(self.repo)));original(path,content)
+        def record(path,content):order.append(path.relative_to(self.repo).as_posix());original(path,content)
         with patch.object(r,'replace_bytes',side_effect=record):r.install(self.repo,self.stage,hashes)
         self.assertEqual(order[-1],r.MANIFEST)
         for name in hashes:self.assertEqual((self.repo/name).read_bytes(),(self.stage/name).read_bytes())
@@ -70,7 +70,7 @@ class TeamReleaseTests(unittest.TestCase):
             self.write(self.repo,name,'previous evidence');self.write(self.stage,name,'new evidence')
             hashes[name]=r.digest(self.repo/name)
         order=[];original=r.replace_bytes
-        def record(path,content):order.append(str(path.relative_to(self.repo)));original(path,content)
+        def record(path,content):order.append(path.relative_to(self.repo).as_posix());original(path,content)
         with patch.object(r,'replace_bytes',side_effect=record):r.install(self.repo,self.stage,hashes)
         self.assertEqual(order[-1],r.MANIFEST)
         for name in r.EVIDENCE_OUTPUTS:self.assertEqual((self.repo/name).read_text(),'new evidence')

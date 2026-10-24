@@ -38,10 +38,10 @@ button,input{font:inherit;color:inherit}
 <a href="#main" class="w" style="font-size: 19px; font-weight: 700; letter-spacing: -0.01em; text-decoration: none">RampReady</a>
 <nav class="nav" aria-label="Main">
 <a href="#main">Overview</a>
-<a href="#plan">Plan</a>
-<a href="#bookings">Bookings</a>
-<a href="#ramp">Ramp</a>
-<a href="#numbers" class="on" aria-current="page">Numbers</a>
+<a href="#plan">Action plan</a>
+<a href="#bookings">Visits</a>
+<a href="#ramp">Ramp capacity</a>
+<a href="#numbers" class="on" aria-current="page">Evidence</a>
 </nav>
 </div>
 <div style="display: flex; align-items: center; gap: 16px; font-size: 15px">
@@ -91,6 +91,13 @@ button,input{font:inherit;color:inherit}
 <tbody><template data-list="{{ledger}}" as="r"><tr><td style="font-weight:600">{{r.label}}</td><td>{{r.value}}</td><td><span class="tag k-s">{{r.type}}</span></td><td>{{r.source}}</td><td class="muted">{{r.note}}</td></tr></template></tbody>
 </table>
 </div>
+</section>
+
+<section class="ops-section" aria-labelledby="evaluation-heading">
+<div class="section-head"><div><p class="eyebrow">Forecast evidence</p><h2 id="evaluation-heading">Historical holdout results</h2><p>Compare the producer's model with a simple baseline on ordinary weeks. These scores do not validate the Super Bowl uplift.</p></div></div>
+<template data-if="{{hasMetrics}}"><p class="mobile-table-hint muted">Scroll sideways to view every metric.</p><div class="table-wrap"><table class="ops-table"><thead><tr><th>Category / direction</th><th>Evaluation data</th><th>Scope</th><th>Model MAE</th><th>Baseline MAE</th><th>90% coverage</th><th>Test rows</th></tr></thead><tbody><template data-list="{{metrics}}" as="m"><tr><th scope="row">{{m.category}} · {{m.direction}}</th><td>{{m.classification}}</td><td>{{m.scope}}</td><td>{{m.mae}}</td><td>{{m.baseline}}</td><td>{{m.coverage}}</td><td>{{m.count}}</td></tr></template></tbody></table></div></template>
+<template data-if="{{noMetrics}}"><p>This dataset does not include forecast evaluation metrics.</p></template>
+<p class="table-note">MAE is mean absolute error; lower is better. Scores against estimated or synthetic inputs are not observed FBO accuracy. Range coverage here is historical, separate from event-week parking ranges.</p>
 </section>
 
 <section style="margin-top: 112px; display: flex; flex-wrap: wrap; gap: 48px">

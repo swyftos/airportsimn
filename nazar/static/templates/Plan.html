@@ -40,10 +40,10 @@ button,textarea{font:inherit;color:inherit}
 <a href="#main" class="w" style="font-size: 19px; font-weight: 700; letter-spacing: -0.01em; text-decoration: none">RampReady</a>
 <nav class="nav" aria-label="Main">
 <a href="#main">Overview</a>
-<a href="#plan" class="on" aria-current="page">Plan</a>
-<a href="#bookings">Bookings</a>
-<a href="#ramp">Ramp</a>
-<a href="#numbers">Numbers</a>
+<a href="#plan" class="on" aria-current="page">Action plan</a>
+<a href="#bookings">Visits</a>
+<a href="#ramp">Ramp capacity</a>
+<a href="#numbers">Evidence</a>
 </nav>
 </div>
 <div style="display: flex; align-items: center; gap: 16px; font-size: 15px">
@@ -62,7 +62,7 @@ button,textarea{font:inherit;color:inherit}
 </div>
 </template>
 
-<p class="muted" style="margin: 0 0 16px; font-size: 17px">Plan {{versionLabel}}. {{reviewText}}</p>
+<p class="muted" style="margin: 0 0 16px; font-size: 17px">{{scenarioLabel}} demand · {{variantLabel}} · Planning release {{versionLabel}} · {{reviewText}}</p>
 <h1 class="w" style="margin: 0; font-size: clamp(40px, 6vw, 72px); line-height: 1.03; font-weight: 600; letter-spacing: -0.025em; max-width: 16ch">{{planHeadline}}</h1>
 
 <section style="margin-top: 48px; padding: 32px; border-radius: 20px; background: #F7F8FA; max-width: 820px">
@@ -81,7 +81,7 @@ button,textarea{font:inherit;color:inherit}
 <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 32px; margin-bottom: 8px">
 <div>
 <h2 class="w" style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.015em">What we'll do</h2>
-<p class="muted" style="margin: 6px 0 0">Approve, change or decline each step. Changing or declining needs a short reason.</p>
+<p class="muted" style="margin: 6px 0 0">Record a planning decision for each proposal. A manager must confirm assumptions, availability and cost before approval.</p>
 </div>
 <span style="font-weight: 600">{{progress}}</span>
 </div>
@@ -108,9 +108,9 @@ button,textarea{font:inherit;color:inherit}
 </template>
 </div>
 <div style="display: flex; flex-wrap: wrap; gap: 8px">
-<button class="btn {{s.aCls}}" type="button" onClick="{{s.approve}}">Approve</button>
-<button class="btn {{s.cCls}}" type="button" onClick="{{s.change}}">Change</button>
-<button class="btn {{s.dCls}}" type="button" onClick="{{s.decline}}">Decline</button>
+<button class="btn {{s.aCls}}" type="button" onClick="{{s.approve}}">Approve for planning</button>
+<button class="btn {{s.cCls}}" type="button" onClick="{{s.change}}">Request changes</button>
+<button class="btn {{s.dCls}}" type="button" onClick="{{s.decline}}">Decline proposal</button>
 </div>
 </div>
 </li>
@@ -118,6 +118,8 @@ button,textarea{font:inherit;color:inherit}
 </ol>
 <p class="muted" style="margin: 0; padding-top: 20px; border-top: 1px solid #EAECF0; font-size: 14px">Decisions are saved with your name, the time and this exact plan version. Approving doesn't book space, contact anyone or spend money.</p>
 </section>
+
+<section class="ops-section" aria-labelledby="service-heading"><div class="section-head"><div><p class="eyebrow">Supporting services</p><h2 id="service-heading">Confirm the people and fuel</h2><p>These workload estimates support the parking plan. Assignments and supply need a human check.</p></div></div><div class="briefing-grid plan-resources"><div class="briefing-card"><span class="briefing-label">Peak daily staff need</span><strong>{{peakStaff}}</strong><span>Check the daily shift estimates against the actual roster.</span></div><div class="briefing-card"><span class="briefing-label">Seven-day fuel workload</span><strong>{{weekFuel}}</strong><span>Confirm truck capacity, supplier availability and service timing.</span></div></div></section>
 
 <section style="margin-top: 112px">
 <h2 class="w" style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.015em">Does the plan hold up?</h2>

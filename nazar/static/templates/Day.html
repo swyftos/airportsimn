@@ -44,10 +44,10 @@ button{font:inherit;color:inherit}
 <a href="#main" class="w" style="font-size: 19px; font-weight: 700; letter-spacing: -0.01em; text-decoration: none">RampReady</a>
 <nav class="nav" aria-label="Main">
 <a href="#main" class="on" aria-current="page">Overview</a>
-<a href="#plan">Plan</a>
-<a href="#bookings">Bookings</a>
-<a href="#ramp">Ramp</a>
-<a href="#numbers">Numbers</a>
+<a href="#plan">Action plan</a>
+<a href="#bookings">Visits</a>
+<a href="#ramp">Ramp capacity</a>
+<a href="#numbers">Evidence</a>
 </nav>
 </div>
 <div style="display: flex; align-items: center; gap: 16px; font-size: 15px">
@@ -72,8 +72,19 @@ button{font:inherit;color:inherit}
 <div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{arrivals}}</div><div class="muted" style="margin-top: 8px">planes arriving</div></div>
 <div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{departures}}</div><div class="muted" style="margin-top: 8px">planes leaving</div></div>
 <div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{parked}}</div><div class="muted" style="margin-top: 8px">planes in the hourly illustration</div></div>
-<div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1; color: {{shortageColor}}">{{shortage}}</div><div class="muted" style="margin-top: 8px">model spaces short at the daily peak</div></div>
+<div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1; color: {{shortageColor}}">{{shortage}}</div><div class="muted" style="margin-top: 8px">parking units short at the daily peak</div></div>
 </div>
+</section>
+
+<section class="ops-section" aria-labelledby="day-resources-heading">
+<div class="section-head"><div><p class="eyebrow">Daily resource brief</p><h2 id="day-resources-heading">What the shift needs</h2><p>Use the modeled workload to confirm people, parking options and fuel service.</p></div><a class="text-link" href="#plan">Review actions →</a></div>
+<div class="briefing-grid day-resources">
+<div class="briefing-card"><span class="briefing-label">Parking range · P10–P90</span><strong>{{parkingRange}}</strong><span>Simulated demand range; daily median gap is {{shortage}} units.</span></div>
+<div class="briefing-card"><span class="briefing-label">Chance above usable capacity</span><strong>{{normalRisk}}</strong><span>After proposed preparation: {{preparedRisk}}. Proposed capacity needs confirmation.</span></div>
+<div class="briefing-card"><span class="briefing-label">{{staffLabel}}</span><strong>{{staffDisplay}}</strong><span>{{staffNote}}</span></div>
+<div class="briefing-card"><span class="briefing-label">Fuel service workload</span><strong>{{fuelGallons}} gal</strong><span>Forecast gallons for the day; verify supply and truck availability.</span></div>
+</div>
+<p class="table-note">After the proposed preparation, the median parking gap is {{preparedGap}} units. No action on this page reserves parking or dispatches staff.</p>
 </section>
 
 <section style="margin-top: 88px">

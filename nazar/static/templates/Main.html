@@ -75,10 +75,10 @@ button,input{font:inherit;color:inherit}
 <a href="#main" class="w" style="font-size: 19px; font-weight: 700; letter-spacing: -0.01em; text-decoration: none">RampReady</a>
 <nav class="nav" aria-label="Main">
 <a href="#main" class="on" aria-current="page">Overview</a>
-<a href="#plan">Plan</a>
-<a href="#bookings">Bookings</a>
-<a href="#ramp">Ramp</a>
-<a href="#numbers">Numbers</a>
+<a href="#plan">Action plan</a>
+<a href="#bookings">Visits</a>
+<a href="#ramp">Ramp capacity</a>
+<a href="#numbers">Evidence</a>
 </nav>
 </div>
 <div style="display: flex; align-items: center; gap: 16px; font-size: 15px">
@@ -104,7 +104,7 @@ button,input{font:inherit;color:inherit}
 </div>
 
 <section style="padding: 72px 0 24px">
-<p class="muted" style="margin: 0 0 16px; font-size: 17px">Super Bowl week at Pacific Executive FBO, LAX. February 11 to 17.</p>
+<p class="muted" style="margin: 0 0 16px; font-size: 17px">FBO readiness briefing · LAX · February 11–17, 2027 · {{scenarioLabel}} demand</p>
 <h1 class="w" style="margin: 0; font-size: clamp(40px, 6.4vw, 80px); line-height: 1.02; font-weight: 600; letter-spacing: -0.025em; max-width: 15ch">{{headline}}</h1>
 <p style="margin: 24px 0 0; font-size: clamp(18px, 1.8vw, 21px); line-height: 1.5; max-width: 54ch; color: #3B4A66">{{subline}}</p><p class="muted" style="margin:16px 0 0;max-width:65ch;font-size:14px">{{uncertainty}}</p>
 
@@ -128,13 +128,29 @@ button,input{font:inherit;color:inherit}
 <div class="muted" style="font-size: 15px">{{hero.rLabel}}</div>
 </div>
 </div>
-<p class="muted" style="margin: 20px 0 0; font-size: 14px">Each stripe is one model parking unit, not a measured stand. Bigger jets take more room. Daily bars show P3 median peaks.</p>
+<p class="muted" style="margin: 20px 0 0; font-size: 14px">Parking units are size-weighted model estimates, not verified aircraft stands. The bar shows a daily median peak.</p>
 </div>
 
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 48px">
-<a class="cta" href="#plan">See the plan</a>
-<span class="muted">{{planSummary}}</span>
+<a class="cta" href="#plan">Review preparation actions</a>
+<span class="muted">{{pending}} actions awaiting a planning decision · {{planSummary}}</span>
 </div>
+</section>
+
+<section class="briefing-grid" aria-label="Operational briefing">
+<div class="briefing-card"><span class="briefing-label">First median capacity gap</span><strong>{{firstGap}}</strong><span>Confirm layout and overflow options before any commitment.</span></div>
+<div class="briefing-card"><span class="briefing-label">Highest exceedance chance</span><strong>{{riskText}}</strong><span>{{riskDetail}}</span></div>
+<div class="briefing-card"><span class="briefing-label">Peak staffing demand</span><strong>{{staffText}}</strong><span>Modeled requirement; check actual shifts and qualifications.</span></div>
+<div class="briefing-card"><span class="briefing-label">Week fuel workload</span><strong>{{fuelText}}</strong><span>Modeled gallons; confirm trucks, supply and timing.</span></div>
+</section>
+
+<section class="ops-section" aria-labelledby="ops-heading">
+<div class="section-head"><div><p class="eyebrow">Shift handoff</p><h2 id="ops-heading">Seven-day operations board</h2><p>Daily median parking, resources and simulated capacity risk for the selected scenario.</p></div><a class="text-link" href="#plan">Open action plan →</a></div>
+<p class="mobile-table-hint muted">Scroll sideways to see the complete operations board.</p>
+<div class="table-wrap"><table class="ops-table"><thead><tr><th scope="col">Day</th><th scope="col">Arr / dep</th><th scope="col">Parking / usable</th><th scope="col">P10–P90 units</th><th scope="col">Median gap</th><th scope="col">After proposed plan</th><th scope="col">Staffing</th><th scope="col">Fuel</th><th scope="col">Chance above capacity</th></tr></thead><tbody>
+<template data-list="{{dailyOps}}" as="r"><tr><th scope="row"><button type="button" class="day-link" onClick="{{r.open}}">{{r.weekday}}<small>{{r.day}}</small></button></th><td>{{r.arrivals}} / {{r.departures}}</td><td>{{r.parking}}</td><td>{{r.range}}</td><td class="{{r.gapClass}}">{{r.gap}}</td><td>{{r.preparedGap}}</td><td>{{r.staff}}</td><td>{{r.fuel}}</td><td>{{r.risk}}</td></tr></template>
+</tbody></table></div>
+<p class="table-note">“After proposed plan” is a simulated comparison. It does not mean overflow space, staffing or fuel has been secured. Open a day for its detail and timing assumptions.</p>
 </section>
 
 <section style="margin-top: 96px">
@@ -191,7 +207,7 @@ button,input{font:inherit;color:inherit}
 <div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{day.arr}}</div><div class="muted" style="margin-top: 8px">planes arriving</div></div>
 <div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{day.dep}}</div><div class="muted" style="margin-top: 8px">planes leaving</div></div>
 <div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{day.parked}}</div><div class="muted" style="margin-top: 8px">planes in the hourly illustration</div></div>
-<div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{day.spaces}}</div><div class="muted" style="margin-top: 8px">spaces they need</div></div>
+<div><div class="w" style="font-size: 40px; font-weight: 600; line-height: 1">{{day.spaces}}</div><div class="muted" style="margin-top: 8px">parking units needed</div></div>
 </div>
 <p class="muted" style="margin: 24px 0 0; max-width: 64ch">Planes from earlier days are still parked here, so arrivals alone don't show how full the ramp gets.</p>
 <a href="#day" style="display: inline-flex; align-items: center; min-height: 44px; margin-top: 12px; font-weight: 600">See this day hour by hour</a>

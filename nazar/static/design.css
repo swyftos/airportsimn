@@ -8,3 +8,43 @@ dialog,dialog *,.advanced-panel{box-sizing:border-box}html{scroll-behavior:auto}
 .tbl th{position:relative}
 
 .mobile-table-hint{display:none}@media(max-width:640px){.mobile-table-hint{display:block;font-size:13px}}
+
+/* FBO desk: keep the operating decision and its evidence visible together. */
+#app{background:#f8fafc;color:#14213d;min-height:100vh}
+#app>div{background:#fff}
+#app header{background:#fff;position:relative;z-index:2}
+#app header>div,#app main{max-width:1200px!important}
+#app .nav{gap:3px}
+#app .nav a{white-space:nowrap}
+#app .nav a.on{background:#14213d;color:#fff}
+#app .nav a:focus-visible,#app button:focus-visible,#app a:focus-visible{outline:3px solid #ff6a2b;outline-offset:3px}
+.desk-status{border-bottom:1px solid #e4e9f0;background:#f5f7fb}
+.desk-status-inner{max-width:1200px;margin:auto;padding:11px 24px;display:flex;align-items:center;justify-content:space-between;gap:8px 24px;flex-wrap:wrap;font-size:13px;color:#42536d}
+.desk-status strong{color:#14213d}
+.desk-status .status-alert{color:#9b330e;font-weight:700}
+.desk-status a{font-weight:700;color:#14213d}
+.briefing-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:28px 0 0}
+.briefing-card{background:#f5f7fb;border:1px solid #e5eaf1;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:9px;min-width:0}
+.briefing-card strong{font-size:clamp(22px,2.5vw,32px);line-height:1.1;letter-spacing:-.025em;color:#14213d;font-weight:700;overflow-wrap:anywhere}
+.briefing-card>span:last-child{font-size:13px;line-height:1.45;color:#5d6b82}
+.briefing-label,.eyebrow{color:#55647b;font-size:12px;font-weight:800;line-height:1.35;letter-spacing:.07em;text-transform:uppercase}
+.ops-section{margin-top:72px}
+.section-head{display:flex;align-items:end;justify-content:space-between;flex-wrap:wrap;gap:16px 32px;margin-bottom:24px}
+.section-head h2{font-size:clamp(26px,3vw,36px);letter-spacing:-.025em;line-height:1.1;margin:4px 0 8px}
+.section-head p{color:#5d6b82;margin:0;max-width:72ch}
+.section-head .eyebrow{margin:0}
+.text-link{font-weight:700;min-height:44px;display:inline-flex;align-items:center}
+.ops-table{width:100%;border-collapse:collapse;min-width:1040px;font-variant-numeric:tabular-nums}
+.ops-table th,.ops-table td{text-align:left;padding:15px 13px;border-bottom:1px solid #e8edf3;vertical-align:middle;white-space:nowrap}
+.ops-table thead th{background:#f3f6fa;color:#4d5d73;font-size:12px;font-weight:800;letter-spacing:.035em;text-transform:uppercase}
+.ops-table tbody tr:hover{background:#fafbfe}
+.ops-table tbody th{font-weight:600}
+.ops-table .gap-alert{color:#a63811;font-weight:800}
+.day-link{border:0;background:transparent;text-align:left;padding:0;color:#14213d;font-weight:700;cursor:pointer;display:grid;gap:1px;text-decoration:underline;text-decoration-color:#b5becd;text-underline-offset:3px}
+.day-link small{font-weight:500;color:#61718a;text-decoration:none}
+.table-note{color:#66758b;font-size:13px;line-height:1.5;margin:14px 0 0}
+.day-resources{margin-top:0}
+.plan-resources{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:0;max-width:820px}
+@media(max-width:960px){.briefing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.briefing-grid{grid-template-columns:1fr 1fr;gap:10px}.briefing-card{padding:16px}.briefing-card strong{font-size:23px}.desk-status-inner{padding:10px 24px}.ops-section{margin-top:56px}#app .nav{flex-wrap:nowrap}#app header>div{gap:8px!important}#app header .nav{order:3;width:100%;overflow-x:auto;padding-bottom:2px}#app header .nav a{font-size:13px!important;padding:0 10px!important}.ops-table th,.ops-table td{padding:12px}}
+@media(max-width:390px){.briefing-grid{grid-template-columns:1fr}}
