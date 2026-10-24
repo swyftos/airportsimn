@@ -28,12 +28,15 @@ OUTPUTS = (
     'alan/data/processed/historical_traffic_interim.validation.json',
     'alan/baseline.csv', 'alan/assumptions.csv', 'assumptions.csv',
     *(P2 + n for n in ('provisional_inputs/historical_traffic.csv',
-      'provisional_inputs/monthly_reconciliation.csv','provisional_inputs/planning_inputs.csv',
+      'provisional_inputs/monthly_reconciliation.csv','provisional_inputs/holiday_history.csv',
+      'provisional_inputs/planning_inputs.csv',
       'demand_predictions.csv','uncertainty_results.csv','evaluation_metrics.csv',
       'daily_totals.csv','run_metadata.json')),
     *('elia/' + n for n in ('resource_requirements.csv','scenario_recommendations.json',
       'ordinary_week_parking.csv','parking_carryover.csv',
       'resource_requirements_departure_delay_24h.csv','scenario_recommendations_departure_delay_24h.json')),
+    'elia/resource_requirements_security_restriction.csv',
+    'elia/scenario_recommendations_security_restriction.json',
 )
 
 class ReleaseError(Exception):
@@ -101,7 +104,9 @@ def build(root, allow_mismatch=False):
             raise ReleaseError('Alan and Marvin must agree on the history window/share. No working files were changed. For an explicitly provisional demo only, use --allow-provisional-mismatch.')
     run_step(root, 'Marvin: forecast and uncertainty', P2+'forecast_model.py',
              '--history', P2+'provisional_inputs/historical_traffic.csv',
-             '--planning', P2+'provisional_inputs/planning_inputs.csv', '--output-dir', P2.rstrip('/'))
+             '--planning', P2+'provisional_inputs/planning_inputs.csv',
+             '--holiday-history', P2+'provisional_inputs/holiday_history.csv',
+             '--output-dir', P2.rstrip('/'))
     opening_check(root)
     run_step(root, 'Elia: all parking variants and carryover', 'elia/parking_optimizer.py', P2.rstrip('/'))
     run_step(root, 'Alan: consolidated assumption ledger', 'alan/scripts/merge_assumptions.py')

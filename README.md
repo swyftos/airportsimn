@@ -40,7 +40,7 @@ The verifier requires numpy and pandas; the dashboard does not. To regenerate th
 
 Current forecasts and capacity assumptions are **provisional pending team review**. Public airport observations are allocated into estimated FBO demand; reservations and event multipliers include assumptions. Matching release hashes and passing tests do not prove forecasting accuracy or physical capacity. Alan’s independent parked-aircraft baseline is displayed separately from P3’s size-weighted parking units.
 
-The dashboard checks the 20-file release manifest, flags changed inputs, and blocks stale-plan review/export. Reviews are attached to the precise dataset, scenario and variant. A planning approval does not authorize movement, towing, a booking, spending or an airport safety decision.
+The dashboard checks the 21-file release manifest, flags changed inputs, and blocks stale-plan review/export. Reviews are attached to the precise dataset, scenario and variant. A planning approval does not authorize movement, towing, a booking, spending or an airport safety decision.
 
 This is a local hackathon application with selectable demo identities, not production authentication or a public deployment. Only aggregate data belongs in the repository; never commit passenger details, credentials or local review databases.
 

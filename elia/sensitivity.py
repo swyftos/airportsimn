@@ -146,7 +146,9 @@ def run_tornado(demand: pd.DataFrame = None, a_base: dict = None, mc_runs: int =
     for key, m in mixes.items():
         d = demand.copy()
         tot = d.groupby(["scenario", "date", "direction"])["expected_movements"].transform("sum")
-        target_exp = tot * d["aircraft_category"].map(m)
+        # Keep the display label out of the numeric category mapping. Pandas 3
+        # otherwise gives this series object dtype, which reaches NumPy's log.
+        target_exp = tot * d["aircraft_category"].map({c: m[c] for c in po.CATS}).astype(float)
         scale = target_exp / d["expected_movements"]
         for col in ["expected_movements", "lower90_prediction", "upper90_prediction"]:
             d[col] = d[col] * scale

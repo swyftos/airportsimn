@@ -6,6 +6,10 @@ This is Marvin's runnable forecasting module. The current committed release uses
 
 Run `python marvin/person_2_forecasting/sensitivity_review.py` from the repository root. It regenerates [SENSITIVITY_REVIEW.md](SENSITIVITY_REVIEW.md), `sensitivity_forecast_totals.csv`, `analog_scenario_check.csv`, and `event_stress_cases.csv` from the committed release outputs. It compares 5%, 10%, and 15% assumed FBO shares, checks the current Low–High event band against public airport analogs, adds a larger event stress case, and summarizes the rolling backtest. It does not change the shared forecast or parking outputs. The share scaling only applies while the planning inputs have zero reservation floors.
 
+Run `python marvin/person_2_forecasting/frozen_2026_holdout.py` to regenerate [FROZEN_2026_HOLDOUT.md](FROZEN_2026_HOLDOUT.md) and its daily/monthly scores. The model remains frozen at the end of 2025; 273 finalized January–September 2026 FAA LAX days test the airport-level daily pattern. The public extract can be regenerated with `python marvin/person_2_forecasting/calibration_evidence/fetch_2026_holdout.py`. It reconciles every month to a separate FAA monthly query and leaves release inputs unchanged.
+
+Run `python marvin/person_2_forecasting/operational_stress.py` to regenerate [OPERATIONAL_STRESS.md](OPERATIONAL_STRESS.md) and its CSV. It compares ordinary arrival shares of 40%, 50%, and 60%, and a case with event arrivals one day earlier and departures one day later. These cases pass modified planning ranges to Elia's existing parking model without replacing the current release. They are assumption tests, not FBO measurements or calibrated probabilities.
+
 ## Run
 
 Requires Python 3.10 or later. No packages or API keys are required. From this folder:

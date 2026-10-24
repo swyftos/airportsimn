@@ -157,9 +157,9 @@ def render_report(forecast, analogs, stress, backtest):
               'The LVI LAX row is the model anchor, so its inclusion is not an independent check.',
               'The analogs differ by market and airport coverage; New Orleans has only two airports in this',
               'extract. Their event excesses cannot be transferred directly to one FBO. See',
-              '`calibration_evidence/README.md` for source and coverage details. The committed',
-              '`provisional_inputs/event_evidence.json` has a stale GA-only scope sentence; the source',
-              'history actually combines GA and air taxi. The generator is corrected for the next release.', '',
+              '`calibration_evidence/README.md` for source and coverage details. The signed event',
+              'metadata now identifies the source history as LAX GA plus air taxi; transferring its',
+              'event response to the fictional FBO remains unvalidated.', '',
               '## Event stress case at the 10% share', '',
               '| Case | Five-day uplift | Estimated FBO movements |',
               '| --- | ---: | ---: |']

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "demand_source": "marvin/person_2_forecasting",
+    "demand_source": "marvin\\person_2_forecasting",
     "demand_provenance": [
       "estimated"
     ],
