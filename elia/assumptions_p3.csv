@@ -1,5 +1,7 @@
 parameter,value,unit,classification,source_or_rationale
-ramp_capacity_su,75,space units,estimate,round(ramp_area_m2 x usable_parking_share / m2_per_su). Range 61 to 91 su for 550-650 m2 per su and 75-95 % usable. Low confidence: the area is a 2008 figure
+reference_ramp_su,75,space units,estimate,round(ramp_area_m2 x usable_parking_share / m2_per_su). Range 61 to 91 su for 550-650 m2 per su and 75-95 % usable. Low confidence: the area is a 2008 figure
+reference_traffic_share,0.50,share of LAX private traffic,estimate,"Atlantic's share of LAX private FBO traffic: its 55.8 % of the two incumbents' leased land (NAZAR-S01, LAWA 2020) applied to the 90 % of traffic this FBO does not capture. Land share as a traffic proxy is an assumption"
+ramp_capacity_su,15,space units,estimate,"round(reference_ramp_su x fbo_market_share / reference_traffic_share) = 75 x 0.10 / 0.50: ramp sized to this FBO's share, so ramp use does not depend on the share guess. fbo_market_share comes from alan/assumptions.csv; run_provisional.py refreshes this value"
 ramp_area_m2,52600,m2,benchmark,Atlantic Aviation LAX ramp reported as 13 acres in 2008 (AIN; Nazar source NAZAR-S07 in alan/docs/data_sources_nazar.md). Reference facility for the fictional FBO. Not a current survey
 m2_per_su,600,m2 per space unit,estimate,Light-jet position (Citation CJ3 16.3 m span x 15.6 m length) plus 3 m clearance and half of a 24 m shared taxilane = 589 m2. Same method gives 1.46 su for a Challenger 350 and 2.57 su for a G650
 usable_parking_share,0.85,share of ramp,estimate,Ramp left for parking after fuel-truck lanes hangar fronts and ground equipment areas
@@ -29,7 +31,7 @@ truck_loads_per_shift,3,loads,estimate,Refill cycles per truck per 8 h shift
 normal_fuel_trucks,2,trucks,synthetic,Normal operating plan of the fictional FBO
 revenue_per_aircraft_usd,2400,USD,estimate,Lost revenue per aircraft that cannot be accommodated (parking fees for ~3 nights plus fuel margin). Explicit cost assumption
 extra_tech_shift_cost_usd,600,USD,estimate,Cost of one additional technician shift (overtime or agency)
-overflow_cost_per_day_usd,4000,USD,estimate,Lease of the remote apron per day once activated
+overflow_cost_per_su_day_usd,100,USD per space unit per day,estimate,"Lease of the remote overflow apron, paid only for the space units needed ($4,000 a day for the full 40 su)"
 extra_truck_cost_per_day_usd,1500,USD,estimate,Rental refueler with driver per day
 delayed_turn_cost_usd,150,USD,estimate,Service cost of a turn handled late because of understaffing
 risk_medium_threshold,0.85,utilization,estimate,Utilization above which a day is Medium risk
@@ -43,3 +45,5 @@ delay_24h_share,1.0,share of departures,estimate,Departure-delay variant: share 
 security_release_hours,4,hours,estimate,Security-restriction variant: movements blocked by the game-day TFR window (alan/data/processed/security_restriction_model_input.csv) are released evenly over this many hours after it ends. Not observed
 security_next_day_share,0.0,share of blocked departures,estimate,Security-restriction variant: share of departures blocked by the TFR window that leave the next day instead of the same night. 0 = all leave after the window (LAX is open 24 h); raise it to test crew-rest or night-throughput slips
 heavy_rain_day,3,day index,estimate,"Heavy-rain variant: day with at least 0.5 in of rain (0 = 2027-02-11, 3 = game day). The effect size is measured (marvin/person_2_part91_part135_forecast/results/weather_effect_measured.csv), not set here"
+slot_dropgo_credit_usd,500,USD per accepting aircraft,estimate,"Slot advisor: drop-and-go credit, about one landing fee plus handling for a midsize jet (LAWA GA landing fee $7.85 per 1000 lb x ~40000 lb = $314, ALAN-landing_fee_per_1000lbs). Assumption"
+slot_early_discount_usd,150,USD per accepting aircraft,estimate,Slot advisor: discount for moving a weekend arrival to Thursday or Friday. Invented illustrative value

@@ -15,9 +15,11 @@ The ratios are checked against real aircraft: a position is the aircraft's span 
 | Ramp area | 52,600 m² | Atlantic Aviation LAX ramp reported as 13 acres in 2008 (AIN, Nazar's source NAZAR-S07). Atlantic is the team's reference facility for the fictional FBO. Low confidence as a present-day value |
 | Area per su | 600 m² | Light-jet position computed above, rounded |
 | Usable share | 85 % | Ramp left for parking after fuel-truck lanes, hangar fronts and ground equipment |
-| **Main ramp** | **75 su** | 52,600 × 0.85 / 600. Range 61 to 91 su for 550 to 650 m² per su and 75 to 95 % usable |
+| Reference ramp (Atlantic) | 75 su | 52,600 × 0.85 / 600. Range 61 to 91 su for 550 to 650 m² per su and 75 to 95 % usable |
+| Atlantic's traffic share | 50 % | Its 55.8 % of the two incumbents' leased land (NAZAR-S01) applied to the 90 % of traffic this FBO does not capture. Land share as a traffic proxy is an assumption |
+| **Main ramp (this FBO)** | **15 su** | 75 × 0.10 / 0.50: sized to this FBO's 10 % share (`fbo_market_share`, alan/assumptions.csv). `run_provisional.py` recomputes it when the share changes |
 
-This replaces the earlier synthetic 90 su. The value is now an estimate with a documented source, but it depends on a 2008 figure and should be replaced by a measured apron area or a real stand count when one is found. Tow-in packing (+10 %) and the remote overflow apron (+40 su) remain estimates that need management approval.
+Atlantic's whole ramp was the earlier capacity, which no event scenario could fill. The fictional FBO now gets a ramp proportional to its share. Because demand and ramp both scale with the share, ramp use no longer depends on the share guess (`sensitivity_share_robustness.csv`: identical utilization for 5, 10 and 15 %). Tow-in packing (+10 %) and the remote overflow apron (up to 40 su, leased only for the space units needed at $100 per su per day) remain estimates that need management approval. The area figure dates from 2008 and should be replaced by a measured apron area or a real stand count when one is found.
 
 ## Starting inventory
 
@@ -37,7 +39,7 @@ The model does not track individual aircraft or draw a stay length per aircraft.
 
 Same model, units, opening inventory, capacity and staffing rules, run on P2's ordinary forecast for the same dates (`baseline_arrivals`, `baseline_departures`, checked to be identical across P2 scenarios). The range is P2's nominal 90 % baseline interval (baseline ± `baseline_radius`, floored at zero). 10,000 Monte Carlo paths.
 
-Result: a daily parking peak of 11.6 to 13.7 su at P50 (lowest on Saturday, highest on Presidents' Day, Monday 2027-02-15), 16 to 18 % of the 75 su ramp, no chance of exceeding it, and 1 technician on the busiest shift.
+Result: a daily parking peak of 11.6 to 13.7 su at P50 (lowest on Saturday, highest on Presidents' Day, Monday 2027-02-15), 78 to 91 % of the 15 su ramp, up to a 21 % chance of exceeding it on Presidents' Day, and 1 technician on the busiest shift. A ramp this full in an ordinary week suggests 15 su is at the small end of a plausible range.
 
 **This level depends on P2's ordinary forecast.** P2 trains on observed daily FAA GA and air-taxi counts for 2023–2025 (3.8 to 6.4 arrivals a day). The weekday pattern comes from the data, and Presidents' Day carries a factor of 1.25 measured on seven holidays (2016–2019, 2023–2025). In a rolling backtest over every week of 2025 the forecast's average daily error is 14.9%, better than four simple baselines (see marvin/person_2_forecasting/PROVISIONAL_ASSUMPTIONS.md).
 
@@ -45,7 +47,15 @@ Result: a daily parking peak of 11.6 to 13.7 su at P50 (lowest on Saturday, high
 
 ## Event week (`resource_requirements.csv`)
 
-With P2's FAA-anchored scenarios (five-day operations excess of 3.1 / 15.5 / 31 % for Low / Medium / High), the P50 parking peak is 14.2 / 17.4 / 23.0 su, reached on Presidents' Day in Low and on game day in Medium and High. Event aircraft build up from Thursday and leave on Sunday evening and Monday. No scenario comes close to the 75 su ramp, so parking is not the constraint at this capacity. Alan's ledger now gives `fbo_capacity_su` = 87.5 su (Atlantic's 5-jet hangar, 12.5 su, plus the 75 su ramp); this model still uses the 75 su ramp alone. Both describe Atlantic's whole facility, so neither is sized to a 10 % share; the team still has to decide whether to scale capacity to the share.
+With P2's FAA-anchored scenarios (five-day operations excess of 3.1 / 15.5 / 31 % for Low / Medium / High), the P50 parking peak is 14.2 / 17.4 / 23.0 su, reached on Presidents' Day in Low and on game day in Medium and High. Event aircraft build up from Thursday and leave on Sunday evening and Monday. Against the 15 su ramp, measured on the same 10,000 demand paths with and without the plan:
+
+| Scenario | Plan (approved by the GM) | Cost | Aircraft not accommodated, no plan → plan | Plan pays off in |
+|---|---|---|---|---|
+| Low | Tow-in packing, lease 1 su of overflow | $1,000 | 1.0 → 0.3 | 41 % of runs |
+| Medium | Tow-in packing, overflow lease | $3,500 | 2.3 → 0.1 | 62 % |
+| High | Tow-in packing, overflow lease | $9,100 | 6.0 → 0.1 | 78 % |
+
+In Low, preparing costs more than it saves in most runs, and the plan says so; a manager could decline. Alan's ledger gives `fbo_capacity_su` = 87.5 su (Atlantic's hangar plus its whole ramp); that describes Atlantic's facility, not a share-sized one, and is not used.
 
 ## 24-hour departure-delay variant
 
@@ -53,7 +63,7 @@ With P2's FAA-anchored scenarios (five-day operations excess of 3.1 / 15.5 / 31 
 
 Definition: from game day (Sunday 2027-02-14, `delay_24h_first_day` = 3) onward, 100 % of each day's departures (`delay_24h_share`) leave 24 hours later. This represents a post-game ground stop, weather hold or slot restriction. The variant is a **separate simulation** on the same 10,000 demand paths as the standard run (same seed). Departures, parking, prepared capacity, staffing, fuel, costs, impact and recommendations are all recomputed. Departures scheduled for 2027-02-17 move to 2027-02-18, outside the window, so those aircraft stay parked.
 
-Effect in the Medium scenario: Monday's parking peak goes from 15.8 to 26.5 su at P50, and aircraft keep accumulating until the delayed departures leave. In the Low scenario, it goes from 14.2 to 22.5 su. No scenario exceeds the 75 su ramp at P50, even with the delay (High peaks at 32.4 su).
+Effect in the Medium scenario: Monday's parking peak goes from 15.8 to 26.5 su at P50, and aircraft keep accumulating until the delayed departures leave. In the Low scenario, it goes from 14.2 to 22.5 su. Every scenario now exceeds the 15 su ramp: without a plan 5.5 / 8.0 / 12.0 aircraft are not accommodated, with it 0.2 / 0.1 / 0.2, and the plan ($6,000 / $11,200 / $16,800) pays off in 84 / 89 / 92 % of runs. Preparation matters most when something goes wrong.
 
 ## Game-day security restriction variant
 
@@ -89,7 +99,16 @@ Result: the game-day peak moves from 17.4 to 17.1 su in Medium (14.2 → 14.5 su
 
 The FBO share drives the result far more than anything else, and it is an assumption. Dwell time and aircraft mix come next; both could be measured with ADS-B data.
 
-Capacity stress: the same demand against ramps of 10 to 75 su. Parking never binds above 40 su. The smallest tested ramp at which fewer than 0.5 aircraft a run go unaccommodated without preparation is 20 / 20 / 30 su (Low / Medium / High), and 30 / 30 / 40 su with the 24-hour delay. Below that, the plan's tow-in packing (free) and overflow apron (40 su at $4,000 a day) remove almost all unaccommodated aircraft, but the apron costs more than the revenue it protects ($2,400 an aircraft) in most runs. Preparation pays off in 85 % of runs only for the 10 su ramp with the 24-hour delay in High, and in about half of the runs at 15 su in that case. Sizing capacity to the share matters: Atlantic held about 56 % of the two incumbents' leased land, so a ramp proportional to a 10 % share would be roughly 75 × 10 / 56 ≈ 13 su, inside the range where parking binds. That proportional sizing is an illustration for the team's capacity decision, not a measured stand count.
+Capacity stress: the same demand against ramps of 10 to 75 su. Parking never binds above 40 su. The smallest tested ramp at which fewer than 0.5 aircraft a run go unaccommodated without preparation is 20 / 20 / 30 su (Low / Medium / High), and 30 / 30 / 40 su with the 24-hour delay. Below that, tow-in packing (free) and an overflow lease sized to the shortfall remove almost all unaccommodated aircraft. At 10 su the plan pays off in 77 to 99 % of runs; at 15 su (the share-sized ramp) in 40 / 55 / 82 % (standard) and 82 / 89 / 92 % (24-hour delay), from this 2,000-path run.
+
+## Arrival-slot and price incentives (`slot_advisor.py`)
+
+`slot_advisor.csv` and `slot_recommendations.json`, same demand paths as the parking plan, plain 15 su ramp. Two levers, each at 0 / 10 / 20 / 30 % take-up because nobody knows how many owners accept an offer:
+
+- **Cheap early arrival (Thursday or Friday instead of the weekend)** does not free parking. Departures do not move, so the aircraft stay longer: at 30 % take-up the Medium game-day peak stays at 17.3 su and unaccommodated aircraft rise from 2.3 to 4.3. It only spreads the handling workload.
+- **Drop-and-go credit ($500, about one landing fee plus handling)** for Super Bowl arrivals: drop passengers, reposition to a partner field, return for pickup. At 30 % take-up the Medium game-day peak falls from 17.4 to 15.9 su and unaccommodated aircraft from 2.3 to 1.6 (net +$1,000); in High from 23.0 to 20.0 su and 6.0 to 4.2 (net +$3,100). Not worth it in Low. Each acceptance adds two handling movements.
+
+The advisor recommends the drop-and-go offer in Medium and High as a complement to the ramp plan, never on its own. Past Super Bowls filled parking without raising prices, so reservations (PPR) stay the primary tool. Every recommendation is an offer approved by the FBO general manager; the system never refuses or reassigns an aircraft.
 
 ## Aircraft still parked after 2027-02-17 (`parking_carryover.csv`)
 

@@ -32,7 +32,11 @@ def run():
             _, forecasts = read(HERE/'demand_predictions.csv')
             first = min(r['date'] for r in forecasts)
             baseline = sum(float(r['baseline_arrivals']) for r in forecasts if r['date']==first and r['scenario']=='Medium')
+            share = float(next(r['value'] for r in read(ROOT/'alan/assumptions.csv')[1] if r['id']=='fbo_market_share'))
+            value = {r['parameter']: r['value'] for r in assumptions}
             for r in assumptions:
+                if r['parameter']=='ramp_capacity_su':
+                    r['value'] = str(round(float(value['reference_ramp_su'])*share/float(value['reference_traffic_share'])))
                 if r['parameter']=='initial_transient_aircraft':
                     r['value'] = str(round(baseline*dwell, 1))
                     r['source_or_rationale'] = f'P2 ordinary arrivals {baseline:.3f} x opening_dwell_days {dwell}; derived estimate refreshed with this release, not observed inventory.'
@@ -85,10 +89,6 @@ def run():
               HERE/'build_event_inputs.py',HERE/'provisional_inputs/event_evidence.json',
               HERE/'test_forecast_model.py',HERE/'forecast_output_contract.json',
               HERE/'provisional_inputs/monthly_reconciliation.csv',
-              ROOT/'alan/elia_output/data/processed/opsnet_lax_monthly.csv',
-              P3/'resource_requirements_security_restriction.csv',
-              P3/'scenario_recommendations_security_restriction.json',
-              ROOT/'alan/data/processed/security_restriction_model_input.csv',
               ROOT/'alan/elia_output/data/processed/superbowl_lvi_surge.csv',
               ROOT/'alan/elia_output/data/processed/superbowl_lvi_daily_profile.csv',
               ROOT/'alan/elia_output/data/processed/opsnet_daily_superbowl.csv',
@@ -104,5 +104,15 @@ def run():
     audit={'release_run_id':manifest['run_id'],
            'files':{str(p.relative_to(ROOT)).replace(chr(92),'/'):digest(p) for p in evidence_paths}}
     (HERE/'event_evidence_manifest.json').write_text(json.dumps(audit,indent=2),encoding='utf-8')
+    # The dashboard validates exactly 12 evidence files; newer inputs and variants get their own sidecar.
+    extra_paths=[ROOT/'alan/elia_output/data/processed/opsnet_lax_monthly.csv',
+                 HERE/'provisional_inputs/holiday_history.csv',HERE/'backtest_metrics.csv',
+                 ROOT/'alan/data/processed/security_restriction_model_input.csv',
+                 ROOT/'marvin/person_2_part91_part135_forecast/results/weather_effect_measured.csv',
+                 *sorted(P3.glob('resource_requirements_*.csv')),*sorted(P3.glob('scenario_recommendations_*.json'))]
+    extra={'release_run_id':manifest['run_id'],
+           'files':{str(p.relative_to(ROOT)).replace(chr(92),'/'):digest(p) for p in extra_paths
+                    if p.name not in ('resource_requirements_departure_delay_24h.csv','scenario_recommendations_departure_delay_24h.json')}}
+    (HERE/'extended_evidence_manifest.json').write_text(json.dumps(extra,indent=2),encoding='utf-8')
     print('Verified schema stability, provenance, monthly conservation, forecast/range consistency and source preservation.')
 if __name__=='__main__': run()

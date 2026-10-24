@@ -129,6 +129,12 @@ class TestSensitivity(unittest.TestCase):
         for scen in ("Low", "Medium", "High"):
             self.assertGreaterEqual(self.thresholds[("departure_delay_24h", scen)], self.thresholds[("standard", scen)])
 
+    def test_share_sized_ramp_keeps_utilization_stable(self):
+        robust = sensitivity.run_share_robustness(self.demand, self.a, mc_runs=2000)
+        for scen, sub in robust.groupby("scenario"):
+            util = sub["max_utilization_p50"]
+            self.assertLess(util.max() - util.min(), 0.15, f"{scen}: utilization moves with the share")
+
 
 if __name__ == "__main__":
     unittest.main()

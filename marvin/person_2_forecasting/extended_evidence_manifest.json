@@ -1,0 +1,14 @@
+{
+  "release_run_id": "f66be9dc3e3f3f97fe18ea65ae02955f675d350cc0aa1878071629f3dcda5409",
+  "files": {
+    "alan/elia_output/data/processed/opsnet_lax_monthly.csv": "afb2e603b10fd70154f27025834a90a9a8816451e53b34308b9fa00efa4f567f",
+    "marvin/person_2_forecasting/provisional_inputs/holiday_history.csv": "88b4398ce1315c42da956efc008b29d5739c4c03fdbfe5d60f5b6497fd0195b5",
+    "marvin/person_2_forecasting/backtest_metrics.csv": "57277c83a2f31af9586a934e940f0453ccc343f88190def98e19e7816860e71f",
+    "alan/data/processed/security_restriction_model_input.csv": "8792793e3dd4c456eb821e54c678737de00db81b5967d7ec7bb5a35ee1a06bff",
+    "marvin/person_2_part91_part135_forecast/results/weather_effect_measured.csv": "092b40a663d222786958ba41c2d3703d964dd9b3b1978dd6ac534de82b29934f",
+    "elia/resource_requirements_heavy_rain.csv": "c735ae704cac1081df86571d701f6954b8e8db2976061b29474ad85f3b43b879",
+    "elia/resource_requirements_security_restriction.csv": "3d7f3cc645c68a190fccc47b4e103cb922e2a333bfe657faefc7bc132bdff9af",
+    "elia/scenario_recommendations_heavy_rain.json": "849e751c96bb0b0724bc398f1aaf659f1cf0ff765f9bdc2a46606f225594d57c",
+    "elia/scenario_recommendations_security_restriction.json": "610a9dee39377e786333a719a4f473cd0f7f686523d2fc38215570878295a109"
+  }
+}

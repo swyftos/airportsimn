@@ -19,7 +19,7 @@
     "large_jet": 0.2
   },
   "presidents_day": "Learned factor applied to baseline; see presidents_day_effect.csv",
-  "fbo_ppr_capacity_su": 75.0,
+  "fbo_ppr_capacity_su": 15.0,
   "assumed_su_per_aircraft": 1.465,
   "opening_ground": 5.34,
   "departure_before_arrival_peak": 0.5,

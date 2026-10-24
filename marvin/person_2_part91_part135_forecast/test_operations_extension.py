@@ -63,7 +63,7 @@ class OperationsReleaseTests(unittest.TestCase):
                 previous = occupied
                 self.assertAlmostEqual(float(r['parking_overflow_to_resolve']),
                     max(0,float(r['projected_peak_ground'])-int(r['capacity_aircraft_equivalent'])), places=2)
-                self.assertGreater(int(r['capacity_aircraft_equivalent']), 24)  # P3 ramp, not invented stands
+                self.assertEqual(int(r['capacity_aircraft_equivalent']), int(float(r['fbo_ppr_capacity_su']) // float(r['assumed_su_per_aircraft'])))  # P3 ramp, not invented stands
                 self.assertFalse(any(k in r for k in ('can_land','can_leave','unserved_land','unserved_leave')))
         rates = defaultdict(dict)
         for r in rows('parking_price_scenarios.csv'):
