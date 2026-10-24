@@ -15,14 +15,15 @@ Answer “What decision should AI never make?”: **It must never authorize airc
 
 ## Presentation with the connected team models
 
-Use **Data & assumptions → Load current P2/P3 outputs** before presenting this version. Do not narrate the handcrafted sample’s numbers over the native model screens.
+Run `python3 nazar/scripts/verify_team_pipeline.py` (numpy/pandas required), then use **Data & assumptions → Load current P2/P3 outputs** before presenting this version. Do not narrate the handcrafted sample’s numbers over the native model screens.
 
-- Expected demand: peak daily P50 parking need 147.5, current capacity 90, proposed 139. The remaining median shortfall is 8.5; the preparation does not eliminate risk.
+- Expected demand: peak daily P50 parking need 91.7, current capacity 90, proposed 139. The remaining median shortfall is 0; the preparation does not eliminate risk.
 - Compare **Arrivals** to show the supplied ordinary baseline against event estimates. Explain that the missing ordinary parking baseline is still a team deliverable.
-- Select game day: the parking P10–P90 range is 92.8–235.9 units and the supplied simulation exceeds proposed capacity in 56.1% of runs. These are unvalidated synthetic-model outputs, not observed probabilities.
+- Select game day: the parking P10–P90 range is 54.8–132.6 units and the supplied simulation exceeds proposed capacity in 7.0% of runs. These are unvalidated synthetic-model outputs, not observed probabilities.
+- Show the impact comparison: Expected mean unaccommodated aircraft changes 9.4 → 0.9, but median net benefit is −$15,006 and preparation pays off in only 38.7% of simulations. Discuss the risk/cost tradeoff; do not pitch guaranteed savings. These figures belong to the currently committed synthetic output set and must be refreshed when producers change it.
 - Show the per-category arrival ranges and P2’s synthetic historical test metrics on the data tab. Historical validation does not validate the assumed event uplift.
 - Explain that the 24-hour delay toggle is disabled until Person 3 supplies that variant. Do not describe the current P3 within-day departure-order assumption as a 24-hour delay test.
-- Review the overflow proposal; the displayed weekly preparation cost is $43,600, including supplied action costs. Record a request for confirmed capacity, geometry checks and quotes.
+- Review the overflow proposal; the displayed weekly preparation cost is $24,400, including supplied action costs. Record a request for confirmed capacity, geometry checks and quotes.
 
 ## What each teammate should demonstrate before the final rehearsal
 

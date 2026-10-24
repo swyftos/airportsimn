@@ -30,11 +30,11 @@ Do not open `static/index.html` directly: the app needs its local Python server.
 
 ## Connect the current team code — works now
 
-The native adapter reads the existing P2/P3 formats without requiring teammates to rename their files. Open **Data & assumptions → Load current P2/P3 outputs**. It loads Marvin’s category forecasts, ranges and model report from `marvin/Person2-Forecasting/`, plus Elia’s resources, recommendations and assumptions from `elia/`.
+The native adapter reads the existing P2/P3 formats without requiring teammates to rename their files. Open **Data & assumptions → Load current P2/P3 outputs**. It loads Marvin’s category forecasts, ranges, run metadata and evaluation metrics from `marvin/person_2_forecasting/`, plus Elia’s resources, recommendations and assumptions from `elia/`.
 
-At the integrated revision, the expected scenario has a daily P50 parking peak of **147.5 units**, ordinary capacity **90**, and proposed capacity **139**: the maximum median gap changes **57.5 → 8.5**, with **4 → 2** days above capacity and **$43,600** of proposed weekly preparation cost. These are synthetic model results, not verified LAX demand or confirmed resources.
+At the integrated revision, the expected scenario has a daily P50 parking peak of **91.7 units**, ordinary capacity **90**, and proposed capacity **139**: the maximum median gap changes **1.7 → 0**, with **1 → 0** days above capacity and **$24,400** of proposed weekly preparation cost. These are synthetic model results, not verified LAX demand or confirmed resources.
 
-Click **Arrivals** above the chart for an ordinary/event comparison using P2’s learned baseline. Parking displays P3 daily P50 peaks and P10–P90 ranges. The ordinary parking baseline is explicitly unavailable; the app does not fabricate it. The delay toggle is disabled for native outputs because no separate delayed-departure result is supplied. Category arrival intervals are shown individually and never added into a false total interval. The data tab also shows P2’s ordinary-week synthetic holdout metrics.
+Click **Arrivals** above the chart for an ordinary/event comparison using P2’s learned baseline. Parking displays P3 daily P50 peaks and P10–P90 ranges. The ordinary parking baseline is explicitly unavailable; the app does not fabricate it. The delay toggle is disabled for native outputs because no separate delayed-departure result is supplied. Category arrival intervals are shown individually and never added into a false total interval. The data tab shows P2’s historical holdout metrics with the producer’s observed/estimated/synthetic classification. Scores against estimated inputs are not observed FBO accuracy. Selected-day details expose event multipliers, reservation floors and their sources. The preparation panel compares simulated unaccommodated aircraft, delayed turns and modeled costs, including negative net benefits; exports retain these results.
 
 See [NATIVE-INTEGRATION.md](NATIVE-INTEGRATION.md) for exact mappings, limitations and remaining team work. The models are **not** re-run on load: regenerate P2 and P3 outputs coherently, then refresh. The app’s source badge always distinguishes team outputs from the handcrafted sample.
 
@@ -63,7 +63,7 @@ Selecting a scenario asks “what if?” It does not make the employee the forec
 
 ## Responsible AI boundary
 
-This module displays the preparation output supplied by the resource/planner module. The native path uses P2’s learned ridge forecasts plus P3’s Monte Carlo/rule-based resource advice. The separate sample uses handcrafted text. Neither path calls a live LLM. If the team adds an LLM, keep the key in the backend, have it reference validated evidence, disclose the generation method in `source`, and check its prose. The dashboard checks numerical evidence fields against resource values; it does **not** fact-check arbitrary narrative claims or verify external sources.
+This module displays the preparation output supplied by the resource/planner module. The native path uses P2’s learned month/weekday shrinkage forecasts plus P3’s Monte Carlo/rule-based resource advice. The separate sample uses handcrafted text. Neither path calls a live LLM. If the team adds an LLM, keep the key in the backend, have it reference validated evidence, disclose the generation method in `source`, and check its prose. The dashboard checks numerical evidence fields against resource values; it does **not** fact-check arbitrary narrative claims or verify external sources.
 
 AI must never authorize aircraft movements, select a physically safe aircraft position, clear towing/taxiing/takeoff/landing, override airport procedures, or autonomously commit resources or money. Approving a card only records a planning review. It sends no operational instruction, booking, purchase or message. Scalar parking units do not demonstrate aircraft compatibility, clearances or safe geometry.
 
@@ -81,6 +81,14 @@ This is a localhost hackathon app. **Do not bind it publicly or present its demo
 python3 -m unittest discover -s nazar/tests -v
 ```
 
+For a read-only numerical check that Elia’s committed results match the current forecast inputs (requires numpy and pandas):
+
+```sh
+python3 nazar/scripts/verify_team_pipeline.py
+```
+
+The verifier reproduces P3 in memory, compares resources and recommendation/impact results, and prints input SHA-256 hashes. It does not overwrite producer files or validate physical capacity. Run it after every P2/P3 update; normal dashboard loading does not run simulations.
+
 Tests cover data contracts, missing/invalid files, evidence mismatches, finite values, summaries, persisted reviews, stale-version rejection, role checks, CSRF/origin checks, export and source restoration. See [DEMO.md](DEMO.md) for the presentation walkthrough and integration acceptance checklist.
 
 ## Folder map
@@ -92,6 +100,7 @@ Tests cover data contracts, missing/invalid files, evidence mismatches, finite v
 - `readiness/team_adapter.py`: validates and normalizes the existing P2/P3 exports without changing their code.
 - `static/`: dashboard HTML, CSS and browser interactions.
 - `sample-data/`: fixtures and reproducible fixture generator.
-- `tests/`: standard-library automated checks.
+- `tests/`: standard-library automated checks, including mandatory current-repository integration tests. Missing native files fail instead of skipping.
+- `scripts/verify_team_pipeline.py`: read-only P2-to-P3 numerical coherence check.
 
 The shared file formats are the part to agree on **now**. Connect outputs and test one complete journey early; use the remaining time to improve model quality, operational realism and visual polish together.

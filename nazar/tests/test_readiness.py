@@ -1,5 +1,7 @@
 """Boundary, audit and HTTP tests. No external services or dependencies."""
 import copy
+import csv
+import io
 import http.client
 import json
 from pathlib import Path
@@ -123,13 +125,15 @@ class ServerTests(unittest.TestCase):
         restored=Application(self.root/'state',self.root/'repo');self.assertIsNone(restored.bundle);self.assertEqual(restored.source,'team')
     def test_native_http_review_and_export(self):
         from readiness.team_adapter import NATIVE_PATHS
-        if not all((ROOT.parent/p).is_file() for p in NATIVE_PATHS.values()):self.skipTest('Native outputs missing')
+        self.assertTrue(all((ROOT.parent/p).is_file() for p in NATIVE_PATHS.values()), 'Required current team outputs are missing')
         self.server.application.repo_root=ROOT.parent
         status,data=self.request('/api/source',{'source':'team-native'});self.assertEqual(status,200)
         self.assertTrue(data['bundle']['native'])
         self.assertEqual(self.request('/api/review',self.review())[0],201)
         status,export=self.request('/api/export?scenario=medium&variant=standard')
         self.assertEqual(status,200);self.assertEqual(export['source'],'team-native');self.assertEqual(len(export['reviews']),1)
+        self.assertEqual(export['simulation_impact'],data['bundle']['impacts']['medium'])
+        self.assertEqual(len(export['forecast_drivers']),42)
         self.assertEqual(self.request('/api/export?scenario=medium&variant=departure_delay_24h')[0],400)
     def test_login_malformed_role(self):
         self.assertEqual(self.request('/api/login',{'role':[]})[0],400)
@@ -146,7 +150,7 @@ class NativeAdapterTests(unittest.TestCase):
         cls.paths=NATIVE_PATHS
         cls.repo=ROOT.parent
         if not all((cls.repo/p).is_file() for p in NATIVE_PATHS.values()):
-            raise unittest.SkipTest('Native P2/P3 outputs not present in this checkout.')
+            raise AssertionError('Required native P2/P3 outputs are missing; integration must not silently skip.')
     def native_files(self):
         return {k:(self.repo/p).read_text(encoding='utf-8-sig') for k,p in self.paths.items()}
     def test_native_summary_matches_producer(self):
@@ -179,9 +183,66 @@ class NativeAdapterTests(unittest.TestCase):
             a=Application(Path(tmp),self.repo);a.activate('team-native');first=a.bundle['version']
             self.assertEqual(a.snapshot()['source'],'team-native')
             a=Application(Path(tmp),self.repo);self.assertEqual(first,a.bundle['version'])
+    def alter_csv(self,raw,name,field,value):
+        reader=csv.DictReader(io.StringIO(raw[name]));data=list(reader);data[0][field]=value
+        out=io.StringIO();writer=csv.DictWriter(out,fieldnames=reader.fieldnames);writer.writeheader();writer.writerows(data);raw[name]=out.getvalue()
+    def test_current_schema_and_provenance(self):
+        from readiness.team_adapter import load_native
+        raw=self.native_files();b=load_native(raw)
+        self.assertEqual(len(b['forecast_metrics']),6)
+        self.assertEqual(len(b['forecast_drivers']),126)
+        self.assertIn('month/weekday',b['meta']['model_version'])
+        classes=json.loads(raw['p2_report'])['historical_data_classes']
+        self.assertTrue(all(any(c in m['evaluation_data'] for c in classes) for m in b['forecast_metrics']))
+    def test_estimated_history_remains_non_observed(self):
+        from readiness.team_adapter import load_native
+        raw=self.native_files()
+        for key in ('p2_demand','p2_uncertainty','p2_metrics','p2_report'):
+            raw[key]=raw[key].replace('synthetic','estimated')
+        b=load_native(raw)
+        self.assertEqual(b['meta']['data_classification'],'mixed')
+        self.assertTrue(all('estimated / non_observed_demonstration' in m['evaluation_data'] for m in b['forecast_metrics']))
+    def test_missing_current_file_fails(self):
+        from readiness.team_adapter import load_native
+        raw=self.native_files();del raw['p2_metrics']
+        with self.assertRaisesRegex(ContractError,'seven'):load_native(raw)
+    def test_duplicate_demand_and_metrics_rejected(self):
+        from readiness.team_adapter import load_native
+        for name in ('p2_demand','p2_metrics'):
+            with self.subTest(name=name):
+                raw=self.native_files();raw[name]+='\n'+raw[name].splitlines()[1]+'\n'
+                with self.assertRaisesRegex(ContractError,'duplicate'):load_native(raw)
+    def test_interval_and_provenance_mismatch_rejected(self):
+        from readiness.team_adapter import load_native
+        for field,value in (('arrivals_upper','999'),('historical_data_class','observed')):
+            with self.subTest(field=field):
+                raw=self.native_files();self.alter_csv(raw,'p2_demand',field,value)
+                with self.assertRaisesRegex(ContractError,'disagree|provenance'):load_native(raw)
+    def test_evaluation_cannot_claim_observed_accuracy(self):
+        from readiness.team_adapter import load_native
+        raw=self.native_files();self.alter_csv(raw,'p2_metrics','evaluation_type','invented_evaluation')
+        with self.assertRaisesRegex(ContractError,'evaluation type'):load_native(raw)
+    def test_impact_matches_producer_including_losses(self):
+        from readiness.team_adapter import load_native, parse_impact
+        raw=self.native_files();b=load_native(raw);plans=json.loads(raw['p3_recommendations'])
+        for sc,impact in b['impacts'].items():
+            self.assertEqual(impact,plans['scenarios'][sc.title()]['impact'])
+        # Negative benefits are legitimate: costs can exceed avoided losses.
+        impact=copy.deepcopy(b['impacts']['low'])
+        impact['no_preparation']['total_cost_usd']['mean']=0
+        impact['ai_preparation']['total_cost_usd']['mean']=10
+        impact['net_benefit_usd']={'mean':-10,'p10':-20,'p50':-10,'p90':-5}
+        self.assertEqual(parse_impact(impact)['net_benefit_usd']['mean'],-10)
+    def test_invalid_impact_rejected(self):
+        from readiness.team_adapter import load_native
+        for field,value in (('prob_preparation_pays_off',1.1),('runs',0)):
+            raw=self.native_files();j=json.loads(raw['p3_recommendations']);j['scenarios']['Medium']['impact'][field]=value;raw['p3_recommendations']=json.dumps(j)
+            with self.assertRaises(ContractError):load_native(raw)
+        raw=self.native_files();j=json.loads(raw['p3_recommendations']);j['scenarios']['Medium']['impact']['net_benefit_usd']['mean']+=100;raw['p3_recommendations']=json.dumps(j)
+        with self.assertRaisesRegex(ContractError,'reconcile'):load_native(raw)
     def test_changed_input_changes_review_version(self):
         from readiness.team_adapter import load_native
-        f=self.native_files();old=load_native(f)['version'];j=json.loads(f['p2_report']);j['issue_date']='2026-10-24';f['p2_report']=json.dumps(j)
+        f=self.native_files();old=load_native(f)['version'];j=json.loads(f['p2_report']);j['seed']+=1;f['p2_report']=json.dumps(j)
         self.assertNotEqual(old,load_native(f)['version'])
 
 if __name__=='__main__':unittest.main()

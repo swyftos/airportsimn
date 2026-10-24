@@ -96,6 +96,9 @@ class Handler(BaseHTTPRequestHandler):
                         sc=q.get('scenario',['medium'])[0]; variant=q.get('variant',['standard'])[0]
                         data={'dataset':self.app.bundle['meta'],'source':self.app.source,'assumptions':self.app.bundle['assumptions'],'basis':'Daily P50 parking peaks from P3' if self.app.bundle.get('native') else 'Supplied daily peak parking fixtures/outputs','version':self.app.bundle['version'],'scenario':sc,'variant':variant,
                             'summary':summarize(self.app.bundle,sc,variant),
+                            'simulation_impact':self.app.bundle.get('impacts',{}).get(sc),
+                            'forecast_drivers':[r for r in self.app.bundle.get('forecast_drivers',[]) if r['scenario']==sc],
+                            'input_limitations':self.app.bundle.get('limitations',[]),
                             'recommendations':[r for r in self.app.bundle['recommendations'] if r['scenario']==sc and r['variant']==variant],
                             'reviews':[r for r in self.app.store.history(self.app.bundle['version']) if not r['stale'] and r['scenario']==sc and r['variant']==variant],
                             'limitations':'Planning review only. No capacity is reserved, money committed, or aircraft movement authorized. Demo reviewer identities are unverified.'}
