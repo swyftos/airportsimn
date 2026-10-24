@@ -5,7 +5,7 @@ Each TCOM PDF gives the report month and the same month one year earlier, so eve
 two reports; both readings are kept and compared as a consistency check.
 
 Output: alan/elia_output/data/processed/lawa_monthly_movements.csv
-    year, month, air_carrier, air_taxi, general_aviation, military, total,
+    year, month, air_taxi, general_aviation,
     report_file, report_url, column (current|prior_year), retrieved_utc
 Raw PDFs are cached in alan/elia_output/data/raw/lawa_tcom/ (git-ignored) so the run is repeatable offline.
 """
@@ -26,8 +26,8 @@ PAGE = BASE + "/lawa-investor-relations/statistics-for-lax/volume-of-air-traffic
 UA = {"User-Agent": "Mozilla/5.0 (SpartHill Hacks research; contact elia108@proton.me)"}
 MONTHS = {m: i for i, m in enumerate(["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], 1)}
-FIELDS = {"Air Carrier": "air_carrier", "Air Taxi": "air_taxi", "General Aviation": "general_aviation",
-          "Military": "military", "Total": "total"}
+# Private aviation only: air carrier (Part 121), military and the all-traffic total are never read
+FIELDS = {"Air Taxi": "air_taxi", "General Aviation": "general_aviation"}
 
 
 def get(url: str) -> bytes:

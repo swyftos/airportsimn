@@ -23,7 +23,9 @@ def test_tight_capacity_is_respected_and_counts_overflow():
 
 
 def test_every_action_needs_a_human():
-    table, recs = po.run(po.load_demand(), A)
+    # Exercise approval paths independently of whether this release needs preparations.
+    constrained = dict(A, ramp_capacity_su=1)
+    table, recs = po.run(po.load_demand(), constrained)
     actions = [x for r in recs.values() for x in r["actions"]]
     assert actions and all(x["requires_human_approval"] and x["approver"] for x in actions)
     assert set(table["risk_level"]) <= {"Low", "Medium", "High"}

@@ -14,5 +14,5 @@
   ],
   "nominal_baseline_coverage": 0.9,
   "uncertainty": "Baseline split-conformal intervals scaled by assumed multipliers; event coverage not validated",
-  "caution": "Estimated or synthetic inputs do not establish observed FBO accuracy. Human review required."
+  "caution": "Training/calibration/test use only 2023-2025. MAE and coverage against flat monthly allocations are allocation diagnostics, not daily predictive accuracy or observed FBO accuracy. FAA air-taxi operations inform event assumptions; FBO transfer and direction split are unvalidated. No booking data supplied; reservation floors disabled."
 }

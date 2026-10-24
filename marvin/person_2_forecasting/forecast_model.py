@@ -6,7 +6,9 @@ from pathlib import Path
 
 TARGETS = ('arrivals', 'departures')
 SCENARIOS = ('Low', 'Medium', 'High')
-EXCLUDED = {2020, 2021, 2022}
+TRAINING_START = date(2023, 1, 1)
+TRAINING_END = date(2025, 12, 31)
+EXCLUDED = {2020, 2021, 2022}  # COVID exclusions; training window is enforced separately.
 
 def read_csv(path):
     with open(path, newline='', encoding='utf-8-sig') as f:
@@ -28,7 +30,7 @@ def load_history(path):
     rows, seen = [], set()
     for r in read_csv(path):
         d = date.fromisoformat(r['date'])
-        if d.year in EXCLUDED:
+        if not TRAINING_START <= d <= TRAINING_END:
             continue
         if not 2016 <= d.year <= 2025:
             raise ValueError('History must be within 2016-2025')
@@ -70,6 +72,8 @@ def conformal_radius(residuals, coverage):
     return sorted(residuals)[rank - 1]
 
 def fit_and_evaluate(history, coverage):
+    # Enforce the post-COVID window for direct in-memory callers too.
+    history = sorted((r for r in history if TRAINING_START <= r["date"] <= TRAINING_END), key=lambda r: r["date"])
     fitted, metrics = {}, []
     dates = sorted({r['date'] for r in history})
     if len(dates) < 180:
@@ -209,7 +213,7 @@ def main():
         seed=42 if args.demo else None,history_file=str(args.history),planning_file=str(args.planning),
         historical_data_classes=sorted({r['data_class'] for r in history}),nominal_baseline_coverage=args.coverage,
         uncertainty='Baseline split-conformal intervals scaled by assumed multipliers; event coverage not validated',
-        caution='Estimated or synthetic inputs do not establish observed FBO accuracy. Human review required.')
+        caution='Training/calibration/test use only 2023-2025. MAE and coverage against flat monthly allocations are allocation diagnostics, not daily predictive accuracy or observed FBO accuracy. FAA air-taxi operations inform event assumptions; FBO transfer and direction split are unvalidated. No booking data supplied; reservation floors disabled.')
     (args.output_dir/'run_metadata.json').write_text(json.dumps(metadata,indent=2),encoding='utf-8')
     print(f'Wrote {len(forecasts)} scenario/category forecasts to {args.output_dir}')
 

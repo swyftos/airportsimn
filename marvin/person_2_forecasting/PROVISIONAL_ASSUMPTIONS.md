@@ -1,57 +1,86 @@
-# Provisional monthly-to-daily FBO conversion — Alan review requested
+# Provisional forecast assumptions — FAA ATADS/OPSNET update
 
-Status: provisional assumptions, not approved by Alan. These outputs are not observed FBO traffic or validated event forecasts.
+This release fixes the training window and replaces the earlier illustrative event multipliers with scenarios anchored to FAA ATADS/OPSNET evidence. It is still an estimated fictional-FBO scenario model, not a validated forecast of observed FBO demand.
 
-## Original source, kept separate
+## Sources and original data
 
-The converter reads alan/elia_output/data/processed/lax_monthly_movements.csv unchanged. It uses 2016–2019 and 2023–2025 (84 months), excluding 2020–2022 from the ordinary baseline. Monthly GA and air-taxi counts are airport-wide operations. Air carrier and military operations are not included in the FBO proxy. All source URLs and the source value_source marker are carried into each converted row. The LAWA source documentation flags 2018 discrepancies and annual-residual derivation for September 2025. No monthly count is corrected or silently averaged with another source.
+The ordinary input uses the unchanged LAWA monthly airport series in alan/elia_output/data/processed/lax_monthly_movements.csv, restricted to 2023–2025 (36 months, 1,096 days). Original monthly records remain separate. Each derived row is estimated and retains its source marker. September 2025 is an annual-residual value. The FAA cross-check now explains the 2018 gap as preliminary September/October LAWA values; those years are outside this run.
 
-## Assumptions for review
+Event evidence: **FAA ATADS/OPSNET**, airport tower operations, retrieved 2026-10-23:
+https://aspm.faa.gov/opsnet/sys/Airport.asp
 
-| Driver | Provisional value | Meaning and limitation |
+Repository evidence:
+- alan/elia_output/data_sources_lawa_bts.md, section FAA ATADS/OPSNET.
+- alan/elia_output/data/processed/superbowl_lvi_surge.csv.
+- alan/elia_output/data/processed/superbowl_lvi_daily_profile.csv.
+- alan/elia_output/data/processed/opsnet_daily_superbowl.csv.
+- alan/elia_output/scripts/analyze_superbowl_lvi.py.
+
+PR #17 delivered these files; it is not the underlying source.
+
+## Baseline allocation
+
+| Driver | Value | Meaning |
 | --- | --- | --- |
-| Effective FBO capture share | 25% | A fictional operator captures one quarter of the airport's combined GA + air-taxi movements. This combines eligibility and market share; it is not a measured share. GA includes non-jets and air taxi includes commuter activity. |
-| Arrival/departure split | 50% / 50% | Balanced monthly directional demand; no actual directional observations. |
-| Aircraft mix | light_jet 47%, midsize_jet 33%, large_jet 20% | Planning allocation to supported model categories, aligned with P3's initial-inventory mix. These are not FAA aircraft-type observations. |
-| Daily allocation | Equal share per calendar day | Monthly count divided by actual days in that month, including leap days. No invented weekday or within-month trend. |
-| Precision | Fractional counts retained | No daily rounding; category/direction/day totals recover the assumed monthly FBO share. |
-| Historical provenance | estimated on every row | Source monthly airport observations do not make derived FBO counts observed. |
-| Reservation provenance | synthetic | Existing illustrative reservations retained from demo_planning_inputs.csv. They are not actual bookings. |
-| Reservation show rate | 90% | Unvalidated assumption retained from existing planning inputs. |
+| FBO capture | 25% of GA + Air Taxi | Provisional effective share; not observed |
+| Direction split | 50% arrivals / 50% departures | Assumed |
+| Ordinary category mix | 47% light, 33% midsize, 20% large | Assumed; retained across scenarios |
+| Daily allocation | Uniform across actual calendar days | Includes leap days; fractional counts retained |
+| Provenance | estimated on every history row | Public monthly observations do not make derived FBO counts observed |
+| Reservations | Zero synthetic placeholders; show rate zero | No booking data supplied; demo bookings cannot override evidence-based multipliers |
 
-For every date/category:
-arrivals = (monthly_air_taxi + monthly_GA) × 0.25 / days_in_month × category_share × 0.50.
-Departures use the remaining 0.50. The model applies reservations as an overlapping floor, not additional demand.
+Alan accepted the share, direction split and uniform allocation for provisional use in issue #10. His separate baseline uses 20% capture. That discrepancy is still explicit and requires team reconciliation. His requested larger-aircraft event mix remains pending: FAA operational categories do not identify aircraft size, and no size-specific uplift is invented here.
 
-## Event multipliers — explicit assumptions, unchanged from the demo
+## What the FAA analysis measures
 
-| Date | Arrivals Low | Medium | High | Departures Low | Medium | High |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 2027-02-11 | 1.125 | 1.25 | 1.40 | 1.00 | 1.00 | 1.00 |
-| 2027-02-12 | 1.30 | 1.60 | 1.96 | 1.00 | 1.00 | 1.00 |
-| 2027-02-13 | 1.60 | 2.20 | 2.92 | 1.05 | 1.10 | 1.16 |
-| 2027-02-14 | 1.40 | 1.80 | 2.28 | 1.15 | 1.30 | 1.48 |
-| 2027-02-15 | 1.05 | 1.10 | 1.16 | 1.75 | 2.50 | 3.40 |
-| 2027-02-16 | 1.00 | 1.00 | 1.00 | 1.40 | 1.80 | 2.28 |
-| 2027-02-17 | 1.00 | 1.00 | 1.00 | 1.10 | 1.20 | 1.32 |
+The event window is Thursday–Monday around February 13, 2022. Each day's baseline is the median of the same weekday outside the event window. The five-day ratio is divided by the mean corresponding ratio in control years 2019, 2023 and 2024.
 
-All event indicators equal 1. Low uses half the Medium incremental uplift; High uses 1.6 times that uplift. The monthly February 2022 comparison does not validate these multipliers. Scenarios are conditional assumptions, not probabilities.
+The rounded source results show:
+- Six-airport control-adjusted excess: 8.5%.
+- LAX control-adjusted excess: 15.5%.
+- Regional Monday raw same-weekday ratio: 1.330.
 
-## Interpretation and model limitations
+The Monday 33% increase is **total air-taxi operations**, including takeoffs and landings. It is not a measured departures-only uplift and is not control-adjusted in the daily profile file. It cannot be combined with the five-day adjusted percentages as if all were the same statistic.
 
-The existing seasonal shrinkage model and chronological 60/20/20 evaluation remain unchanged. Its metrics compare forecasts with allocated estimates, never observed FBO outcomes. Smooth daily allocations suppress real daily variability, so residual-based bands can understate operational uncertainty. The nominal 90% baseline coverage refers to the model calibration target; event-week ranges remain unvalidated planning ranges.
+## Reproducible event mapping
 
-The source documents a structural level change between pre-COVID and recent years. The frozen model trains on the earliest 60% of usable dates; later periods evaluate it, not refit it. This provisional run can therefore reflect outdated traffic levels. Do not claim it is the preferred production forecast or hide poor holdout results. Alan should review the training-period suitability along with capture share and aircraft allocation.
+The central (Medium) case uses the positive regional daily excess shape for Thursday–Monday and scales it so that baseline-weighted five-day **forecast total movements** increase by 15.5%, matching the rounded LAX aggregate excess. The regional shape is computed from air_taxi / baseline using source counts rather than rounded ratios.
 
-Elia's existing simulation is rerun on this exact uncertainty file. Its algorithm treats expected counts as lognormal medians and maps supplied ranges to assumed 5th/95th percentiles. That is an additional simulation assumption, not validation of P2 coverage or proof that expected values are true medians. Capacity, opening inventory, fuel, staffing and cost assumptions remain P3's existing estimates/synthetic settings. Results remain conditional simulations, not observed operational benefits.
+For each event day i:
 
-## Reproduce and release together
+    shape_i = max(0, regional_operations_i / regional_baseline_i - 1)
+    scale = 0.155 * sum(forecast_baseline_i) / sum(forecast_baseline_i * shape_i)
+    Medium_multiplier_i = 1 + scale * shape_i
+    Low_multiplier_i = 1
+    High_multiplier_i = 1 + 2 * (Medium_multiplier_i - 1)
 
-From the repository root, using Python with numpy and pandas installed:
+No observed directional split exists. Direction follows aircraft conservation instead: every event aircraft lands once before the game and leaves once after it, so the five-day excess operations split into equal extra arrivals and extra departures. Thursday to Saturday and half of game day carry the extra arrivals; the other half of game day and Monday carry the extra departures, each spread by the FAA daily shape. The five-day operations excess stays exactly the FAA value. The arrival-before, departure-after timing is an assumption, not a measured split. Tuesday/Wednesday remain at baseline; this is a boundary assumption, not evidence of no event effect.
+
+Low is a no-excess sensitivity case; High doubles the central excess. They are assumptions, not confidence bounds, observed extremes or event probabilities. The 8.5% regional excess is context, not substituted for the 15.5% LAX anchor. The 33% raw regional Monday result informs the shape, not a forced 1.33 departure multiplier.
+
+Applying this air-taxi event signal to the GA+air-taxi fictional-FBO baseline is an explicit transfer assumption. A single recovery-era event cannot establish a causal 2027 forecast. Current per-day multipliers and evidence details are generated in provisional_inputs/event_evidence.json and planning_inputs.csv.
+
+## Evaluation and uncertainty
+
+The 2023–2025 chronological split has 657 training, 219 calibration and 220 test dates per category. Training ends 2024-10-18; calibration starts 2024-10-19; testing starts 2025-05-26. The calibrated model is frozen.
+
+MAE, benchmark improvement and interval coverage against uniformly allocated daily rows are **allocation diagnostics only**. They do not establish real daily predictive accuracy, weekday patterns, event prediction accuracy or observed FBO performance. They must not be presented as such.
+
+Nominal baseline coverage remains 90%; empirical coverage on the estimated holdout is approximately 46.82%. The residual bands are inadequately calibrated even against those allocations. Event ranges are assumption-scaled planning ranges with unvalidated coverage. Uniform allocation omits real variability. Real monthly holdout validation at airport scope and independent observed daily/FBO validation remain next work.
+
+## Matching parking outputs
+
+The current main version of Elia's optimizer is retained, including ordinary parking, carryover and the 24-hour departure-delay variant. All are regenerated from this exact P2 release. Opening inventory is recomputed as first-day baseline arrivals times the existing 1.1-day dwell assumption (13.0 aircraft, rather than the old 22.2); ramp capacity and other operating assumptions remain unchanged. Parking simulations treat points as medians and supplied ranges as assumed percentiles; these extra assumptions do not validate P2 coverage. Balanced direction multipliers may understate event accumulation; delayed-departure results provide a separate sensitivity case, not observed dwell evidence.
+
+## Release and review
+
+Existing producer filenames, CSV column order and metadata keys are preserved. excluded_years remains the COVID exclusion list [2020, 2021, 2022] for compatibility; the separately enforced training bounds are 2023-01-01 through 2025-12-31, stated in run_metadata.json's caution and this document.
+
+nazar/ is unchanged. The release manifest retains exactly its existing 20-file contract. Additional event sources and conversion code are hashed separately in event_evidence_manifest.json, linked to the release run ID. Nazar’s current dashboard does not validate that extra sidecar.
+
+Run from the repository root, using Python with numpy and pandas:
 
     python marvin/person_2_forecasting/run_provisional.py
 
-The runner converts inputs, runs the existing P2 model, then runs P3 standard, ordinary-week, delayed-departure and carryover simulations on those exact outputs. The read-only team pipeline verifier must pass before the runner stamps the release. It verifies current output columns and metadata keys, validates category-range agreement, and writes a separate release_manifest.json with SHA-256 hashes covering 20 files, including all four parking comparison artifacts. The refreshed manifest supersedes the 16-file manifest from the supplied ZIP. That sidecar does not change any existing producer schema. Both producer output sets must ship in the same commit. The runner should be used on an isolated branch, not directly on a dashboard's live data directory.
-
-Alan: please review the 25% effective FBO share, 50/50 split, 47/33/20 mix, uniform daily allocation, source caveats, and historical training window. Until reviewed, retain the provisional/estimated labels.
+Alan: review the event mapping, direction/size limitations, 25% share and sensitivity choices. Nazar: existing output formats remain stable; display allocation diagnostics as non-observed and event ranges as unvalidated. Do not interpret passing integration tests as model validation.
 
