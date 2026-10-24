@@ -1912,3 +1912,6 @@ main, section, header, .card, [class*="grid"] > *, [class*="row"] > * { min-widt
   .segment-btn { flex: 1 1 auto; }
   .time-picker-wrapper, .time-picker-wrapper .select-input { max-width: 100%; width: 100%; }
 }
+
+/* Note shown when a day or direction does not change between scenarios (from the data) */
+.scenario-note { margin: 6px 0 8px; padding: 6px 10px; border-left: 3px solid var(--brand-accent, #2563eb); background: var(--bg-surface-2, rgba(37, 99, 235, 0.06)); color: var(--text-secondary, inherit); font-size: 0.78rem; line-height: 1.4; border-radius: 4px; }

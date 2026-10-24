@@ -73,6 +73,18 @@ function shareAfterRestriction(target) {
   const end = clockToHours(restriction().end);
   return restriction().hour_shares[target].reduce((a, v, h) => a + (h + 1 > end ? v : 0), 0);
 }
+function scenarioSensitivity(day) {
+  const v = Object.values(day.scenarios);
+  const varies = key => v.some(x => Math.abs(x[key] - v[0][key]) > 1e-9);
+  return { arrivals: varies('expected_arrivals'), departures: varies('expected_departures') };
+}
+function scenarioNote(day) {
+  const s = scenarioSensitivity(day);
+  if (!s.arrivals && !s.departures) return 'Same in Low, Forecast and High: the model adds the Super Bowl effect from Thursday to Monday only (the window measured in 2022), so this day is the ordinary forecast in every scenario.';
+  if (!s.arrivals) return 'Landings are the same in every scenario; only departures change (the model places the extra event departures on this day).';
+  if (!s.departures) return 'Departures are the same in every scenario; only landings change (the model places the extra event arrivals on this day).';
+  return '';
+}
 function weatherProbLabel(type) { return `${(state.data.weather.february_probability[type] * 100).toFixed(1)}% of Feb days`; }
 function signedPct(x) { const v = Math.round(x * 100); return `${v >= 0 ? '+' : ''}${v}%`; }
 
@@ -816,6 +828,7 @@ function renderDayCards() {
         <div class="day-badges-row">
           ${badges.join(' ')}
         </div>
+        ${scenarioNote(day) ? `<div class="scenario-note">${scenarioNote(day)}</div>` : ''}
 
         <!-- Weather Box -->
         <div class="day-weather-box">
@@ -1098,6 +1111,8 @@ function renderDayDetail() {
     if (day.presidents_day) b.push('<span class="badge badge-peak-dep">PRESIDENTS\' DAY</span>');
     if (isRestrictionDay(day)) b.push(`<span class="badge badge-restriction">PAUSE ${restrictionLabel()} (ASSUMED)</span>`);
     b.push(`<span class="badge ${impact.weather !== 'clear' ? 'badge-warning' : 'badge-ok'}">Weather: ${impact.weather}</span>`);
+    const sens = scenarioSensitivity(day);
+    if (!sens.arrivals && !sens.departures) b.push('<span class="badge badge-info">SAME IN ALL SCENARIOS</span>');
     badgesEl.innerHTML = b.join(' ');
   }
 
@@ -1144,6 +1159,9 @@ function renderDayDetail() {
       </div>
     `;
   }
+
+  const noteEl = document.getElementById('timeline-scenario-note');
+  if (noteEl) { const n = scenarioNote(day); noteEl.textContent = n; noteEl.hidden = !n; }
 
   // Next 3 Hours Radar
   renderNext3HoursRadar(day, impact);
@@ -1237,8 +1255,10 @@ function render24HourTimelineChart(day, impact) {
   const chartW = width - padding.left - padding.right;
   const chartH = height - padding.top - padding.bottom;
 
-  // Find max hourly value for Y-axis scale
-  let maxVal = 0.5;
+  // Y-axis scale fixed per day across Low / Forecast / High, so switching scenario only moves what really changes
+  const shA = dayHourShares(day, 'arrivals'), shD = dayHourShares(day, 'departures');
+  let maxVal = Math.max(0.5, ...Object.values(day.scenarios).map(v =>
+    Math.max(v.expected_arrivals * Math.max(...shA), v.expected_departures * Math.max(...shD))));
   hours.forEach(h => {
     maxVal = Math.max(maxVal, h.arrExp, h.depExp, h.userArrCount, h.userDepCount);
   });
