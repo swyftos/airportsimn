@@ -95,6 +95,17 @@ further split:
   ferry flights — that generate a movement but not a "visit" with a
   passenger needing FBO services.
 
+**Concrete sourced example of positioning-flight contamination**: Atlantic
+Aviation's own 2013 LAX hangar project filing
+(`alan/data/processed/alan_5010/` chain of custody; see Item 1a in
+`alan/docs/lax_private_capacity_and_cost_research.md`) states the explicit
+purpose of basing more aircraft at LAX was to let owners **stop flying
+in empty to position the aircraft before a passenger trip** — cutting
+operations from 4 per customer trip (fly in empty, fly out, fly in, fly
+out with passengers) down to 2 (based at LAX, fly out and back with
+passengers only). This is a real, government-filed example of exactly the
+positioning-flight contamination described above, not a hypothetical.
+
 **Project scope**: this is the category the project's narrowed, private-
 only baseline is built on (`alan/scripts/build_historical_traffic.py`,
 `alan/scripts/build_baseline.py`). The project does **not** have a way to
