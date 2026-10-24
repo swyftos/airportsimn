@@ -1,0 +1,6 @@
+name,url,use_and_limit
+FAA weather delay overview,https://www.faa.gov/nextgen/programs/weather/faq,Qualitative reason weather can delay flights; no percentages used as model estimates.
+FAA VIP/TFR operating restrictions,https://www.faa.gov/uas/getting_started/where_can_i_fly/airspace_restrictions/tfr,"Actual restriction time, area and permitted flights come from the applicable notice; no fixed closure duration."
+FAA LAX capacity profile index,https://www.faa.gov/airports/planning_capacity/profiles,"Airport-wide profile, not available FBO stands or 2027 slots."
+Team assumptions ledger,https://github.com/swyftos/airportsimn/blob/main/assumptions.csv,20% FBO capture and 47/33/20 aircraft mix; both need scope confirmation for selected private fleets.
+Elia parking assumptions,https://github.com/swyftos/airportsimn/blob/main/elia/assumptions_p3.csv,"Inherited 75 space units, unverified as usable FBO/PPR capacity."

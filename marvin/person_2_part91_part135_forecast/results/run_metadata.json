@@ -1,0 +1,18 @@
+{
+  "model": "month_weekday_shrinkage_mean",
+  "prior_days": 14,
+  "excluded_years": [
+    2020,
+    2021,
+    2022
+  ],
+  "seed": 42,
+  "history_file": "C:\\Users\\ASUS\\OneDrive\\Documents\\GitHub\\airportsimn\\marvin\\person_2_part91_part135_forecast\\results\\demo_historical_traffic.csv",
+  "planning_file": "C:\\Users\\ASUS\\OneDrive\\Documents\\GitHub\\airportsimn\\marvin\\person_2_part91_part135_forecast\\results\\demo_planning_inputs.csv",
+  "historical_data_classes": [
+    "synthetic"
+  ],
+  "nominal_baseline_coverage": 0.9,
+  "uncertainty": "Baseline split-conformal intervals scaled by assumed multipliers; event coverage not validated",
+  "caution": "PLACEHOLDER DEMO: history and reservations are synthetic. The Part 135 event factor transfers an observed airport Air Taxi excess by assumption; it is not an observed selected-fleet effect. Synthetic holdout metrics are not real-world accuracy. Event ranges are unvalidated."
+}

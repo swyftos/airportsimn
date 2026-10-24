@@ -1,0 +1,2 @@
+metric,airport,event,observed_five_day_excess,source_repo_path,forecast_use,scope_limit
+air_taxi,LAX,Super_Bowl_LVI_2022,0.155,alan/elia_output/data/processed/superbowl_lvi_surge.csv,Assumed Part 135 medium multiplier 1.155 for 2027-02-12 through 2027-02-16; not measured selected-fleet effect,FAA Air Taxi is broader than selected-fleet Part 135; no directional split

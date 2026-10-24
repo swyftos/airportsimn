@@ -1,0 +1,14 @@
+{
+  "status": "PLACEHOLDER",
+  "seed": 42,
+  "scope": "Selected-fleet Part 91 and Part 135; Part 121 excluded",
+  "hourly_curve": "Fitted hourly shares from seeded synthetic 2023-2025 FBO history; weekday/weekend curves",
+  "hourly_formula": "expected hourly movements = expected daily arrivals x fitted arrival hour share + expected daily departures x fitted departure hour share",
+  "timing": "720 seeded synthetic category turnaround samples; stages are sequential minimum service times, not full dwell or ATC slot times",
+  "weather": "Clear/rain/low visibility effects and throughput factors are unmeasured sensitivity assumptions; no actual forecast",
+  "parking": "24 physical spots invented; 75 ramp space units inherited but unverified; price slot incentive invented; overflow requires manager review",
+  "presidential_visit": "No visit assumed; 0/2/4-hour full-pause stress tests on Feb 14 are not FAA closure requirements; actual notice controls",
+  "primary_event_uplift": "Synthetic Low/Medium/High factors in demo_planning_inputs.csv",
+  "evaluation": "Synthetic-only holdout; no measured private-FBO accuracy",
+  "source_links": "operational_source_links.csv"
+}

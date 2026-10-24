@@ -1,0 +1,10 @@
+date,scenario,sensitivity,additional_presidents_day_factor,arrival_demand_sensitivity,departure_demand_sensitivity,primary_forecast_changed,classification,note
+2027-02-15,Low,lower_hypothetical,0.9,7.571,11.612,no,PLACEHOLDER_UNMEASURED_SENSITIVITY,Hypothetical +/-10 percent only; no measured Presidents Day effect or capacity rerun.
+2027-02-15,Low,unchanged_primary,1.0,8.412,12.902,no,PLACEHOLDER_UNMEASURED_SENSITIVITY,Hypothetical +/-10 percent only; no measured Presidents Day effect or capacity rerun.
+2027-02-15,Low,upper_hypothetical,1.1,9.253,14.192,no,PLACEHOLDER_UNMEASURED_SENSITIVITY,Hypothetical +/-10 percent only; no measured Presidents Day effect or capacity rerun.
+2027-02-15,Medium,lower_hypothetical,0.9,8.305,15.984,no,PLACEHOLDER_UNMEASURED_SENSITIVITY,Hypothetical +/-10 percent only; no measured Presidents Day effect or capacity rerun.
+2027-02-15,Medium,unchanged_primary,1.0,9.228,17.76,no,PLACEHOLDER_UNMEASURED_SENSITIVITY,Hypothetical +/-10 percent only; no measured Presidents Day effect or capacity rerun.
+2027-02-15,Medium,upper_hypothetical,1.1,10.151,19.536,no,PLACEHOLDER_UNMEASURED_SENSITIVITY,Hypothetical +/-10 percent only; no measured Presidents Day effect or capacity rerun.
+2027-02-15,High,lower_hypothetical,0.9,9.113,21.155,no,PLACEHOLDER_UNMEASURED_SENSITIVITY,Hypothetical +/-10 percent only; no measured Presidents Day effect or capacity rerun.
+2027-02-15,High,unchanged_primary,1.0,10.126,23.506,no,PLACEHOLDER_UNMEASURED_SENSITIVITY,Hypothetical +/-10 percent only; no measured Presidents Day effect or capacity rerun.
+2027-02-15,High,upper_hypothetical,1.1,11.139,25.857,no,PLACEHOLDER_UNMEASURED_SENSITIVITY,Hypothetical +/-10 percent only; no measured Presidents Day effect or capacity rerun.
