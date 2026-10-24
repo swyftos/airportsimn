@@ -1,9 +1,16 @@
 import copy
+import importlib.util
 import tempfile
 import unittest
 from pathlib import Path
 from datetime import date
-import forecast_model as m
+
+# Both Marvin packages have a forecast_model.py. Load this package's model by path
+# so a repository-wide pytest run cannot reuse the other one from sys.modules.
+_model_path = Path(__file__).with_name('forecast_model.py')
+_spec = importlib.util.spec_from_file_location('part_forecast_model', _model_path)
+m = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(m)
 
 class ForecastTests(unittest.TestCase):
     @classmethod
@@ -26,6 +33,16 @@ class ForecastTests(unittest.TestCase):
             self.assertLessEqual(r['lower'],r['expected'])
             self.assertLessEqual(r['expected'],r['upper'])
             self.assertFalse(r['event_coverage_validated'])
+
+    def test_planning_forecasts_never_negative(self):
+        for row in self.pred:
+            for target in m.TARGETS:
+                with self.subTest(date=row['date'], scenario=row['scenario'],
+                                  category=row['aircraft_category'], target=target):
+                    for prefix in ('baseline_', 'expected_'):
+                        self.assertGreaterEqual(row[prefix + target], 0)
+                    self.assertGreaterEqual(row[target + '_lower'], 0)
+                    self.assertGreaterEqual(row[target + '_upper'], 0)
     def test_scenarios_ordered(self):
         for d,c in {(r['date'],r['aircraft_category']) for r in self.pred}:
             rows = {r['scenario']:r for r in self.pred if r['date']==d and r['aircraft_category']==c}

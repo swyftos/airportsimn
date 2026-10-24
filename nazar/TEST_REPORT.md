@@ -1,12 +1,12 @@
 # Test report: FBO agent app and its data (2026-10-24)
 
-Run on `main` at 1417f4f (PR #53 merged).
+Baseline: `main` at 1417f4f (PR #53 merged). This report includes the Marvin follow-up on PR #57.
 
 ## How to run
 
 ```
 python3 -m pytest -q nazar/tests/test_agent_data.py nazar/tests/test_agent_app.py   # 38 tests, ~15 s
-python3 -m pytest -q --continue-on-collection-errors                                  # whole repo
+python3 -m pytest -q                                                                 # whole repo
 ```
 
 The JavaScript checks need `node`; the browser check also needs Google Chrome (or `CHROME=/path/to/chrome`). Each is skipped when missing.
@@ -21,26 +21,25 @@ The JavaScript checks need `node`; the browser check also needs Google Chrome (o
 ## Results
 
 - New tests: **38 passed.**
-- Whole repo: **200 passed, 1 file could not be collected** (see Marvin below). That file passes on its own (12 passed).
+- Whole repo after the Marvin follow-up: **198 passed, 17 skipped, 331 subtests passed** on Windows. The skips require Node or Chrome on the Python test runner's PATH; there are no collection errors.
 - Elia's `elia/test_sensitivity.py` errors seen earlier are gone on main: all pass.
 
 ## Data is correct
 
 - `agent_data.json` matches the team's outputs exactly and is not stale.
-- Presentation numbers confirmed: Friday 7.3 landings (+44%, peak 09:00-12:00); Monday 10.0 departures (+55%, peak 07:00-10:00); 40% of Sunday departures after 20:30; heavy rain on Sunday moves Monday departures 10.0 -> 10.3; backtest 14.9% vs 16.6 / 17.8 / 18.4 / 21.5%; 87.9% inside the 90% range; Super Bowl effect +3.1 / +15.5 / +31%; eight-city test -32.3% to +81.3%.
+- Presentation numbers confirmed: Friday 7.3 landings (+44%, peak 09:00-12:00); Monday 10.0 departures (+55%, peak 07:00-10:00); 40% of Sunday departures after 20:30; heavy rain on Sunday moves Monday departures 10.0 -> 10.3; rolling backtest 14.9% WAPE vs 16.6 / 17.8 / 18.4 / 21.5%; 87.9% inside the 90% range; Super Bowl effect +3.1 / +15.5 / +31%; eight-city test -32.3% to +81.3%.
 
 ## Feedback: things to fix or decide
 
 1. **FIXED in this PR. Next-3-hours box contradicted itself in the demo.** Friday 10:00 after logging the demo flights showed "1.8 Exp Landings (3 Booked)". It now shows max(forecast, booked), and a browser test checks expected >= booked.
 2. **FIXED in this PR. Raw key on the game-day page.** It showed "Weather: heavy_rain"; it now shows "Heavy rain" (tested).
-3. **Fog increases traffic in the app.** Measured heavy-fog effect: Part 91 -4.3%, Part 135 **+3.7%** (95% CI +0.2% to +7.3%), so the app adds +0.7% on a fog day and nothing carries over. Is this real (diversions from other airports?) or should fog be 0 when not significant? (Marvin)
+3. **Clarified in this PR. Fog is a sensitivity, not a diversion claim.** In the full historical sample, heavy fog is associated with Part 91 -4.3% and Part 135 +3.7% (95% bootstrap interval +0.2% to +7.3%). The recent 2023-2025 Part 135 interval includes zero. The app defaults to clear weather and shows about +0.7% only if heavy fog is selected. The source cannot identify diversions or predict 2027 fog; the app now says so.
 4. **Rain on Wednesday 17 Feb loses flights.** Lost movements move to the next day, but the week ends, so they disappear. Fine, but say so in the app or the Q&A. (Nazar)
-5. **Two test files with the same name.** `marvin/person_2_forecasting/test_forecast_model.py` and `marvin/person_2_part91_part135_forecast/test_forecast_model.py` collide, so `pytest` from the repo root stops with "import file mismatch". Rename one (e.g. `test_part_forecast_model.py`) or add `__init__.py` files. (Marvin)
+5. **Fixed in this PR.** The Part 91/135 test is now `test_part_forecast_model.py` and loads its own `forecast_model.py` by path, so root-level pytest cannot reuse the other package's module. The release evidence hash was refreshed for the changed Marvin test.
 6. **The game-day hours 14:00 and 20:00 are drawn as paused** although half of each hour is open (14:00-14:30, 20:30-21:00). The numbers are right; only the shading covers the whole hour. Minor. (Nazar)
 
 ## Not tested yet (for the others)
 
 - Alan: raw FAA data (no missing days, no duplicates, 2022 Super Bowl +3.1% / +15.5% reproduced from raw).
-- Marvin: rerunning the backtest reproduces 14.9%; forecasts never negative.
 - Elia: the slot advisor never suggests a time inside the pause; scenario totals are conserved.
 - Everyone: show the app to 3 people outside the team for 5 seconds and ask "what is this for?".

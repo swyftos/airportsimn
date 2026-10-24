@@ -32,7 +32,7 @@ def serve():
 
 class PageTests(unittest.TestCase):
     def test_every_element_the_script_uses_is_on_the_page(self):
-        html=(APP/'index.html').read_text();js=(APP/'app.js').read_text()
+        html=(APP/'index.html').read_text(encoding='utf-8');js=(APP/'app.js').read_text(encoding='utf-8')
         ids=set(re.findall(r"getElementById\('([^']+)'\)",js))
         self.assertGreater(len(ids),40)
         self.assertEqual(sorted(i for i in ids if f'id="{i}"' not in html),[])
@@ -54,7 +54,7 @@ class PlanningMathTests(unittest.TestCase):
     def setUpClass(cls):
         out=subprocess.run([NODE,str(HERE/'agent_app_harness.js'),str(APP/'app.js'),str(APP/'agent_data.json')],capture_output=True,text=True,timeout=60)
         if out.returncode:raise AssertionError(out.stderr)
-        cls.r=json.loads(out.stdout);cls.data=json.loads((APP/'agent_data.json').read_text())
+        cls.r=json.loads(out.stdout);cls.data=json.loads((APP/'agent_data.json').read_text(encoding='utf-8'))
     def by_date(self,key):return {x['date']:x for x in self.r[key]}
     def test_clear_weather_shows_the_forecast_unchanged(self):
         for s in ('Low','Medium','High'):

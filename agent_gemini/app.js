@@ -771,8 +771,9 @@ function renderDayCards() {
     if (impact.weather !== 'clear') {
       const pctFormatted = (impact.effectPct * 100).toFixed(1);
       weatherBadgeHtml = `<div class="weather-spillover-alert">
-        <span>⚠️ ${impact.weather.replace('_', ' ').toUpperCase()}: ${pctFormatted}% measured effect → landings ${impact.weatherDeltaArr.toFixed(1)}, departures ${impact.weatherDeltaDep.toFixed(1)} vs clear.</span>
+        <span>⚠️ ${impact.weather.replace('_', ' ').toUpperCase()}: ${pctFormatted}% historical association → landings ${impact.weatherDeltaArr.toFixed(1)}, departures ${impact.weatherDeltaDep.toFixed(1)} vs clear.</span>
         <span>${impact.lostArrivals.toFixed(1)} arr & ${impact.lostDepartures.toFixed(1)} dep shifted to next day.</span>
+        ${impact.weather === 'heavy_fog' ? '<span>Cause unknown; this is not evidence of diversions or a 2027 fog forecast.</span>' : ''}
       </div>`;
     }
 

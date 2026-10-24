@@ -59,6 +59,23 @@ class BacktestTests(unittest.TestCase):
                 self.assertEqual((Path(first) / filename).read_bytes(),
                                  (Path(second) / filename).read_bytes())
 
+    def test_rerun_reproduces_reported_2025_wape_and_nonnegative_forecasts(self):
+        with tempfile.TemporaryDirectory() as output:
+            backtest.main(history_path=HISTORY, output_dir=Path(output), print_table=False)
+            with (Path(output) / 'backtest_metrics.csv').open(newline='') as handle:
+                metrics = list(csv.DictReader(handle))
+            with (Path(output) / 'backtest_forecasts.csv').open(newline='') as handle:
+                forecasts = list(csv.DictReader(handle))
+
+        for target in ('arrivals', 'departures'):
+            row = next(r for r in metrics if (r['model'], r['target'], r['window'])
+                       == ('model', target, 'all_2025_origins'))
+            self.assertEqual(int(row['n']), 357)
+            self.assertEqual(round(float(row['wape']) * 100, 1), 14.9)
+        self.assertEqual(len(forecasts), 51 * 7 * 2)
+        for row in forecasts:
+            self.assertGreaterEqual(float(row['model']), 0, row)
+
     def test_forecast_csv_has_all_origin_days_and_targets(self):
         with tempfile.TemporaryDirectory() as output:
             backtest.main(history_path=HISTORY, output_dir=Path(output), print_table=False)

@@ -27,7 +27,7 @@ def without_timestamp(d):
 class AgentDataTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.data=json.loads(APP_DATA.read_text())
+        cls.data=json.loads(APP_DATA.read_text(encoding='utf-8'))
         cls.days={d['date']:d for d in cls.data['days']}
 
     # --- the file is the team's data, not a stale or hand-edited copy ---
@@ -39,7 +39,7 @@ class AgentDataTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             mod.OUT=Path(tmp)/'agent_data.json'
             with contextlib.redirect_stdout(io.StringIO()):mod.main()
-            fresh=json.loads(mod.OUT.read_text())
+            fresh=json.loads(mod.OUT.read_text(encoding='utf-8'))
         self.assertEqual(without_timestamp(fresh),without_timestamp(self.data),'agent_data.json is out of date: run python site_kit/export_agent_data.py')
     def test_daily_numbers_match_marvins_forecast(self):
         for r in rows(P2/'daily_totals.csv'):
@@ -140,7 +140,7 @@ class AgentDataTests(unittest.TestCase):
         after=sum(v for h,v in enumerate(g['hour_shares']['departures']) if h+1>end)
         self.assertEqual(round(after*100),40)
     def test_no_personal_data(self):
-        text=APP_DATA.read_text().lower()
+        text=APP_DATA.read_text(encoding='utf-8').lower()
         for word in ('passenger_name','owner','email','phone','crew'):self.assertNotIn(word,text)
 
 if __name__=='__main__':unittest.main()
