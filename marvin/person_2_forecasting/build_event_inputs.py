@@ -5,15 +5,20 @@ from forecast_model import load_history, fit_and_evaluate, read_csv
 
 HERE = Path(__file__).resolve().parent
 DATA = HERE.parents[1]/'alan/elia_output/data/processed'
-EVENT_EXCESS_SCALES = {'low': 0.0, 'medium': 1.0, 'high': 2.0}
+# Five-day operations excess per scenario, from FAA counts around Super Bowl LVI (control-adjusted).
+# Low: LAX GA, the modeled Part 91 scope. GA mixes in non-FBO flying (training was banned under the
+# event TFR), so Medium uses LAX air taxi as the analog for event-driven business-jet demand.
+# High doubles Medium as a stress case.
+EVENT_EXCESS = {'low': ('general_aviation', 1), 'medium': ('air_taxi', 1), 'high': ('air_taxi', 2)}
 
 def build(history_path):
     surge = read_csv(DATA/'superbowl_lvi_surge.csv')
-    lax = next(r for r in surge if r['metric']=='air_taxi' and r['locid']=='LAX')
+    lax = {r['metric']: float(r['excess_2022']) for r in surge if r['locid']=='LAX'}
     regional = next(r for r in surge if r['metric']=='air_taxi' and r['locid']=='ALL6')
     profile = {int(r['offset']): r for r in read_csv(DATA/'superbowl_lvi_daily_profile.csv')}
-    excess = float(lax['excess_2022'])
-    assert 0 < excess < 1
+    scenario_excess = {s: lax[metric]*k for s,(metric,k) in EVENT_EXCESS.items()}
+    excess = scenario_excess['medium']
+    assert 0 < scenario_excess['low'] <= excess < 1
     fitted, _ = fit_and_evaluate(load_history(history_path), .9)
     days = [date(2027,2,11)+timedelta(days=i) for i in range(7)]
     categories = sorted({key[0] for key in fitted})
@@ -48,20 +53,22 @@ def build(history_path):
                    reservation_class='synthetic',
                    assumption_source='FAA ATADS/OPSNET; PROVISIONAL_ASSUMPTIONS.md; regional timing and LAX aggregate transferred to fictional FBO; no bookings supplied')
             for t in ('arrivals','departures'):
-                for s,k in EVENT_EXCESS_SCALES.items():
-                    r[f'{t}_multiplier_{s}']=1+k*(directional[t][i]-1)
+                for s,e in scenario_excess.items():
+                    r[f'{t}_multiplier_{s}']=1+e/excess*(directional[t][i]-1)
             plan.append(r)
     evidence=dict(source='FAA ATADS/OPSNET',source_url='https://aspm.faa.gov/opsnet/sys/Airport.asp',
                   retrieval_date='2026-10-23',repository_delivery='PR 17 (not the data source)',
-                  metric='airport-wide air-taxi operations: takeoffs plus landings',
+                  metric='airport-wide operations (takeoffs plus landings): GA for Low, air taxi for Medium/High',
                   lax_five_day_control_adjusted_excess=excess,
+                  lax_ga_five_day_control_adjusted_excess=lax['general_aviation'],
                   six_airport_five_day_control_adjusted_excess=float(regional['excess_2022']),
                   regional_monday_raw_same_weekday_ratio=float(profile[1]['ratio']),
                   observed_directional_split=False,observed_aircraft_size_split=False,
                   method='Regional positive daily excess shape normalized to LAX five-day control-adjusted excess, weighted by forecast baseline movements.',
-                  scenario_excess_scales=EVENT_EXCESS_SCALES,
+                  scenario_excess_scales={s: dict(metric=m, factor=k, excess=round(scenario_excess[s],4))
+                                          for s,(m,k) in EVENT_EXCESS.items()},
                   direction_assumption='FAA table has no directional split. Aircraft conservation: extra arrivals = extra departures = half the five-day excess operations; arrivals Thu-Sat plus half of game day, departures half of game day plus Monday.',
-                  scope_transfer='Apply air-taxi proxy uplift to GA+air-taxi FBO allocation; unvalidated.',
+                  scope_transfer='History is GA only (Part 91). Air-taxi event response applied to GA FBO demand in Medium/High as an analog; unvalidated.',
                   shoulders='Tuesday and Wednesday set to ordinary baseline; conservative boundary assumption.',
                   reservations='Zero synthetic placeholders, show rate zero; no observed bookings or claim of zero actual reservations.',
                   daily=[dict(date=str(d),medium_operations_multiplier=multipliers[i],

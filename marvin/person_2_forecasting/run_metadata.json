@@ -14,5 +14,5 @@
   ],
   "nominal_baseline_coverage": 0.9,
   "uncertainty": "Baseline split-conformal intervals scaled by assumed multipliers; event coverage not validated",
-  "caution": "Training/calibration/test use only 2023-2025. MAE and coverage against flat monthly allocations are allocation diagnostics, not daily predictive accuracy or observed FBO accuracy. FAA air-taxi operations inform event assumptions; FBO transfer and direction split are unvalidated. No booking data supplied; reservation floors disabled."
+  "caution": "Training/calibration/test use only 2023-2025 observed daily FAA GA counts scaled by an assumed FBO share. MAE and coverage measure how well the daily airport GA pattern is predicted, not observed FBO accuracy. Event scenarios: Low from LAX GA, Medium from LAX air taxi as the event-response analog; FBO transfer and direction split are unvalidated. No booking data supplied; reservation floors disabled."
 }

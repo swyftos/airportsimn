@@ -2,8 +2,10 @@
 INTEGRATION.md contract) expects, plus alan/assumptions.csv.
 
 Input:  alan/data/processed/historical_traffic_interim.csv
-        (airport-wide, daily, air_taxi + general_aviation only, 50/50
-        arrivals/departures split -- built by build_historical_traffic.py)
+        (airport-wide, daily, Part 91 general_aviation ONLY -- air_taxi
+        dropped per the team's private-only scope decision -- 50/50
+        arrivals/departures split -- built by build_historical_traffic.py
+        from Marvin's verified daily GA extract, not a monthly spread)
 
 Output: alan/baseline.csv       -- exactly 7 rows, one per planning date
         alan/assumptions.csv    -- the assumption ledger behind those rows
@@ -15,16 +17,32 @@ ITS OWN WEEKDAY, in February, across ordinary (non-COVID, non-event) years.
 This preserves weekday seasonality (e.g. weekend vs weekday GA patterns)
 instead of just averaging across "any February day."
 
-Three additional assumptions, beyond the monthly->daily and 50/50
-arrivals/departures split already applied in the interim file, are needed
-to get from "all of LAX" down to "this fictional FBO's parking baseline":
+Three additional assumptions, beyond the daily GA-only extraction and
+50/50 arrivals/departures split already applied in the interim file, are
+needed to get from "all of LAX's GA category" down to "this fictional
+FBO's parking baseline":
 
-  1. FBO_MARKET_SHARE: this fictional FBO's share of LAX's total GA +
-     air-taxi traffic. LAX realistically has two real FBOs (Atlantic
-     Aviation, Signature -- see Nazar's apron research). A new, smaller
-     fictional entrant capturing an even 1/3 split is optimistic; 20% is
-     used as a conservative starting assumption, easy to change via the
-     named constant below.
+  1. EFFECTIVE_SHARE: this fictional FBO's share of LAX's Part 91 GA
+     traffic, built from two factors the team was previously applying
+     inconsistently (one pipeline used a flat 20% on the combined
+     GA+air-taxi total, the other used 50% eligibility x 20% capture =
+     10% on GA alone):
+       - PRIVATE_ELIGIBLE_FRACTION (0.50): fraction of the raw FAA
+         general_aviation category that is actually private/FBO-eligible
+         traffic (excludes flight training, positioning flights, etc --
+         see alan/docs/traffic_categories_and_fleet_mix.md section 1.3).
+         This is Marvin's number (private_eligibility_sensitivity.csv).
+       - FBO_CAPTURE_SHARE (0.20): of that already-filtered private
+         traffic, the fictional FBO's capture share. LAX realistically
+         has two real FBOs (Atlantic Aviation, Signature -- see Nazar's
+         apron research); 20% is a conservative starting assumption for a
+         smaller, newer third entrant.
+     EFFECTIVE_SHARE = PRIVATE_ELIGIBLE_FRACTION x FBO_CAPTURE_SHARE = 0.10
+     is now the ONE number both Alan's baseline and Marvin's forecast
+     should share, instead of two silently-different figures. A low/high
+     range (0.05-0.15) comes from Marvin's own eligibility sensitivity
+     table at the 25%/75% eligibility points (capture share held fixed,
+     since no comparable sensitivity exists for it yet).
 
   2. AVG_DWELL_DAYS: parking_units (how many aircraft are ON THE GROUND on
      a given day) is NOT the same as arrivals that day -- it also depends
@@ -52,7 +70,13 @@ IN_PATH = HERE.parent / "data" / "processed" / "historical_traffic_interim.csv"
 BASELINE_OUT = HERE.parent / "baseline.csv"
 ASSUMPTIONS_OUT = HERE.parent / "assumptions.csv"
 
-FBO_MARKET_SHARE = 0.20
+PRIVATE_ELIGIBLE_FRACTION = 0.50
+PRIVATE_ELIGIBLE_FRACTION_LOW = 0.25
+PRIVATE_ELIGIBLE_FRACTION_HIGH = 0.75
+FBO_CAPTURE_SHARE = 0.20
+EFFECTIVE_SHARE = PRIVATE_ELIGIBLE_FRACTION * FBO_CAPTURE_SHARE
+EFFECTIVE_SHARE_LOW = PRIVATE_ELIGIBLE_FRACTION_LOW * FBO_CAPTURE_SHARE
+EFFECTIVE_SHARE_HIGH = PRIVATE_ELIGIBLE_FRACTION_HIGH * FBO_CAPTURE_SHARE
 AVG_DWELL_DAYS = 1.10
 
 # Training window for the ordinary-week baseline. LAX GA + air-taxi traffic
@@ -130,8 +154,8 @@ def main():
         avg_departures_airportwide = sum(float(r["departures"]) for r in matches) / len(matches)
 
         dow_mult = WEEKDAY_MULTIPLIERS[wd]
-        arrivals_fbo = avg_arrivals_airportwide * dow_mult * FBO_MARKET_SHARE
-        departures_fbo = avg_departures_airportwide * dow_mult * FBO_MARKET_SHARE
+        arrivals_fbo = avg_arrivals_airportwide * dow_mult * EFFECTIVE_SHARE
+        departures_fbo = avg_departures_airportwide * dow_mult * EFFECTIVE_SHARE
         parking_units = arrivals_fbo * AVG_DWELL_DAYS
 
         baseline_rows.append(
@@ -150,13 +174,27 @@ def main():
 
     assumptions_rows = [
         {
+            # NOTE: id kept as "fbo_market_share" (not renamed) -- Nazar's
+            # nazar/scripts/release_team.py and nazar/readiness/release_status.py
+            # read this exact key out of alan/assumptions.csv. Only the VALUE
+            # and its derivation changed (unified with Marvin's eligibility x
+            # capture figure); keeping the id avoids breaking that pipeline.
             "id": "fbo_market_share",
-            "label": "Fictional FBO's share of LAX GA + air-taxi traffic",
-            "value": FBO_MARKET_SHARE,
+            "label": "Combined private-eligible x FBO-capture share of LAX Part 91 GA traffic",
+            "value": EFFECTIVE_SHARE,
             "unit": "fraction",
             "classification": "assumption",
-            "source": "Team judgment, informed by Nazar's apron research (2 real incumbent FBOs: Atlantic, Signature)",
-            "note": "Conservative share for a smaller/newer third entrant, not an even 1/3 split. Change the FBO_MARKET_SHARE constant in build_baseline.py to revise.",
+            "source": "PRIVATE_ELIGIBLE_FRACTION (Marvin, private_eligibility_sensitivity.csv) x FBO_CAPTURE_SHARE (team judgment, Nazar's apron research: 2 real incumbent FBOs, Atlantic/Signature)",
+            "note": f"Single shared number replacing two previously-divergent pipeline figures (Alan's old flat 0.20 on GA+air-taxi vs Marvin's 0.50x0.20=0.10 on GA alone). Low/high range {EFFECTIVE_SHARE_LOW:.2f}-{EFFECTIVE_SHARE_HIGH:.2f} from Marvin's eligibility sensitivity table at the 25%/75% eligibility points (capture share held fixed at 0.20; no comparable sensitivity exists for it). Change PRIVATE_ELIGIBLE_FRACTION / FBO_CAPTURE_SHARE in build_baseline.py to revise.",
+        },
+        {
+            "id": "fbo_capacity_su",
+            "label": "Fictional FBO's parking/hangar capacity ceiling",
+            "value": 87.5,
+            "unit": "space units",
+            "classification": "benchmark",
+            "source": "Hangar: Atlantic Aviation LAX corporate hangar, confirmed built 2016 (alan/docs/lax_private_capacity_and_cost_research.md Item 1a), 5 large-cabin jets x 2.5 su/large jet (Elia's su_large) = 12.5 su. Ramp: Elia's P3 ramp model (elia/assumptions_p3.csv, ramp_capacity_su), Atlantic's 2008 13-acre ramp benchmark = 75 su (range 61-91).",
+            "note": "Replaces MARVIN-ramp's placeholder 75 su (\"replace_with_Alan_capacity\") with hangar + ramp combined: 12.5 (hangar, public/high-confidence, confirmed as-built) + 75 (ramp, benchmark/low-confidence, 2008 figure) = 87.5 su point estimate. Range 73.5-103.5 su using Elia's documented ramp range (61-91) with the hangar held fixed. Does not include Elia's optional +40 su overflow apron or +10% tow-packing gain, which remain separate, explicitly activation-gated assumptions.",
         },
         {
             "id": "avg_dwell_days",
@@ -179,11 +217,11 @@ def main():
         {
             "id": "historical_base",
             "label": "Underlying airport-wide movement data",
-            "value": "LAWA TCOM monthly movements, Feb (ordinary years), disaggregated to daily",
+            "value": "FAA ATADS/OPSNET LAX GA-category daily operations, Feb (ordinary years)",
             "unit": "n/a",
             "classification": "benchmark",
-            "source": "Elia (LAWA TCOM, verified_public) via Alan's build_historical_traffic.py (monthly->daily, 50/50 arrivals/departures)",
-            "note": "Weekday-matched February average across ordinary (non-COVID, non-2022) years; see alan/scripts/build_baseline.py docstring for full methodology.",
+            "source": "Marvin (private_only_review/ga_only_daily_source.csv, verified_public_FAA_GA_category_not_private_fleet) via Alan's build_historical_traffic.py (daily-direct, 50/50 arrivals/departures, Part 91 GA only -- air_taxi dropped)",
+            "note": "Weekday-matched February average across ordinary (non-COVID, non-2022) years; see alan/scripts/build_baseline.py docstring for full methodology. Switched from a monthly-spread air_taxi+GA source to this daily-resolution GA-only source per the team's private-only scope decision -- see alan/docs/traffic_categories_and_fleet_mix.md section 1.4.",
         },
     ]
 
@@ -196,6 +234,18 @@ def main():
             "classification": "assumption",
             "source": "Alan's analysis of alan/elia_output lax_monthly_movements.csv",
             "note": "Restricted to post-COVID years only. Feb daily mean: ~175/day in 2016-2019 vs ~98/day in 2023-2025 (~45% drop, structural break not noise). Blending both without a level-shift would overstate 2027 ordinary traffic. 2016-2019 remain in historical_traffic_interim.csv as reference data, excluded only from this baseline average. See issue #10.",
+        }
+    )
+
+    assumptions_rows.append(
+        {
+            "id": "security_restriction_window",
+            "label": "Game-day VIP/security TFR ground-stop window applied to the model",
+            "value": "2027-02-14 14:30-20:30 America/Los_Angeles",
+            "unit": "n/a",
+            "classification": "assumption",
+            "source": "Super Bowl LVI FAA Flight Advisory (99.7 Special Security Instruction TFR): https://www.faasafety.gov/files/notices/2022/Jan/SB_LVI_Flight_Advisory.pdf",
+            "note": "Modeled by applying the LVI precedent's exact clock window to this project's game day (2027-02-14, Sunday); no TFR has actually been published for Super Bowl LXI, so this is a precedent-based assumption, not a confirmed restriction. Structured model input: alan/data/processed/security_restriction_model_input.csv. Full derivation: alan/docs/vip_tfr_operational_impact.md.",
         }
     )
 

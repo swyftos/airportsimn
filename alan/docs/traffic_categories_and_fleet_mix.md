@@ -93,36 +93,30 @@ is a known limitation, carried forward from `data_sources.md`'s
 cross-cutting limitations section, stated here explicitly rather than
 implicitly.
 
-### 1.4 Known scope inconsistency across the project (stated as-is)
+### 1.4 Known scope inconsistency across the project
 
-The project narrowed to Part 91-only partway through. That change is not
-uniformly applied everywhere:
+**Update**: Alan's side of this inconsistency is now fixed. `alan/scripts/
+build_historical_traffic.py` and `build_baseline.py` were switched to
+Marvin's verified daily Part 91 `general_aviation`-only extract
+(`private_only_review/ga_only_daily_source.csv`), dropping `air_taxi`
+entirely, and now share the same combined
+private-eligible-fraction x FBO-capture-share figure as Marvin's
+`private_only_review/` work (`EFFECTIVE_SHARE` in `build_baseline.py`;
+`ALAN-fbo_market_share` in `assumptions.csv`) instead of a
+separately-chosen flat share applied to a combined GA+air-taxi total.
+
+One inconsistency remains, and this doc does not fix it (outside this
+doc's scope — a team/Marvin decision):
 
 | File | Scope used |
 |---|---|
-| `alan/baseline.csv`, `alan/scripts/build_baseline.py` | Part 91 (general_aviation) + Part 135 (air_taxi) combined, then scaled by `FBO_MARKET_SHARE` — **not yet narrowed to Part 91 only** at the code level (see note below) |
+| `alan/baseline.csv`, `alan/scripts/build_baseline.py` | **Fixed**: Part 91 (general_aviation) only, combined private-eligible x FBO-capture share |
 | `marvin/person_2_forecasting/private_only_review/*` | Part 91 only, via `private_eligible_ga_fraction` applied on top of the raw `general_aviation` count |
 | `marvin/person_2_forecasting/demand_predictions.csv` (live dashboard-facing file) | Still uses the **older mixed Part 91 + Part 135 scope** ("25% air-taxi eligibility"-style assumption), not the private-only numbers from Marvin's own `private_only_review/` folder |
 
-**Correction found while writing this doc**: re-reading `build_baseline.py`
-(see `alan/scripts/build_baseline.py` docstring and `historical_base`
-input) confirms the **current** `alan/baseline.csv` is built from
-`historical_traffic_interim.csv`, whose upstream source
-(`lax_monthly_movements.csv`) is itself `air_taxi + general_aviation`
-combined — i.e. Alan's own baseline still carries Part 135 in its inputs,
-scaled only by the flat `FBO_MARKET_SHARE` constant, with no Part 91/135
-split applied anywhere in `build_historical_traffic.py` or
-`build_baseline.py`. This is the same inconsistency as Marvin's dashboard
-file, just less visible because Alan's output is a single blended total
-rather than a column labeled by scope.
-
-**This doc does not fix this.** Per Nazar's request and the team's
-decision, it is documented neutrally as the current reality: *the private-
-only scope decision has been applied in Marvin's `private_only_review/`
-work, but not yet in Alan's `baseline.csv`/`build_baseline.py` pipeline or
-in Marvin's live `demand_predictions.csv`.* Resolving it is a team
-decision outside this doc's scope (see the repo audit finding from
-earlier in the project, "issue number 1/2" context).
+Resolving that last row is a team decision outside this doc's scope (see
+the repo audit finding from earlier in the project, "issue number 1/2"
+context).
 
 ## 2. Aircraft-size mix (47% light / 33% midsize / 20% large)
 
@@ -177,31 +171,25 @@ useful context (it shows the two real incumbents are not evenly split
 either — roughly 56/44, not 50/50), but it cannot be converted into a
 hard number for a fictional third entrant's traffic share without a
 further assumption about that FBO's relative size, which is exactly the
-kind of extra assumption Nazar's instruction says not to force. **The 20%
-`FBO_MARKET_SHARE` figure is marked as an unsupported assumption** (as
-`alan/assumptions.csv`'s `ALAN-fbo_market_share` row already stated) and
-not pursued further, now with the added context above on what evidence
-does and doesn't exist.
+kind of extra assumption Nazar's instruction says not to force. **The FBO
+capture share is marked as an unsupported assumption** and not pursued
+further, now with the added context above on what evidence does and
+doesn't exist.
 
-**Relationship to Marvin's private-only numbers**: Marvin's
-`private_only_review/` work uses two separate factors that both bear on
-"FBO share" but are not the same number as Alan's `FBO_MARKET_SHARE`:
-
-| Factor | Value | What it represents |
-|---|---|---|
-| `ALAN-fbo_market_share` | 0.20 | This fictional FBO's share of **all** LAX GA + air-taxi traffic |
-| `MARVIN-private-eligibility` | 0.50 | Fraction of the raw `general_aviation` FAA category that is actually private-eligible traffic (i.e. excludes training/positioning/non-FBO flying — see section 1.3) |
-| `MARVIN-FBO-share` | 0.20 | FBO capture **of that already-filtered, private-eligible** GA traffic |
-
-These are not interchangeable: Alan's 20% is applied to the raw combined
-GA+air-taxi total; Marvin's 20% is applied *after* a separate 50% private-
-eligibility filter is applied first. Multiplying Marvin's two factors
-(0.50 x 0.20 = 0.10) gives a materially different effective share than
-Alan's single 0.20 factor applied to the unfiltered total — another
-concrete expression of the same section-1.4 scope inconsistency, not a
-new problem. Both are already labeled `assumption`/`low confidence` in
-`assumptions.csv`; this doc does not change that, only documents how they
-relate.
+**Update — the two shares are now unified**: this used to be two
+materially different numbers (Alan's flat 20% applied to the combined
+GA+air-taxi total vs. Marvin's 50% eligibility x 20% capture = 10% applied
+to GA alone). They are now one shared figure:
+`ALAN-fbo_market_share` in `assumptions.csv`
+(`EFFECTIVE_SHARE` in `build_baseline.py`) = `PRIVATE_ELIGIBLE_FRACTION`
+(0.50, Marvin's number) x `FBO_CAPTURE_SHARE` (0.20) = **0.10**, with a
+**0.05-0.15 low/high range** taken from Marvin's own
+`private_eligibility_sensitivity.csv` at the 25%/75% eligibility points
+(the capture share itself has no comparable sensitivity table yet, so it
+is held fixed). Both factors remain labeled `assumption`, unsupported by
+independent evidence, per the conclusion above — this update removes the
+*inconsistency* between pipelines, it does not newly evidence either
+factor.
 
 ## 4. Operations vs. aircraft visits
 
@@ -264,7 +252,7 @@ section — the audit requested in the spec is recorded here as a result
 | Item | Resolution |
 |---|---|
 | Traffic categories (121/135/91) | Documented, including Part 91's training/positioning contamination and Part 135's commuter-vs-charter split — new detail beyond what was previously in the repo |
-| Scope inconsistency (91-only vs mixed) | Documented as-is, including a previously-unflagged instance in Alan's own `build_baseline.py` (see section 1.4) — not resolved here, by design |
+| Scope inconsistency (91-only vs mixed) | **Fixed on Alan's side** (build_historical_traffic.py / build_baseline.py now Part 91-only, via Marvin's verified daily GA extract); Marvin's live `demand_predictions.csv` remains mixed-scope — outside this doc's scope, see section 1.4 |
 | Aircraft-size mix (47/33/20) | No official evidence found (FAA GA Survey checked directly); confirmed as an unsupported assumption, not pursued further |
-| FBO market share (20%) | Real Atlantic/Signature land-share evidence exists (~56/44) but doesn't resolve a fictional entrant's share; confirmed as an unsupported assumption, not pursued further; relationship to Marvin's two-factor approach documented |
+| FBO market share | Real Atlantic/Signature land-share evidence exists (~56/44) but doesn't resolve a fictional entrant's share; still an unsupported assumption, but Alan's and Marvin's two previously-divergent figures are now unified into one shared number (`ALAN-fbo_market_share` = 0.10, range 0.05-0.15) — see section 3 |
 | Operations vs. visits | Explained with conversion math and caveats; full-repo audit found no existing conflation, so no fix was required |

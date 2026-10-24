@@ -1,5 +1,7 @@
 # FAA ATADS/OPSNET event update — review package
 
+> **Superseded** by PROVISIONAL_ASSUMPTIONS.md (private Part 91 scope, daily FAA history, measured Low/Medium/High). Kept as the record of the earlier release.
+
 Based on main snapshot 3f8aa2bbd348fcef7c0e52200352adbcf9bc7263, inspected October 23, 2026. PR #17 is merged. The earlier provisional P2 release and newer P3/dashboard work are now on main, but the downloaded model still blended pre-COVID years. This package applies the post-COVID correction and FAA event mapping on top of that shared version.
 
 ## Changes

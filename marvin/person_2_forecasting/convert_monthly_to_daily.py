@@ -1,46 +1,51 @@
-"""Provisional, deterministic monthly-to-daily FBO conversion. No observed FBO claims."""
-import calendar
+"""Provisional FBO history from observed FAA daily GA counts. No observed FBO claims.
+
+File name kept for the release contract; the input is now daily, not monthly.
+Scope: itinerant general aviation (Part 91) only; air taxi/charter, airlines and military excluded.
+"""
 import csv
 import json
+from collections import defaultdict
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-SOURCE = ROOT / 'alan/elia_output/data/processed/lax_monthly_movements.csv'
+SOURCE = ROOT / 'alan/elia_output/data/processed/opsnet_lax_daily.csv'
+MONTHLY = ROOT / 'alan/elia_output/data/processed/opsnet_lax_monthly.csv'
 MIX = {'light_jet': .47, 'midsize_jet': .33, 'large_jet': .20}
-FBO_SHARE = .25
+FBO_SHARE = .10  # fbo_market_share in alan/assumptions.csv: 50% private-eligible x 20% capture; one setting for the whole team
 ARRIVAL_SHARE = .5
+YEARS = (2023, 2024, 2025)
 
-def convert(source=SOURCE):
+def convert(source=SOURCE, monthly=MONTHLY):
     with Path(source).open(newline='', encoding='utf-8-sig') as f:
-        months = list(csv.DictReader(f))
-    rows, checks, seen = [], [], set()
-    for month in months:
-        year, mon = int(month['year']), int(month['month'])
-        if not 2023 <= year <= 2025:
-            continue
-        key = (year, mon)
-        if key in seen:
-            raise ValueError(f'Duplicate month: {key}')
-        seen.add(key)
-        days = calendar.monthrange(year, mon)[1]
-        movements = float(month['air_taxi']) + float(month['general_aviation'])
+        days = [r for r in csv.DictReader(f) if int(r['date'][:4]) in YEARS]
+    rows, seen, sums = [], set(), defaultdict(float)
+    for day in days:
+        if day['date'] in seen:
+            raise ValueError(f"Duplicate day: {day['date']}")
+        seen.add(day['date'])
+        movements = float(day['general_aviation'])
         if movements < 0:
             raise ValueError('Negative movements')
-        monthly_fbo = movements * FBO_SHARE
-        for day in range(1, days + 1):
-            for category, share in MIX.items():
-                daily = monthly_fbo / days * share
-                rows.append(dict(date=f'{year:04}-{mon:02}-{day:02}',
-                    aircraft_category=category, scope='fbo', data_class='estimated',
-                    source=f"{month['source_url']};value_source={month['value_source']};conversion=PROVISIONAL_ASSUMPTIONS.md",
-                    arrivals=daily * ARRIVAL_SHARE, departures=daily * (1-ARRIVAL_SHARE)))
-        checks.append(dict(month=f'{year:04}-{mon:02}', days=days,
-            airport_ga_air_taxi=movements, assumed_fbo_movements=monthly_fbo,
-            allocation='uniform_calendar_day', data_class='estimated'))
-    expected = {(y,m) for y in (2023,2024,2025) for m in range(1,13)}
-    if seen != expected:
+        sums[day['date'][:7]] += movements
+        for category, share in MIX.items():
+            fbo = movements * FBO_SHARE * share
+            rows.append(dict(date=day['date'], aircraft_category=category, scope='fbo', data_class='estimated',
+                source=f"{day['source']};metric=general_aviation;conversion=PROVISIONAL_ASSUMPTIONS.md",
+                arrivals=fbo * ARRIVAL_SHARE, departures=fbo * (1-ARRIVAL_SHARE)))
+    with Path(monthly).open(newline='', encoding='utf-8-sig') as f:
+        reported = {f"{int(r['year']):04}-{int(r['month']):02}": float(r['general_aviation'])
+                    for r in csv.DictReader(f) if int(r['year']) in YEARS}
+    if set(sums) != set(reported) or len(reported) != 12 * len(YEARS):
         raise ValueError('Missing or unexpected baseline months')
+    checks = []
+    for month, movements in sorted(sums.items()):
+        if movements != reported[month]:
+            raise ValueError(f'Daily GA sum differs from FAA monthly total in {month}')
+        checks.append(dict(month=month, days=sum(d[:7] == month for d in seen),
+            airport_ga_ops=movements, assumed_fbo_movements=movements * FBO_SHARE,
+            allocation='observed_daily_faa_counts', data_class='estimated'))
     return rows, checks
 
 def write(path, rows):
@@ -59,7 +64,7 @@ def main():
     planning, evidence = build(dest/'historical_traffic.csv')
     (dest/'event_evidence.json').write_text(json.dumps(evidence,indent=2),encoding='utf-8')
     write(dest/'planning_inputs.csv',planning)
-    print(f'{len(rows)} estimated rows; {len(checks)} months; original monthly source unchanged.')
+    print(f'{len(rows)} estimated rows from daily FAA GA counts; {len(checks)} months reconciled.')
 
 if __name__=='__main__':
     main()

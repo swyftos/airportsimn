@@ -14,7 +14,7 @@ def read(p):
         return r.fieldnames,list(r)
 def run():
     contract=json.loads((HERE/'forecast_output_contract.json').read_text(encoding='utf-8-sig'))
-    source=ROOT/'alan/elia_output/data/processed/lax_monthly_movements.csv'
+    source=ROOT/'alan/elia_output/data/processed/opsnet_lax_daily.csv'
     source_hash=digest(source)
     p3_headers,_=read(P3/'resource_requirements.csv')
     before=json.loads((P3/'scenario_recommendations.json').read_text())
@@ -84,6 +84,7 @@ def run():
               HERE/'build_event_inputs.py',HERE/'provisional_inputs/event_evidence.json',
               HERE/'test_forecast_model.py',HERE/'forecast_output_contract.json',
               HERE/'provisional_inputs/monthly_reconciliation.csv',
+              ROOT/'alan/elia_output/data/processed/opsnet_lax_monthly.csv',
               ROOT/'alan/elia_output/data/processed/superbowl_lvi_surge.csv',
               ROOT/'alan/elia_output/data/processed/superbowl_lvi_daily_profile.csv',
               ROOT/'alan/elia_output/data/processed/opsnet_daily_superbowl.csv',

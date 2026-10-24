@@ -10,6 +10,12 @@ TRAINING_START = date(2023, 1, 1)
 TRAINING_END = date(2025, 12, 31)
 EXCLUDED = {2020, 2021, 2022}  # COVID exclusions; training window is enforced separately.
 
+def presidents_day(year):
+    d = date(year, 2, 15)  # third Monday of February
+    return d + timedelta(days=-d.weekday() % 7)
+
+HOLIDAYS = {'presidents_day': presidents_day}
+
 def read_csv(path):
     with open(path, newline='', encoding='utf-8-sig') as f:
         return list(csv.DictReader(f))
@@ -59,11 +65,20 @@ class SeasonalModel:
             d = r['date']
             self.weekday[d.weekday()].append(r[target])
             self.seasonal[d.month, d.weekday()].append(r[target])
-    def predict(self, d):
+        # Holiday effect learned from training days: observed / ordinary prediction.
+        self.holiday = {}
+        for name, rule in HOLIDAYS.items():
+            ratios = [r[target] / self.ordinary(r['date']) for r in rows
+                      if r['date'] == rule(r['date'].year) and self.ordinary(r['date']) > 0]
+            self.holiday[name] = sum(ratios) / len(ratios) if ratios else 1.0
+    def ordinary(self, d):
         w = self.weekday[d.weekday()]
         parent = sum(w) / len(w) if w else self.mean
         v = self.seasonal[d.month, d.weekday()]
         return (sum(v) + 14 * parent) / (len(v) + 14)
+    def predict(self, d):
+        factor = next((self.holiday[n] for n, rule in HOLIDAYS.items() if d == rule(d.year)), 1.0)
+        return self.ordinary(d) * factor
 
 def conformal_radius(residuals, coverage):
     rank = math.ceil((len(residuals) + 1) * coverage)
@@ -213,7 +228,7 @@ def main():
         seed=42 if args.demo else None,history_file=str(args.history),planning_file=str(args.planning),
         historical_data_classes=sorted({r['data_class'] for r in history}),nominal_baseline_coverage=args.coverage,
         uncertainty='Baseline split-conformal intervals scaled by assumed multipliers; event coverage not validated',
-        caution='Training/calibration/test use only 2023-2025. MAE and coverage against flat monthly allocations are allocation diagnostics, not daily predictive accuracy or observed FBO accuracy. FAA air-taxi operations inform event assumptions; FBO transfer and direction split are unvalidated. No booking data supplied; reservation floors disabled.')
+        caution='Training/calibration/test use only 2023-2025 observed daily FAA GA counts scaled by an assumed FBO share. MAE and coverage measure how well the daily airport GA pattern is predicted, not observed FBO accuracy. Event scenarios: Low from LAX GA, Medium from LAX air taxi as the event-response analog; FBO transfer and direction split are unvalidated. No booking data supplied; reservation floors disabled.')
     (args.output_dir/'run_metadata.json').write_text(json.dumps(metadata,indent=2),encoding='utf-8')
     print(f'Wrote {len(forecasts)} scenario/category forecasts to {args.output_dir}')
 
