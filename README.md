@@ -1,4 +1,4 @@
-# RampReady — The Intelligent FBO
+# The Intelligent FBO
 
 A seven-day parking preparation desk for a fictional FBO at LAX during Super Bowl LXI. Compare ordinary and event demand, explore lower/expected/higher scenarios and delayed departures, inspect preparation proposals, and record a human planning review.
 
@@ -34,7 +34,7 @@ python3 -m unittest discover -s nazar/tests -v
 python3 nazar/scripts/verify_team_pipeline.py
 ```
 
-The verifier requires numpy and pandas; the dashboard does not. To regenerate the provisional forecast and all parking outputs, use `python3 marvin/person_2_forecasting/run_provisional.py` with those dependencies installed. Review model assumptions before regenerating; this command does not resolve them automatically.
+The verifier requires numpy and pandas; the dashboard does not. To regenerate the provisional forecast and all parking outputs, use `python3 nazar/scripts/release_team.py` with those dependencies installed. Review model assumptions before regenerating; this command does not resolve them automatically.
 
 ## What the results mean
 
@@ -43,3 +43,5 @@ Current forecasts and capacity assumptions are **provisional pending team review
 The dashboard checks the 20-file release manifest, flags changed inputs, and blocks stale-plan review/export. Reviews are attached to the precise dataset, scenario and variant. A planning approval does not authorize movement, towing, a booking, spending or an airport safety decision.
 
 This is a local hackathon application with selectable demo identities, not production authentication or a public deployment. Only aggregate data belongs in the repository; never commit passenger details, credentials or local review databases.
+
+Coordinated release: see [the release guide](nazar/RELEASE.md). The default stops on the current Alan/Marvin policy mismatch; only `--allow-provisional-mismatch` explicitly permits reproducing that provisional demo.

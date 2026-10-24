@@ -1,4 +1,4 @@
-# RampReady: three-minute team demo
+# The Intelligent FBO: three-minute team demo
 
 ## Start from the shared repository
 
@@ -21,7 +21,7 @@ Answer to the judges: **AI must never authorize aircraft movements or override a
 ## Refresh after teammates finish their models
 
 1. Agree the model assumptions with Alan and Marvin. Elia updates opening inventory as necessary.
-2. Producers regenerate with `python marvin/person_2_forecasting/run_provisional.py` (numpy/pandas required) and commit the complete release together.
+2. Producers regenerate with `python nazar/scripts/release_team.py` (numpy/pandas required) and commit the complete release together.
 3. Pull the merged changes, run tests and the pipeline verifier, then click **Refresh current source**.
 4. Changed files cause a visible stale-plan warning and block review/export. Missing or mismatched release files cannot silently fall back to samples. Fix the complete release before refreshing again.
 
@@ -37,3 +37,5 @@ The optional seven-file contract under Advanced is not the team’s current inte
 - The presenter rehearses the full sequence and can explain why preparation still leaves risk.
 
 This is a local hackathon decision-support demo, not a deployed operational system. No live LLM is required: the learned forecast and Monte Carlo/resource rules supply the recommendations. LA 2028 remains outside the core demonstration.
+
+Coordinated release: see [the release guide](RELEASE.md). The default stops on the current Alan/Marvin policy mismatch; only `--allow-provisional-mismatch` explicitly permits reproducing that provisional demo.

@@ -64,7 +64,7 @@ class Application:
                 'native_files':native_status(self.repo_root), 'team_files':team_status(self.repo_root),'history':self.store.history(self.bundle['version'] if self.bundle else '')}
 
 class Handler(BaseHTTPRequestHandler):
-    server_version='RampReadyLocal/1.0'
+    server_version='IntelligentFBOLocal/1.0'
     def log_message(self,format,*args): pass
     @property
     def app(self): return self.server.application
@@ -195,7 +195,7 @@ if __name__=='__main__':
     parser.add_argument('--port',type=int,default=4180)
     args=parser.parse_args()
     server=create_server(args.port)
-    print(f'RampReady: http://127.0.0.1:{server.server_port}',flush=True)
+    print(f'The Intelligent FBO: http://127.0.0.1:{server.server_port}',flush=True)
     print('Local demonstration only. Press Ctrl+C to stop.',flush=True)
     try: server.serve_forever()
     except KeyboardInterrupt: pass

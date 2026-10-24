@@ -1,4 +1,4 @@
-# RampReady — Nazar’s dashboard & integration module
+# The Intelligent FBO — Nazar’s dashboard & integration module
 
 A working local readiness desk for a fictional **Pacific Executive FBO at LAX**. It helps a manager see parking pressure during February 11–17, 2027, compare preparations, inspect assumptions, and record a human planning review.
 
@@ -44,7 +44,7 @@ See [NATIVE-INTEGRATION.md](NATIVE-INTEGRATION.md) for exact mappings, limitatio
 
 For the native path, the dashboard validates the producer schemas and all 20 declared manifest files, including ordinary parking, delayed departures and carryover. A missing manifest is explicitly unreviewed; an existing malformed/mismatched manifest blocks loading. An unsigned producer status cannot establish verified human approval. A manager planning review never removes the provisional banner.
 
-The file list is deliberately fixed in `readiness/release_status.py`. Coordinate a contract change with Nazar if a producer adds/removes manifest entries; do not weaken validation to make a broken release load. Producers should run `python marvin/person_2_forecasting/run_provisional.py` with numpy/pandas installed after updating agreed inputs. It regenerates and verifies the complete release. Pull it, then use **Refresh current source**. Loading does not run simulations or silently activate changed files.
+The file list is deliberately fixed in `readiness/release_status.py`. Coordinate a contract change with Nazar if a producer adds/removes manifest entries; do not weaken validation to make a broken release load. Producers should run `python nazar/scripts/release_team.py` with numpy/pandas installed after updating agreed inputs. It regenerates and verifies the complete release. Pull it, then use **Refresh current source**. Loading does not run simulations or silently activate changed files.
 
 Imported bundles are frozen snapshots; re-import them to update. Alan’s reference is read independently and is not part of the active forecast or planning approvals.
 
@@ -115,3 +115,5 @@ Tests cover data contracts, missing/invalid files, evidence mismatches, finite v
 - `scripts/verify_team_pipeline.py`: read-only P2-to-P3 numerical coherence check.
 
 The shared file formats are the part to agree on **now**. Connect outputs and test one complete journey early; use the remaining time to improve model quality, operational realism and visual polish together.
+
+Coordinated release: see [the release guide](RELEASE.md). The default stops on the current Alan/Marvin policy mismatch; only `--allow-provisional-mismatch` explicitly permits reproducing that provisional demo.
