@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Super Bowl LXI Flight Operations & Ramp Readiness Planning Dashboard for LAX Executive FBO Terminal">
+  <title>LAX FBO • Super Bowl LXI Flight Operations &amp; Ramp Readiness</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       Sticky Top App Header & Controls Bar
+       ======================================================================== -->
+  <header class="app-header">
+    <div class="header-top">
+      <div class="brand-wrapper">
+        <div class="brand-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">
+            LAX FBO Operations
+            <span class="badge-tag badge-measured">Super Bowl LXI</span>
+          </h1>
+          <div class="brand-sub">Flight Demand &amp; Ramp Parking Readiness • Feb 11–17, 2027</div>
+        </div>
+      </div>
+
+      <div class="header-governance-badge" title="AI Boundary Policy">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <span>Human-in-Command: AI Recommends • Manager Authorizes</span>
+      </div>
+
+      <div class="header-actions">
+        <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle visual theme">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-icon-light">
+            <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/>
+          </svg>
+          <span id="themeLabel">Theme</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Sticky Scenario & Situation Selector -->
+    <div class="control-bar" role="toolbar" aria-label="Operational Controls">
+      <div class="controls-group">
+        <div class="control-item">
+          <span class="control-label" id="scenarioLabel">Scenario:</span>
+          <div class="segmented-control" role="radiogroup" aria-labelledby="scenarioLabel">
+            <button type="button" role="radio" aria-checked="false" class="segmented-btn" data-scenario="Low">
+              Low <span class="badge-count">(+3.1%)</span>
+            </button>
+            <button type="button" role="radio" aria-checked="true" class="segmented-btn active" data-scenario="Medium">
+              Medium <span class="badge-count">(+15.5%)</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="segmented-btn" data-scenario="High">
+              High <span class="badge-count">(+31.0%)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="control-item">
+          <label for="variantSelect" class="control-label">Operational Situation:</label>
+          <select id="variantSelect" class="select-input">
+            <option value="standard" selected>Normal operations</option>
+            <option value="departure_delay_24h">Departures delayed 24 h after game</option>
+            <option value="security_restriction">Game-day security restriction (14:30–20:30)</option>
+            <option value="heavy_rain">Heavy rain on game day</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="controls-group">
+        <div class="control-item">
+          <span class="control-label">Planning Window:</span>
+          <span class="badge-tag badge-assumed" style="font-weight:600;">11–17 Feb 2027</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="app-nav" role="tablist" aria-label="Dashboard views">
+      <button role="tab" aria-selected="true" aria-controls="pane-overview" id="tab-overview" class="nav-tab-btn active">
+        <span>1. Week at a Glance</span>
+      </button>
+      <button role="tab" aria-selected="false" aria-controls="pane-movements" id="tab-movements" class="nav-tab-btn">
+        <span>2. Flight Demand (Predict)</span>
+      </button>
+      <button role="tab" aria-selected="false" aria-controls="pane-parking" id="tab-parking" class="nav-tab-btn">
+        <span>3. Ramp &amp; What-If (Predict)</span>
+      </button>
+      <button role="tab" aria-selected="false" aria-controls="pane-plan" id="tab-plan" class="nav-tab-btn">
+        <span>4. Action Plan &amp; Slot Advisor (Plan)</span>
+      </button>
+      <button role="tab" aria-selected="false" aria-controls="pane-trust" id="tab-trust" class="nav-tab-btn">
+        <span>5. Model Trust &amp; Evidence</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- ========================================================================
+       Main Content Area
+       ======================================================================== -->
+  <main class="container">
+
+    <!-- Hard Operational Boundary Banner: What AI Is NEVER Allowed To Do -->
+    <aside class="safeguards-banner" role="region" aria-label="AI Safety Boundaries">
+      <div class="safeguards-header">
+        <div class="safeguards-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+          </svg>
+          <span>What Decision Should the AI Never Be Allowed to Make?</span>
+        </div>
+        <span class="safeguards-badge">Human Sign-off Mandatory</span>
+      </div>
+      <p style="font-size: var(--text-xs); color: var(--text-secondary); margin-top: 4px;">
+        By the team's design rules, the system is strictly advisory. It must never:
+      </p>
+      <div class="safeguards-grid">
+        <div class="safeguard-item">
+          <span class="safeguard-icon">&times;</span>
+          <span class="safeguard-text"><strong>Never accept or refuse an individual aircraft</strong>; PPR slot allocation requires line manager review.</span>
+        </div>
+        <div class="safeguard-item">
+          <span class="safeguard-icon">&times;</span>
+          <span class="safeguard-text"><strong>Never cancel a confirmed customer booking</strong> under any demand condition.</span>
+        </div>
+        <div class="safeguard-item">
+          <span class="safeguard-icon">&times;</span>
+          <span class="safeguard-text"><strong>Never authorize aircraft movements</strong> or repositioning on active taxiways.</span>
+        </div>
+        <div class="safeguard-item">
+          <span class="safeguard-icon">&times;</span>
+          <span class="safeguard-text"><strong>Never commit money or activate apron leases</strong> without General Manager authorization.</span>
+        </div>
+        <div class="safeguard-item">
+          <span class="safeguard-icon">&times;</span>
+          <span class="safeguard-text"><strong>Never process or store passenger PII</strong> or private manifest details.</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ======================================================================
+         TAB 1: WEEK AT A GLANCE (OVERVIEW)
+         ====================================================================== -->
+    <section id="pane-overview" class="tab-pane active" role="tabpanel" aria-labelledby="tab-overview">
+      <!-- Executive Summary / Core Question Answer -->
+      <div class="executive-answer-box">
+        <div class="executive-answer-heading">Operational Assessment • FBO Executive Summary</div>
+        <p class="executive-answer-text" id="execAnswerText">
+          Loading executive forecast assessment...
+        </p>
+      </div>
+
+      <!-- KPI Metric Cards Grid -->
+      <div class="kpi-grid">
+        <!-- KPI 1: Incremental Landings -->
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <span class="kpi-label">Extra Landings</span>
+            <span class="badge-tag badge-estimated">SB Week</span>
+          </div>
+          <div class="kpi-value-row">
+            <span class="kpi-value" id="kpiExtraLandings">--</span>
+            <span class="kpi-unit">aircraft</span>
+          </div>
+          <div class="kpi-subtext" id="kpiExtraLandingsSub">vs ordinary 7-day baseline</div>
+        </div>
+
+        <!-- KPI 2: Peak Parking vs Capacity -->
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <span class="kpi-label">Peak Parking Demand</span>
+            <span id="kpiPeakParkingBadge" class="kpi-indicator warning">High Risk</span>
+          </div>
+          <div class="kpi-value-row">
+            <span class="kpi-value" id="kpiPeakParking">--</span>
+            <span class="kpi-unit">su</span>
+          </div>
+          <div class="kpi-subtext" id="kpiPeakParkingSub">Peak on Sun Feb 14 vs 15.0 su ramp</div>
+        </div>
+
+        <!-- KPI 3: Unaccommodated Aircraft -->
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <span class="kpi-label">Ramp Overflow</span>
+            <span class="badge-tag badge-assumed">No Plan vs Plan</span>
+          </div>
+          <div class="kpi-value-row">
+            <span class="kpi-value" id="kpiUnaccommodated">--</span>
+            <span class="kpi-unit">aircraft</span>
+          </div>
+          <div class="kpi-subtext" id="kpiUnaccommodatedSub">Expected stranded aircraft</div>
+        </div>
+
+        <!-- KPI 4: Plan Cost & Benefit -->
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <span class="kpi-label">Plan Cost &amp; Net Benefit</span>
+            <span id="kpiPayoffBadge" class="kpi-indicator ok">62% Payoff</span>
+          </div>
+          <div class="kpi-value-row">
+            <span class="kpi-value" id="kpiPlanCost">--</span>
+            <span class="kpi-unit">USD</span>
+          </div>
+          <div class="kpi-subtext" id="kpiPlanBenefitSub">Net benefit: +$1,702 (mean)</div>
+        </div>
+      </div>
+
+      <!-- Main Overview Chart: 7-Day Movements -->
+      <div class="card">
+        <div class="card-header-flex">
+          <div>
+            <h2 class="card-title">
+              <span>Seven-Day Flight Movements: Ordinary vs Super Bowl LXI</span>
+              <span class="badge-tag badge-estimated">P50 &amp; 90% Range</span>
+            </h2>
+            <div class="card-subtitle">
+              Daily Landings (Arrivals) and Takeoffs (Departures) with 90% uncertainty bands. Game Day (Sun 14 Feb) and Presidents' Day (Mon 15 Feb) marked.
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-wrapper">
+          <div id="chartMovementsContainer" class="svg-chart-container" role="img" aria-label="7-Day flight movements chart"></div>
+          <div id="movementsTooltip" class="chart-tooltip" role="tooltip"></div>
+        </div>
+
+        <div class="chart-legend">
+          <div class="legend-item">
+            <span class="legend-line" style="background-color: var(--chart-arrival);"></span>
+            <span>Arrivals (SB Week)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-swatch" style="background-color: var(--chart-arrival-band);"></span>
+            <span>Arrivals 90% Range</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-line" style="background-color: var(--chart-departure);"></span>
+            <span>Departures (SB Week)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-swatch" style="background-color: var(--chart-departure-band);"></span>
+            <span>Departures 90% Range</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dashed" style="border-color: var(--chart-baseline);"></span>
+            <span>Ordinary Week Baseline</span>
+          </div>
+          <div class="legend-item">
+            <span style="font-weight:700; color:var(--text-muted);">&bull;</span>
+            <span>Sun 14 Feb: Game Day</span>
+          </div>
+          <div class="legend-item">
+            <span style="font-weight:700; color:var(--text-muted);">&bull;</span>
+            <span>Mon 15 Feb: Presidents' Day</span>
+          </div>
+        </div>
+
+        <!-- Accessible Data Fallback Table -->
+        <details class="chart-details-toggle">
+          <summary>View accessible data table for 7-day flight movements</summary>
+          <div class="table-wrapper">
+            <table class="data-table" id="movementsTable">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Day Event</th>
+                  <th class="num">Baseline Arr</th>
+                  <th class="num">SB Expected Arr</th>
+                  <th class="num">Arr 90% Band</th>
+                  <th class="num">Baseline Dep</th>
+                  <th class="num">SB Expected Dep</th>
+                  <th class="num">Dep 90% Band</th>
+                </tr>
+              </thead>
+              <tbody id="movementsTableBody"></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         TAB 2: FLIGHT DEMAND (PREDICT - MOVEMENTS & AIRCRAFT SIZE)
+         ====================================================================== -->
+    <section id="pane-movements" class="tab-pane" role="tabpanel" aria-labelledby="tab-movements">
+      <div class="section-header">
+        <h2 class="section-title">Flight Demand &amp; Aircraft Size Distribution</h2>
+        <p class="section-desc">
+          Breakdown of Part 91 (General Aviation) and Part 135 (Air Taxi) arrivals and departures by jet class footprint (Light 1.0 su, Midsize 1.5 su, Large 2.5 su).
+        </p>
+      </div>
+
+      <div class="grid-2col">
+        <!-- Aircraft Size Breakdown Chart -->
+        <div class="card">
+          <div class="card-header-flex">
+            <div>
+              <h3 class="card-title">Arrivals by Aircraft Category</h3>
+              <div class="card-subtitle">Space Unit demand varies by jet footprint</div>
+            </div>
+            <span class="badge-tag badge-assumed">47% Light / 33% Mid / 20% Large</span>
+          </div>
+          <div class="chart-wrapper">
+            <div id="chartSizeMixContainer" class="svg-chart-container" role="img" aria-label="Aircraft size mix chart"></div>
+            <div id="sizeMixTooltip" class="chart-tooltip" role="tooltip"></div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item">
+              <span class="legend-swatch" style="background-color: #38bdf8;"></span>
+              <span>Light Jet (1.0 su)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-swatch" style="background-color: #818cf8;"></span>
+              <span>Midsize Jet (1.5 su)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-swatch" style="background-color: #f43f5e;"></span>
+              <span>Large Jet (2.5 su)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Aircraft Size Daily Table -->
+        <div class="card">
+          <div class="card-header-flex">
+            <div>
+              <h3 class="card-title">Daily Movement Specifications</h3>
+              <div class="card-subtitle">Expected values and incremental Super Bowl surge</div>
+            </div>
+            <span class="badge-tag badge-estimated">FAA Model Output</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th class="num">Arr (Exp)</th>
+                  <th class="num">&Delta; Extra</th>
+                  <th class="num">Dep (Exp)</th>
+                  <th class="num">&Delta; Extra</th>
+                  <th class="num">Light</th>
+                  <th class="num">Mid</th>
+                  <th class="num">Large</th>
+                </tr>
+              </thead>
+              <tbody id="detailedForecastTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         TAB 3: RAMP & WHAT-IF (PREDICT - PARKING & SIMULATION)
+         ====================================================================== -->
+    <section id="pane-parking" class="tab-pane" role="tabpanel" aria-labelledby="tab-parking">
+      <div class="section-header">
+        <h2 class="section-title">Ramp Parking Occupancy &amp; Simulation</h2>
+        <p class="section-desc">
+          Compare parking occupancy in Space Units (su) against standard capacity (15 su) and prepared capacity (21.5 su). Test operational shocks with the interactive what-if simulator.
+        </p>
+      </div>
+
+      <!-- Main Parking Occupancy Chart -->
+      <div class="card">
+        <div class="card-header-flex">
+          <div>
+            <h3 class="card-title">
+              <span>Ramp Parking Occupancy vs Capacity (su)</span>
+              <span class="badge-tag badge-estimated">Monte Carlo P10 / P50 / P90</span>
+            </h3>
+            <div class="card-subtitle" id="parkingChartSubtitle">
+              Standard ramp limit: 15 su. Area filled in critical red where demand exceeds capacity.
+            </div>
+          </div>
+          <div id="parkingStatusPill" class="kpi-indicator critical">Critical Overflow on Game Day</div>
+        </div>
+
+        <div class="chart-wrapper">
+          <div id="chartParkingContainer" class="svg-chart-container" role="img" aria-label="Ramp parking occupancy chart"></div>
+          <div id="parkingTooltip" class="chart-tooltip" role="tooltip"></div>
+        </div>
+
+        <div class="chart-legend">
+          <div class="legend-item">
+            <span class="legend-line" style="background-color: var(--chart-parking-p50);"></span>
+            <span>Parking Demand (P50 su)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-swatch" style="background-color: var(--chart-parking-band);"></span>
+            <span>90% Range (P10–P90)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-line" style="background-color: var(--chart-capacity-normal); height: 2px;"></span>
+            <span>Normal Capacity (15.0 su)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dashed" style="border-color: var(--chart-capacity-prep); border-top-width: 2px;"></span>
+            <span>Prepared Capacity (21.5 su)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-swatch" style="background-color: var(--chart-overflow-fill);"></span>
+            <span>Overflow Risk Area</span>
+          </div>
+        </div>
+
+        <!-- Accessible Daily Parking Table -->
+        <details class="chart-details-toggle" open>
+          <summary>View daily parking metrics &amp; capacity risk table</summary>
+          <div class="table-wrapper">
+            <table class="data-table" id="parkingTable">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th class="num">Arr P50</th>
+                  <th class="num">Dep P50</th>
+                  <th class="num">P10 (su)</th>
+                  <th class="num">P50 (su)</th>
+                  <th class="num">P90 (su)</th>
+                  <th class="num">Util (Normal)</th>
+                  <th class="num">Prob &gt;15su</th>
+                  <th class="num">Prob &gt;21.5su</th>
+                  <th>Risk Level</th>
+                </tr>
+              </thead>
+              <tbody id="parkingTableBody"></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+
+      <!-- Interactive What-If Ramp Simulator -->
+      <div class="simulator-panel">
+        <div class="simulator-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          <span>Interactive What-If Simulator</span>
+        </div>
+        <h3 style="font-size: var(--text-base); font-weight: 700; color: var(--text-primary);">
+          What-If Simulator (Browser approximation of Monte Carlo model)
+        </h3>
+        <p style="font-size: var(--text-xs); color: var(--text-secondary); margin-top: 4px;">
+          Explore real-time sensitivity by adjusting ramp physical capacity, event shock intensity, and operational actions. Clearly labelled as a fast client-side approximation of the full 10,000-run Monte Carlo engine.
+        </p>
+
+        <div class="simulator-controls-grid">
+          <div class="sim-control">
+            <div class="sim-label-row">
+              <span>Standard Ramp Capacity:</span>
+              <span id="simCapValue" style="color:var(--accent-primary);">15 su</span>
+            </div>
+            <input type="range" id="simCapSlider" class="sim-slider" min="10" max="25" step="1" value="15">
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Default: 15 su (Atlantic-derived)</div>
+          </div>
+
+          <div class="sim-control">
+            <div class="sim-label-row">
+              <span>Additional Event Demand Shock:</span>
+              <span id="simShockValue" style="color:var(--accent-primary);">0%</span>
+            </div>
+            <input type="range" id="simShockSlider" class="sim-slider" min="-30" max="60" step="5" value="0">
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Stress-test beyond baseline scenario</div>
+          </div>
+
+          <div class="sim-control">
+            <div class="sim-toggle-row">
+              <label for="simTowPackingToggle" style="cursor:pointer;">Tow-in Tight Packing (+1.5 su)</label>
+              <input type="checkbox" id="simTowPackingToggle" checked style="accent-color:var(--accent-primary); width:18px; height:18px;">
+            </div>
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-top:6px;">Multi-night stays packed without taxi lanes ($0 cost)</div>
+          </div>
+
+          <div class="sim-control">
+            <div class="sim-toggle-row">
+              <label for="simApronLeaseToggle" style="cursor:pointer;">Lease Remote Apron (+5.0 su)</label>
+              <input type="checkbox" id="simApronLeaseToggle" checked style="accent-color:var(--accent-primary); width:18px; height:18px;">
+            </div>
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-top:6px;">5 su remote overflow @ $100/su/day ($3,500 total)</div>
+          </div>
+        </div>
+
+        <!-- Simulation Outputs -->
+        <div class="sim-results-grid">
+          <div class="sim-stat-box">
+            <span class="sim-stat-label">Projected Peak Demand</span>
+            <span class="sim-stat-value" id="simResultPeakDemand">17.4 su</span>
+          </div>
+          <div class="sim-stat-box">
+            <span class="sim-stat-label">Total Prepared Capacity</span>
+            <span class="sim-stat-value" id="simResultNetCapacity" style="color:var(--status-ok);">21.5 su</span>
+          </div>
+          <div class="sim-stat-box">
+            <span class="sim-stat-label">Estimated Peak Utilization</span>
+            <span class="sim-stat-value" id="simResultUtil">80.9%</span>
+          </div>
+          <div class="sim-stat-box">
+            <span class="sim-stat-label">Est. Unaccommodated</span>
+            <span class="sim-stat-value" id="simResultUnaccommodated">0.1</span>
+          </div>
+          <div class="sim-stat-box">
+            <span class="sim-stat-label">Readiness Assessment</span>
+            <span class="kpi-indicator ok" id="simResultStatusPill" style="margin-top:4px; align-self:flex-start;">Ramp Buffer Safe</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         TAB 4: ACTION PLAN & SLOT ADVISOR (PLAN)
+         ====================================================================== -->
+    <section id="pane-plan" class="tab-pane" role="tabpanel" aria-labelledby="tab-plan">
+      <div class="section-header">
+        <h2 class="section-title">Recommended Parking Plan &amp; Human Approval</h2>
+        <p class="section-desc">
+          Operational actions required for the chosen scenario and situation. <strong>The system never accepts, refuses or executes actions automatically</strong>. Each decision must be signed off by the designated approver and is audited in localStorage.
+        </p>
+      </div>
+
+      <!-- Plan Economics Card -->
+      <div class="card" style="background: linear-gradient(135deg, var(--bg-surface), var(--bg-surface-subtle));">
+        <div class="card-header-flex">
+          <div>
+            <h3 class="card-title">Plan Economic Performance &amp; Risk Mitigation</h3>
+            <div class="card-subtitle">Comparing outcomes without preparation vs with recommended parking plan</div>
+          </div>
+          <button id="exportDecisionsBtn" class="btn btn-secondary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Export Decisions (JSON)</span>
+          </button>
+        </div>
+
+        <div class="kpi-grid" style="margin-bottom:0;">
+          <div class="kpi-card" style="padding: var(--space-3);">
+            <span class="kpi-label">Ramp Cost</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value" id="planEcoCost">$3,500</span>
+            </div>
+            <div class="kpi-subtext">Remote apron lease</div>
+          </div>
+          <div class="kpi-card" style="padding: var(--space-3);">
+            <span class="kpi-label">Unaccommodated Aircraft</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value" id="planEcoUnacc">2.3 &rarr; 0.1</span>
+            </div>
+            <div class="kpi-subtext">96% risk reduction</div>
+          </div>
+          <div class="kpi-card" style="padding: var(--space-3);">
+            <span class="kpi-label">Net Economic Benefit</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value" id="planEcoNet" style="color:var(--status-ok);">+$1,702</span>
+            </div>
+            <div class="kpi-subtext">Mean benefit ($2,400/unfit ac)</div>
+          </div>
+          <div class="kpi-card" style="padding: var(--space-3);">
+            <span class="kpi-label">ROI Payoff Probability</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value" id="planEcoProb" style="color:var(--status-ok);">62%</span>
+            </div>
+            <div class="kpi-subtext">Positive economic return</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Items for Approval -->
+      <div class="card">
+        <div class="card-header-flex">
+          <div>
+            <h3 class="card-title">Operational Parking Actions</h3>
+            <div class="card-subtitle">Review, modify, or authorize proposals for the selected scenario &amp; situation</div>
+          </div>
+          <div id="approvalSummaryBadge" class="badge-tag badge-assumed">2 Actions Awaiting Authorization</div>
+        </div>
+
+        <div id="planActionsContainer" class="plan-actions-list">
+          <!-- Dynamically populated by app.js -->
+        </div>
+      </div>
+
+      <!-- Slot Advisor & Pricing Incentives -->
+      <div class="card">
+        <div class="card-header-flex">
+          <div>
+            <h3 class="card-title">
+              <span>Slot Advisor: Price Incentives &amp; Reservation Analysis</span>
+              <span class="badge-tag badge-estimated">Economic Simulation</span>
+            </h3>
+            <div class="card-subtitle">
+              Evaluating demand-smoothing incentives: Drop-and-go credit vs cheap early arrival
+            </div>
+          </div>
+        </div>
+
+        <!-- The Cheap Early Arrival Trap Warning Callout -->
+        <div class="advisor-trap-box">
+          <div class="advisor-trap-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span>Key Finding: Cheap Early Arrival Does NOT Free Parking</span>
+          </div>
+          <p class="advisor-trap-text" id="earlyArrivalFindingText">
+            At 30% take-up, offering a cheap Thu–Fri slot moves unaccommodated aircraft from 2.3 to 4.3: aircraft arrive earlier but leave at the same post-game time, so they stay longer on the ramp and worsen congestion.
+          </p>
+          <p style="font-size:0.75rem; color:var(--text-muted); margin-top:6px;">
+            Past Super Bowls filled parking without raising prices; reservations (PPR) remain the primary control tool. Price incentives are optional offers, and the system never refuses an aircraft.
+          </p>
+        </div>
+
+        <!-- Drop and Go Incentive Sensitivity Table -->
+        <h4 style="font-size: var(--text-sm); font-weight: 700; margin-top: var(--space-4); color: var(--text-primary);">
+          Drop-and-Go Credit Evaluation ($500 credit to drop pax at LAX, reposition to partner field)
+        </h4>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Incentive Take-Up</th>
+                <th class="num">Peak Parking (P50 su)</th>
+                <th class="num">Peak Parking (P90 su)</th>
+                <th class="num">Game Day (P50 su)</th>
+                <th class="num">Unaccommodated (Mean)</th>
+                <th class="num">Incentive Cost</th>
+                <th class="num">Net Benefit vs No Action</th>
+              </tr>
+            </thead>
+            <tbody id="slotAdvisorTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         TAB 5: MODEL TRUST & EVIDENCE (TRUST)
+         ====================================================================== -->
+    <section id="pane-trust" class="tab-pane" role="tabpanel" aria-labelledby="tab-trust">
+      <div class="section-header">
+        <h2 class="section-title">Model Trust, Verification &amp; Data Pedigree</h2>
+        <p class="section-desc">
+          Auditable verification of the forecasting model: rolling backtest against 4 baselines, Super Bowl historical benchmarks across 8 host cities, NOAA weather sensitivity, and FAA ATADS operations data.
+        </p>
+      </div>
+
+      <!-- 1. Forecast Accuracy & Backtest -->
+      <div class="card">
+        <div class="card-header-flex">
+          <div>
+            <h3 class="card-title">
+              <span>Rolling Backtest: Model Accuracy vs Baselines</span>
+              <span class="badge-tag badge-measured">FAA ATADS 2025</span>
+            </h3>
+            <div class="card-subtitle">
+              Evaluating out-of-sample forecast accuracy over 357 daily test windows in 2025
+            </div>
+          </div>
+          <div class="badge-tag badge-measured" style="font-size:var(--text-xs); padding:4px 8px;">
+            Model WAPE: 14.86% (vs 21.49% Naive)
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Model / Benchmark</th>
+                <th>Target Window</th>
+                <th class="num">Sample Days (N)</th>
+                <th class="num">MAE (Arrivals)</th>
+                <th class="num">WAPE (%)</th>
+                <th class="num">Bias</th>
+                <th class="num">90% Coverage</th>
+              </tr>
+            </thead>
+            <tbody id="accuracyTableBody"></tbody>
+          </table>
+        </div>
+        <p style="font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-2);">
+          *90% prediction intervals achieved 87.91% empirical coverage (240 of 273 days inside band), confirming statistical calibration.
+        </p>
+      </div>
+
+      <!-- 2. Super Bowl Test Across 8 Host Cities -->
+      <div class="card">
+        <div class="card-header-flex">
+          <div>
+            <h3 class="card-title">
+              <span>Super Bowl Benchmark Across 8 Host Cities</span>
+              <span class="badge-tag badge-measured">FAA Tower Operations</span>
+            </h3>
+            <div class="card-subtitle">
+              Historical private aviation excess movements relative to matched baseline periods
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Host Airport(s)</th>
+                <th>Game Sunday</th>
+                <th class="num">Game Day Ratio</th>
+                <th class="num">Control Mean</th>
+                <th class="num">Measured Excess</th>
+                <th>Position vs Model Range</th>
+                <th>Source</th>
+              </tr>
+            </thead>
+            <tbody id="superBowlTestTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 3. Weather Sensitivity & February Frequency -->
+      <div class="grid-2col">
+        <div class="card">
+          <div class="card-header-flex">
+            <div>
+              <h3 class="card-title">LAX Weather Sensitivity</h3>
+              <div class="card-subtitle">Empirical impact of adverse weather (2016–2025)</div>
+            </div>
+            <span class="badge-tag badge-measured">NOAA USW00023174</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Weather Event</th>
+                  <th class="num">Days</th>
+                  <th class="num">Impact on Movements</th>
+                  <th class="num">95% CI</th>
+                </tr>
+              </thead>
+              <tbody id="weatherEffectsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header-flex">
+            <div>
+              <h3 class="card-title">February Climatology (LAX)</h3>
+              <div class="card-subtitle">12-year frequency of February weather events</div>
+            </div>
+            <span class="badge-tag badge-measured">NOAA 12-Year</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Weather Type</th>
+                  <th>Period</th>
+                  <th class="num">Expected Frequency</th>
+                  <th class="num">Feb 11–17 Mean</th>
+                  <th class="num">Feb 11–17 Max</th>
+                </tr>
+              </thead>
+              <tbody id="weatherFebTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Historical FAA Daily Traffic Time Series -->
+      <div class="card">
+        <div class="card-header-flex">
+          <div>
+            <h3 class="card-title">
+              <span>Three-Year FAA Traffic History (2023–2025)</span>
+              <span class="badge-tag badge-measured">1,096 Daily Records</span>
+            </h3>
+            <div class="card-subtitle">
+              Daily General Aviation (Part 91) and Air Taxi (Part 135) operations at LAX
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-wrapper">
+          <div id="chartHistoryContainer" class="svg-chart-container" style="min-height: 220px;" role="img" aria-label="3-year FAA operations chart"></div>
+          <div id="historyTooltip" class="chart-tooltip" role="tooltip"></div>
+        </div>
+
+        <div class="chart-legend">
+          <div class="legend-item">
+            <span class="legend-line" style="background-color: var(--chart-arrival);"></span>
+            <span>Part 135 Air Taxi</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-line" style="background-color: var(--chart-departure);"></span>
+            <span>Part 91 General Aviation</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Key Assumptions & Data Pedigree -->
+      <div class="card">
+        <div class="card-header-flex">
+          <div>
+            <h3 class="card-title">Key Assumptions &amp; Modeling Parameters</h3>
+            <div class="card-subtitle">Transparent disclosure of measured, estimated and assumed parameters</div>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Parameter Name</th>
+                <th>Class</th>
+                <th class="num">Value</th>
+                <th>Unit</th>
+                <th>Pedigree &amp; Notes</th>
+              </tr>
+            </thead>
+            <tbody id="assumptionsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 6. Sources & References -->
+      <div class="card">
+        <div class="card-header-flex">
+          <div>
+            <h3 class="card-title">Authoritative Data Sources</h3>
+            <div class="card-subtitle">Public datasets and operational citations</div>
+          </div>
+        </div>
+        <div id="sourcesContainer" style="display:flex; flex-direction:column; gap: var(--space-2);"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================
+       Footer
+       ======================================================================== -->
+  <footer class="app-footer">
+    <div class="footer-content">
+      <div>
+        <strong>LAX Executive FBO Terminal • Super Bowl LXI Operations Portal</strong>
+        <p style="margin-top:2px;">Engineered for FBO Operational Decision Support • Strict Human-in-Command Architecture</p>
+      </div>
+      <div class="footer-links">
+        <span class="badge-tag badge-measured">Model Holdout WAPE 14.9%</span>
+        <span class="badge-tag badge-assumed">Atlantic 75 su Benchmark</span>
+        <span class="badge-tag badge-measured">FAA ATADS / NOAA GHCN</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Logic (ES Module or standard script) -->
+  <script src="app.js"></script>
+</body>
+</html>
