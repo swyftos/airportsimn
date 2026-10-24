@@ -8,8 +8,8 @@
 // Application State
 const state = {
   data: null,
-  scenario: 'Medium', // Central forecast (+15.5% Super Bowl effect, LAX baseline)
-  simulatedNow: '2027-02-12T10:45',
+  scenario: 'Medium', // 'Low' | 'Medium' | 'High'
+  simulatedNow: '2027-02-12T10:00',
   selectedDay: '2027-02-12',
   activeTab: 'view-week',
   heatmapMetric: 'total', // 'total' | 'arrivals' | 'departures'
@@ -30,43 +30,10 @@ const state = {
 
 // Storage Keys
 const STORAGE_KEY_MOVEMENTS = 'lax_fbo_movements_v2';
-const STORAGE_KEY_PROPOSALS = 'lax_fbo_proposals_v2';
-const STORAGE_KEY_WEATHER = 'lax_fbo_weather_v2';
-const STORAGE_KEY_THEME = 'lax_fbo_theme_v2';
-
-// Allowed Planning Days & Form Values
-const PLANNING_DATES = ['2027-02-11', '2027-02-12', '2027-02-13', '2027-02-14', '2027-02-15', '2027-02-16', '2027-02-17'];
-const ALLOWED_TYPES = new Set(['arrival', 'departure']);
-const ALLOWED_SIZES = new Set(['light', 'midsize', 'large']);
-const ALLOWED_STATUSES = new Set(['expected', 'confirmed', 'landed', 'departed']);
-const TIME_REGEX = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
-const TAIL_REGEX = /^[A-Za-z0-9\-]{0,10}$/;
-
-// Sample shift movements for instant realistic testing
-const SAMPLE_MOVEMENTS = [
-  // Friday 12 Feb (Peak Arrival Day)
-  { id: 'm-1', date: '2027-02-12', time: '09:15', type: 'arrival', tail: 'N102GA', size: 'midsize', status: 'confirmed' },
-  { id: 'm-2', date: '2027-02-12', time: '10:30', type: 'arrival', tail: 'N340FX', size: 'large', status: 'landed' },
-  { id: 'm-3', date: '2027-02-12', time: '11:45', type: 'arrival', tail: 'N770E', size: 'light', status: 'confirmed' },
-  { id: 'm-4', date: '2027-02-12', time: '13:30', type: 'arrival', tail: 'N888SB', size: 'large', status: 'expected' },
-  { id: 'm-5', date: '2027-02-12', time: '15:00', type: 'arrival', tail: 'N921CL', size: 'midsize', status: 'expected' },
-  { id: 'm-6', date: '2027-02-12', time: '16:15', type: 'departure', tail: 'N340FX', size: 'large', status: 'confirmed' },
-  { id: 'm-7', date: '2027-02-12', time: '17:00', type: 'arrival', tail: 'N404GA', size: 'light', status: 'expected' },
-  // Sunday 14 Feb (Game Day & Post-Game Surge)
-  { id: 'm-8', date: '2027-02-14', time: '11:00', type: 'arrival', tail: 'N550SB', size: 'large', status: 'landed' },
-  { id: 'm-9', date: '2027-02-14', time: '12:30', type: 'arrival', tail: 'N620TX', size: 'midsize', status: 'landed' },
-  { id: 'm-10', date: '2027-02-14', time: '20:45', type: 'departure', tail: 'N550SB', size: 'large', status: 'confirmed' },
-  { id: 'm-11', date: '2027-02-14', time: '21:15', type: 'departure', tail: 'N620TX', size: 'midsize', status: 'expected' },
-  { id: 'm-12', date: '2027-02-14', time: '21:50', type: 'departure', tail: 'N888SB', size: 'large', status: 'expected' },
-  { id: 'm-13', date: '2027-02-14', time: '22:30', type: 'departure', tail: 'N921CL', size: 'midsize', status: 'expected' },
-  // Monday 15 Feb (Presidents' Day Peak Outbound)
-  { id: 'm-14', date: '2027-02-15', time: '07:15', type: 'departure', tail: 'N102GA', size: 'midsize', status: 'confirmed' },
-  { id: 'm-15', date: '2027-02-15', time: '08:00', type: 'departure', tail: 'N770E', size: 'light', status: 'confirmed' },
-  { id: 'm-16', date: '2027-02-15', time: '08:45', type: 'departure', tail: 'N404GA', size: 'light', status: 'confirmed' },
-  { id: 'm-17', date: '2027-02-15', time: '09:30', type: 'departure', tail: 'N234GA', size: 'large', status: 'expected' },
-  { id: 'm-18', date: '2027-02-15', time: '10:15', type: 'departure', tail: 'N999SB', size: 'large', status: 'expected' },
-  { id: 'm-19', date: '2027-02-15', time: '11:00', type: 'departure', tail: 'N812EX', size: 'midsize', status: 'expected' }
-];
+const STORAGE_KEY_PROPOSALS = 'lax_fbo_proposals_v1';
+const STORAGE_KEY_WEATHER = 'lax_fbo_weather_v1';
+const STORAGE_KEY_THEME = 'lax_fbo_theme_v1';
+const STORAGE_KEY_SCENARIO = 'lax_fbo_scenario_v1';
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', async () => {
@@ -77,18 +44,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderAllViews();
 });
 
-/**
- * XSS-Safe HTML String Escaper
- */
-function escapeHtml(str) {
-  if (str == null) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+// ---- Values derived from agent_data.json (no hard-coded windows, dates or shares) ----
+function restriction() { return state.data.game_day_restriction; }
+function isRestrictionDay(day) { return !!(day.security_restriction && restriction() && restriction().date === day.date); }
+function clockToHours(t) { const [h, m] = t.split(':').map(Number); return h + m / 60; }
+function restrictionLabel() { return `${restriction().start}–${restriction().end}`; }
+function inRestriction(day, hourStart, hourEnd) {
+  if (!isRestrictionDay(day)) return false;
+  return Math.min(hourEnd, clockToHours(restriction().end)) > Math.max(hourStart, clockToHours(restriction().start));
 }
+function dayHourShares(day, target) {
+  if (isRestrictionDay(day)) return restriction().hour_shares[target];
+  return state.data.hourly_profile.shares[`${day.day_type}_${target}`];
+}
+// Busiest run of `len` consecutive hours for a share curve; returns start/end hour and its share of the day
+function peakWindow(shares, len = 3) {
+  let best = -1, start = 0;
+  for (let h = 0; h + len <= 24; h++) {
+    const v = shares.slice(h, h + len).reduce((a, b) => a + b, 0);
+    if (v > best + 1e-12) { best = v; start = h; }
+  }
+  return { start, end: start + len, share: best };
+}
+function fmtHour(h) { return `${String(h).padStart(2, '0')}:00`; }
+function fmtWindow(w) { return `${fmtHour(w.start)}–${fmtHour(w.end)}`; }
+// Share of the restricted day's departures from the hour the window ends until midnight
+function shareAfterRestriction(target) {
+  const end = clockToHours(restriction().end);
+  return restriction().hour_shares[target].reduce((a, v, h) => a + (h + 1 > end ? v : 0), 0);
+}
+function weatherProbLabel(type) { return `${(state.data.weather.february_probability[type] * 100).toFixed(1)}% of Feb days`; }
+function signedPct(x) { const v = Math.round(x * 100); return `${v >= 0 ? '+' : ''}${v}%`; }
 
 /**
  * Load local storage preferences and movements
@@ -99,8 +85,7 @@ function loadStoredPreferences() {
     if (savedMovements) {
       state.userMovements = JSON.parse(savedMovements);
     } else {
-      state.userMovements = [...SAMPLE_MOVEMENTS];
-      saveMovements();
+      state.userMovements = []; // the agent enters real movements; no invented data
     }
 
     const savedProposals = localStorage.getItem(STORAGE_KEY_PROPOSALS);
@@ -113,11 +98,16 @@ function loadStoredPreferences() {
       state.weatherSettings = { ...state.weatherSettings, ...JSON.parse(savedWeather) };
     }
 
+    const savedScenario = localStorage.getItem(STORAGE_KEY_SCENARIO);
+    if (savedScenario && ['Low', 'Medium', 'High'].includes(savedScenario)) {
+      state.scenario = savedScenario;
+    }
+
     const savedTheme = localStorage.getItem(STORAGE_KEY_THEME);
     if (savedTheme) {
       state.theme = savedTheme;
-    } else {
-      state.theme = 'light'; // Light theme default
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      state.theme = 'dark';
     }
     applyTheme(state.theme);
   } catch (err) {
@@ -250,17 +240,32 @@ function switchTab(viewId) {
   } else if (viewId === 'view-trust') {
     renderTrustView();
   } else if (viewId === 'view-week') {
-    renderWeekOverview();
     renderHeatmap();
+    renderDayCards();
     renderProposals();
-    renderCompareCases();
   }
 }
 
 /**
- * Setup Controls (Simulated Time, Theme, Filters)
+ * Setup Controls (Scenario, Time, Theme, Filters)
  */
 function setupControls() {
+  // Scenario selector
+  const scenarioBtns = document.querySelectorAll('#scenario-selector .segment-btn');
+  scenarioBtns.forEach(btn => {
+    if (btn.dataset.scenario === state.scenario) btn.classList.add('active');
+    else btn.classList.remove('active');
+
+    btn.addEventListener('click', () => {
+      scenarioBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.scenario = btn.dataset.scenario;
+      localStorage.setItem(STORAGE_KEY_SCENARIO, state.scenario);
+      showToast(`Scenario switched to ${state.scenario} (${state.data ? state.data.scenarios[state.scenario] : ''})`);
+      renderAllViews();
+    });
+  });
+
   // Heatmap metric selector
   const heatmapMetricBtns = document.querySelectorAll('#heatmap-metric-selector .segment-btn');
   heatmapMetricBtns.forEach(btn => {
@@ -279,9 +284,8 @@ function setupControls() {
     demoTimeSelect.addEventListener('change', (e) => {
       state.simulatedNow = e.target.value;
       const day = e.target.value.split('T')[0];
-      if (PLANNING_DATES.includes(day)) {
-        state.selectedDay = day;
-      }
+      state.selectedDay = day;
+      renderTopKPIs();
       if (state.activeTab === 'view-day') renderDayDetail();
       showToast(`Simulated time set to ${formatDateTime(state.simulatedNow)}`);
     });
@@ -319,16 +323,6 @@ function setupControls() {
   }
 
   // Movement Tools
-  const loadSampleBtn = document.getElementById('btn-load-sample');
-  if (loadSampleBtn) {
-    loadSampleBtn.addEventListener('click', () => {
-      state.userMovements = [...SAMPLE_MOVEMENTS];
-      saveMovements();
-      renderAllViews();
-      showToast('Loaded sample shift movements');
-    });
-  }
-
   const clearMovementsBtn = document.getElementById('btn-clear-movements');
   if (clearMovementsBtn) {
     clearMovementsBtn.addEventListener('click', () => {
@@ -370,17 +364,13 @@ function setupControls() {
 function renderAllViews() {
   if (!state.data) return;
   updateNavCount();
-  renderWeekOverview();
+  renderTopKPIs();
   renderHeatmap();
+  renderDayCards();
   renderProposals();
-  renderCompareCases();
-  if (state.activeTab === 'view-day') {
-    renderDayDetail();
-  } else if (state.activeTab === 'view-movements') {
-    renderMovementsBoard();
-  } else if (state.activeTab === 'view-trust') {
-    renderTrustView();
-  }
+  renderDayDetail();
+  renderMovementsBoard();
+  renderTrustView();
 }
 
 function updateNavCount() {
@@ -389,186 +379,173 @@ function updateNavCount() {
 }
 
 /**
- * Compute Weather Calculations, Ranges & Carryovers
- * Formula per review findings C.4:
- * factor = 1.0 + effectPct
- * low' = low x factor + carried-in
- * high' = high x factor + carried-in
- * expected' = expected x factor + carried-in
- * Lost movements roll to the following day.
+ * Compute Weather Calculations & Carryovers
+ * Formula: Effect = share_part91 * effect_part91 + share_part135 * effect_part135
+ * Lost movements roll to the next day.
  */
 function computeDailyWeatherImpacts() {
   if (!state.data) return [];
   const days = state.data.days;
   const weatherData = state.data.weather;
-  const scenKey = state.scenario || 'Medium';
   const impacts = [];
 
-  let carriedInArrivals = 0;
-  let carriedInDepartures = 0;
-  let carriedFromWeekday = null;
+  let carriedOverArrivals = 0;
+  let carriedOverDepartures = 0;
+  let carriedOverFromDay = null;
 
   for (let i = 0; i < days.length; i++) {
     const day = days[i];
-    const scen = day.scenarios[scenKey];
+    const scen = day.scenarios[state.scenario];
     const weather = state.weatherSettings[day.date] || 'clear';
 
     let effectPct = 0;
-    let factor = 1.0;
     let effectDetails = null;
 
-    if (weather !== 'clear' && weatherData && weatherData.effects && weatherData.effects[weather]) {
+    if (weather !== 'clear' && weatherData.effects[weather]) {
       const eff = weatherData.effects[weather];
       effectPct = (scen.share_part91 * eff.part91.effect) + (scen.share_part135 * eff.part135.effect);
-      factor = 1.0 + effectPct;
       effectDetails = {
         weather,
         p91_share: scen.share_part91,
         p91_eff: eff.part91.effect,
         p135_share: scen.share_part135,
         p135_eff: eff.part135.effect,
-        prob: weatherData.february_probability ? weatherData.february_probability[weather] : 0
+        prob: weatherData.february_probability[weather]
       };
     }
 
     const baseArrivals = scen.expected_arrivals;
     const baseDepartures = scen.expected_departures;
 
-    // Apply factor and add carried-in movements:
-    const finalArrivals = baseArrivals * factor + carriedInArrivals;
-    const finalDepartures = baseDepartures * factor + carriedInDepartures;
-
-    // 90% ranges adjusted by the identical weather factor and carried-in movements
-    const baseArrRange = scen.arrivals_range90;
-    const baseDepRange = scen.departures_range90;
-
-    const adjArrivalsRange90 = [
-      Math.max(0, baseArrRange[0] * factor + carriedInArrivals),
-      Math.max(0, baseArrRange[1] * factor + carriedInArrivals)
-    ];
-
-    const adjDeparturesRange90 = [
-      Math.max(0, baseDepRange[0] * factor + carriedInDepartures),
-      Math.max(0, baseDepRange[1] * factor + carriedInDepartures)
-    ];
+    // Receive carryover from previous day
+    const arrivalsBeforeWeather = baseArrivals + carriedOverArrivals;
+    const departuresBeforeWeather = baseDepartures + carriedOverDepartures;
 
     let lostArrivals = 0;
     let lostDepartures = 0;
+    let finalArrivals = arrivalsBeforeWeather;
+    let finalDepartures = departuresBeforeWeather;
+
     if (effectPct < 0) {
-      lostArrivals = baseArrivals * Math.abs(effectPct);
-      lostDepartures = baseDepartures * Math.abs(effectPct);
+      lostArrivals = arrivalsBeforeWeather * Math.abs(effectPct);
+      lostDepartures = departuresBeforeWeather * Math.abs(effectPct);
+      finalArrivals = arrivalsBeforeWeather - lostArrivals;
+      finalDepartures = departuresBeforeWeather - lostDepartures;
+    } else if (effectPct > 0) {
+      finalArrivals = arrivalsBeforeWeather * (1 + effectPct);
+      finalDepartures = departuresBeforeWeather * (1 + effectPct);
     }
 
+    const factor = 1 + effectPct;
+    const arrRange = scen.arrivals_range90.map(v => (v + carriedOverArrivals) * factor);
+    const depRange = scen.departures_range90.map(v => (v + carriedOverDepartures) * factor);
     impacts.push({
+      arrRange,
+      depRange,
+      weatherDeltaArr: finalArrivals - (baseArrivals + carriedOverArrivals),
+      weatherDeltaDep: finalDepartures - (baseDepartures + carriedOverDepartures),
       date: day.date,
       weekday: day.weekday,
       weather,
       effectPct,
-      factor,
       effectDetails,
-      carriedInArrivals,
-      carriedInDepartures,
-      carriedFromWeekday,
+      carriedOverArrivals,
+      carriedOverDepartures,
+      carriedOverFromDay,
       finalArrivals,
       finalDepartures,
-      adjArrivalsRange90,
-      adjDeparturesRange90,
       lostArrivals,
       lostDepartures,
       day
     });
 
-    // Suppressed movements roll to the following day
-    carriedInArrivals = lostArrivals;
-    carriedInDepartures = lostDepartures;
-    carriedFromWeekday = (lostArrivals + lostDepartures > 0) ? day.weekday : null;
+    // Lost movements roll to the following day
+    carriedOverArrivals = lostArrivals;
+    carriedOverDepartures = lostDepartures;
+    carriedOverFromDay = lostArrivals + lostDepartures > 0 ? day.weekday : null;
   }
 
   return impacts;
 }
 
 /**
- * Plain Busy Level compared with ordinary week
+ * Top KPI Summary Bar
  */
-function computeBusyLevel(expectedTotal, ordinaryTotal) {
-  if (!ordinaryTotal || ordinaryTotal <= 0) return { label: 'Normal', diffPct: 0, cssClass: 'busy-normal' };
-  const diffPct = Math.round(((expectedTotal - ordinaryTotal) / ordinaryTotal) * 100);
-  let label = 'Normal';
-  let cssClass = 'busy-normal';
-  if (diffPct < -5) {
-    label = 'Quiet';
-    cssClass = 'busy-quiet';
-  } else if (diffPct >= 20) {
-    label = 'Very busy';
-    cssClass = 'busy-very-busy';
-  } else if (diffPct >= 8) {
-    label = 'Busy';
-    cssClass = 'busy-busy';
-  } else {
-    label = 'Normal';
-    cssClass = 'busy-normal';
-  }
-  return { label, diffPct, cssClass };
-}
+function renderTopKPIs() {
+  if (!state.data) return;
+  const impacts = computeDailyWeatherImpacts();
+  const scen = state.scenario;
 
-/**
- * Action line for each day of the week
- */
-function getDayActionLine(dayDate, weather) {
-  let baseAction = '';
-  switch (dayDate) {
-    case '2027-02-11':
-      baseAction = 'Confirm inbound reservations & stage ramp for weekend arrivals.';
-      break;
-    case '2027-02-12':
-      baseAction = 'Peak arrival day: verify slot ETAs and assign parking positions early.';
-      break;
-    case '2027-02-13':
-      baseAction = 'Mid-event staging: monitor overnight parking and update departure ETDs.';
-      break;
-    case '2027-02-14':
-      baseAction = 'TFR 14:30–20:30 PST: stage aircraft for post-game departure wave.';
-      break;
-    case '2027-02-15':
-      baseAction = 'Peak departure wave (Presidents\' Day): prep departure logs and quick turns.';
-      break;
-    case '2027-02-16':
-      baseAction = 'Post-event departure wind-down: verify outbound board and clear ramp.';
-      break;
-    case '2027-02-17':
-      baseAction = 'Baseline operations: resume normal scheduled turnaround procedures.';
-      break;
-    default:
-      baseAction = 'Verify scheduled flight times and monitor parking capacity.';
+  // Find peak arrival day
+  let peakArrDay = impacts[0];
+  impacts.forEach(d => {
+    if (d.finalArrivals > peakArrDay.finalArrivals) peakArrDay = d;
+  });
+
+  const peakArrDayEl = document.getElementById('kpi-peak-arrival-day');
+  const peakArrStatsEl = document.getElementById('kpi-peak-arrival-stats');
+  if (peakArrDayEl && peakArrStatsEl) {
+    const rawScen = peakArrDay.day.scenarios[scen];
+    const pctVsOrd = Math.round(((peakArrDay.finalArrivals - rawScen.ordinary_arrivals) / rawScen.ordinary_arrivals) * 100);
+    peakArrDayEl.textContent = `${peakArrDay.weekday} ${formatDateShort(peakArrDay.date)}`;
+    peakArrStatsEl.textContent = `${peakArrDay.finalArrivals.toFixed(1)} arrivals (90% range ${peakArrDay.arrRange[0].toFixed(1)}–${peakArrDay.arrRange[1].toFixed(1)}) • ${signedPct(peakArrDay.finalArrivals / rawScen.ordinary_arrivals - 1)} vs ordinary (${rawScen.ordinary_arrivals.toFixed(1)})`;
+    const w = peakWindow(dayHourShares(peakArrDay.day, 'arrivals'));
+    const winEl = document.getElementById('kpi-peak-arrival-window');
+    if (winEl) winEl.textContent = `${fmtWindow(w)} (${Math.round(w.share * 100)}% of the day's landings)`;
   }
 
-  if (weather && weather !== 'clear') {
-    return `Weather alert: ${baseAction}`;
-  }
-  return baseAction;
-}
+  // Find peak departure day
+  let peakDepDay = impacts[0];
+  impacts.forEach(d => {
+    if (d.finalDepartures > peakDepDay.finalDepartures) peakDepDay = d;
+  });
 
-/**
- * Busiest hours window for each day
- */
-function getDayBusiestHours(dayDate) {
-  switch (dayDate) {
-    case '2027-02-11':
-      return '10:00 – 14:00 (Inbound Ramp-up)';
-    case '2027-02-12':
-      return '09:00 – 18:00 (Peak Inbound)';
-    case '2027-02-13':
-      return '11:00 – 15:00 (Midday Staging)';
-    case '2027-02-14':
-      return '20:30 – 24:00 (Post-Game Surge)';
-    case '2027-02-15':
-      return '07:00 – 11:00 (Peak Outbound)';
-    case '2027-02-16':
-      return '08:00 – 12:00 (Morning Outbound)';
-    case '2027-02-17':
-      return '09:00 – 13:00 (Baseline Wave)';
-    default:
-      return '10:00 – 14:00';
+  const peakDepDayEl = document.getElementById('kpi-peak-departure-day');
+  const peakDepStatsEl = document.getElementById('kpi-peak-departure-stats');
+  if (peakDepDayEl && peakDepStatsEl) {
+    const rawScen = peakDepDay.day.scenarios[scen];
+    const pctVsOrd = Math.round(((peakDepDay.finalDepartures - rawScen.ordinary_departures) / rawScen.ordinary_departures) * 100);
+    peakDepDayEl.textContent = `${peakDepDay.weekday} ${formatDateShort(peakDepDay.date)}`;
+    peakDepStatsEl.textContent = `${peakDepDay.finalDepartures.toFixed(1)} departures (90% range ${peakDepDay.depRange[0].toFixed(1)}–${peakDepDay.depRange[1].toFixed(1)}) • ${signedPct(peakDepDay.finalDepartures / rawScen.ordinary_departures - 1)} vs ordinary (${rawScen.ordinary_departures.toFixed(1)})`;
+    const w = peakWindow(dayHourShares(peakDepDay.day, 'departures'));
+    const winEl = document.getElementById('kpi-peak-departure-window');
+    if (winEl) winEl.textContent = `${fmtWindow(w)} (${Math.round(w.share * 100)}% of the day's departures)`;
+  }
+
+  // Restriction card, from game_day_restriction
+  const r = restriction(), rDay = impacts.find(d => d.date === r.date);
+  const setText = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+  setText('kpi-restriction-title', `Game-day restriction (${rDay ? rDay.weekday.slice(0, 3) + ' ' + formatDateShort(r.date) : r.date})`);
+  setText('kpi-restriction-window', `${restrictionLabel()} local time`);
+  setText('kpi-restriction-rule', `Assumption: ${r.status}`);
+  if (rDay) {
+    const after = shareAfterRestriction('departures');
+    setText('kpi-restriction-after', `${r.end}–24:00: ${Math.round(after * 100)}% of the day's departures (~${(rDay.finalDepartures * after).toFixed(1)})`);
+  }
+
+  // Ramp space: the day with the highest chance the ramp is full
+  const fri = impacts.reduce((a, d) => (d.day.scenarios[scen].prob_ramp_full > a.day.scenarios[scen].prob_ramp_full ? d : a), impacts[0]);
+  if (fri) {
+    const friScen = fri.day.scenarios[scen];
+    const rampStats = document.getElementById('kpi-ramp-stats');
+    const rampProb = document.getElementById('kpi-ramp-prob');
+    const rampBadge = document.getElementById('kpi-ramp-badge');
+    if (rampStats && rampProb) {
+      rampStats.textContent = `P90: ${friScen.parking_su_p90.toFixed(1)} su vs ${friScen.ramp_capacity_su.toFixed(1)} cap`;
+      rampProb.textContent = `${Math.round(friScen.prob_ramp_full * 100)}% chance the ramp is full (${fri.weekday.slice(0, 3)} ${formatDateShort(fri.date)}) • P50: ${friScen.parking_su_p50.toFixed(1)} su`;
+      if (rampBadge) {
+        if (friScen.prob_ramp_full > 0.7) {
+          rampBadge.className = 'badge badge-critical';
+          rampBadge.textContent = 'HIGH RAMP RISK';
+        } else if (friScen.prob_ramp_full > 0.3) {
+          rampBadge.className = 'badge badge-warning';
+          rampBadge.textContent = 'CAPACITY RISK';
+        } else {
+          rampBadge.className = 'badge badge-ok';
+          rampBadge.textContent = 'RAMP ADEQUATE';
+        }
+      }
+    }
   }
 }
 
@@ -579,23 +556,16 @@ function getHourlyProfileForDay(dayObj, finalArrivals, finalDepartures) {
   const hourly = state.data.hourly_profile.shares;
   let arrShares, depShares;
 
-  if (dayObj.date === '2027-02-14') {
-    arrShares = state.data.game_day_restriction.hour_shares.arrivals;
-    depShares = state.data.game_day_restriction.hour_shares.departures;
-  } else if (dayObj.day_type === 'weekend') {
-    arrShares = hourly.weekend_arrivals;
-    depShares = hourly.weekend_departures;
-  } else {
-    arrShares = hourly.weekday_arrivals;
-    depShares = hourly.weekday_departures;
-  }
+  arrShares = dayHourShares(dayObj, 'arrivals');
+  depShares = dayHourShares(dayObj, 'departures');
 
   const hours = [];
   for (let h = 0; h < 24; h++) {
     const arrExp = finalArrivals * arrShares[h];
     const depExp = finalDepartures * depShares[h];
-    const isTfr = (dayObj.date === '2027-02-14' && h >= 14 && h < 21);
+    const isTfr = inRestriction(dayObj, h, h + 1);
 
+    // Check user movements for this hour
     const userInHour = state.userMovements.filter(m => {
       if (m.date !== dayObj.date) return false;
       const hourInt = parseInt(m.time.split(':')[0], 10);
@@ -624,142 +594,7 @@ function getHourlyProfileForDay(dayObj, finalArrivals, finalDepartures) {
 }
 
 /**
- * SECTION A: Simple Week Overview (The Boss View)
- * Displays 7 days Thu 11 - Wed 17 Feb with large type numbers, busy levels, busiest hours, and actions.
- */
-function renderWeekOverview() {
-  if (!state.data) return;
-  const container = document.getElementById('week-overview-cards');
-  if (!container) return;
-
-  const impacts = computeDailyWeatherImpacts();
-  const scenKey = state.scenario || 'Medium';
-  const rangeNote = state.data.range_note || '90% prediction range from rolling held-out airport errors.';
-
-  let html = '';
-
-  impacts.forEach(impact => {
-    const day = impact.day;
-    const rawScen = day.scenarios[scenKey];
-    const ordTot = rawScen.ordinary_arrivals + rawScen.ordinary_departures;
-    const expTot = impact.finalArrivals + impact.finalDepartures;
-    const busy = computeBusyLevel(expTot, ordTot);
-    const busiestHours = getDayBusiestHours(day.date);
-    const actionLine = getDayActionLine(day.date, impact.weather);
-
-    let cardModifier = '';
-    if (day.date === '2027-02-12') cardModifier = 'is-peak-arrival';
-    else if (day.date === '2027-02-15') cardModifier = 'is-peak-departure';
-    else if (day.date === '2027-02-14') cardModifier = 'is-game-day';
-
-    // Weather pills
-    let weatherPillHtml = '';
-    if (impact.weather !== 'clear') {
-      const pctFormatted = (impact.effectPct * 100).toFixed(1);
-      const lostTot = (impact.lostArrivals + impact.lostDepartures).toFixed(1);
-      weatherPillHtml = `<div class="weather-effect-pill" title="Weather impact: ${pctFormatted}% traffic effect">
-        ${impact.weather.replace('_', ' ').toUpperCase()}: ${pctFormatted}% (-${lostTot} shifted to next day)
-      </div>`;
-    }
-
-    let carryoverPillHtml = '';
-    if (impact.carriedInArrivals + impact.carriedInDepartures > 0) {
-      const totCarried = (impact.carriedInArrivals + impact.carriedInDepartures).toFixed(1);
-      carryoverPillHtml = `<div class="carryover-pill" title="+${totCarried} delayed movements received from ${impact.carriedFromWeekday}">
-        ⚡ +${totCarried} carried in from ${impact.carriedFromWeekday}
-      </div>`;
-    }
-
-    html += `
-    <article class="boss-day-card ${cardModifier}" data-date="${day.date}">
-      <div class="boss-card-header">
-        <div class="boss-day-name">
-          <span>${day.weekday.slice(0, 3)} ${formatDateShort(day.date)}</span>
-          <span class="boss-busy-badge ${busy.cssClass}">
-            ${busy.label} (${busy.diffPct >= 0 ? '+' : ''}${busy.diffPct}%)
-          </span>
-        </div>
-        <div class="boss-day-date">
-          ${day.date === '2027-02-14' ? '🏈 Game Day (TFR 14:30–20:30)' : day.date === '2027-02-15' ? '🇺🇸 Presidents\' Day' : day.day_type}
-        </div>
-      </div>
-
-      <div class="boss-metrics-block">
-        <!-- Landings -->
-        <div class="boss-metric-row">
-          <span class="boss-metric-lbl">Expected Landings</span>
-          <span class="boss-metric-num num-arr">${impact.finalArrivals.toFixed(1)}</span>
-          <span class="boss-metric-range">
-            90% range: ${impact.adjArrivalsRange90[0].toFixed(1)}–${impact.adjArrivalsRange90[1].toFixed(1)}
-            <button type="button" class="info-tooltip-btn" title="${escapeHtml(rangeNote)}" aria-label="Range calculation note">ℹ️</button>
-          </span>
-        </div>
-
-        <!-- Departures -->
-        <div class="boss-metric-row" style="margin-top:6px;">
-          <span class="boss-metric-lbl">Expected Departures</span>
-          <span class="boss-metric-num num-dep">${impact.finalDepartures.toFixed(1)}</span>
-          <span class="boss-metric-range">
-            90% range: ${impact.adjDeparturesRange90[0].toFixed(1)}–${impact.adjDeparturesRange90[1].toFixed(1)}
-            <button type="button" class="info-tooltip-btn" title="${escapeHtml(rangeNote)}" aria-label="Range calculation note">ℹ️</button>
-          </span>
-        </div>
-      </div>
-
-      <div class="boss-hours-block">
-        <span class="boss-hours-lbl">Busiest Hours</span>
-        <span class="boss-hours-val">⏱️ ${busiestHours}</span>
-      </div>
-
-      <div class="boss-action-block">
-        🎯 <strong>Action:</strong> ${actionLine}
-      </div>
-
-      <div class="boss-weather-block">
-        <div class="weather-select-wrapper">
-          <label class="weather-select-label" for="weather-select-${day.date}">Weather:</label>
-          <select id="weather-select-${day.date}" class="select-input select-xs weather-select" data-date="${day.date}" aria-label="Weather condition for ${day.weekday}">
-            <option value="clear" ${impact.weather === 'clear' ? 'selected' : ''}>☀️ Clear</option>
-            <option value="rain" ${impact.weather === 'rain' ? 'selected' : ''}>🌧️ Rain (12% prob)</option>
-            <option value="heavy_rain" ${impact.weather === 'heavy_rain' ? 'selected' : ''}>⛈️ Heavy Rain (5% prob)</option>
-            <option value="heavy_fog" ${impact.weather === 'heavy_fog' ? 'selected' : ''}>🌫️ Heavy Fog (9% prob)</option>
-          </select>
-        </div>
-        ${weatherPillHtml}
-        ${carryoverPillHtml}
-      </div>
-
-      <button type="button" class="btn btn-secondary btn-xs btn-open-day" data-date="${day.date}" style="margin-top:4px;">
-        Open 24h Timeline →
-      </button>
-    </article>
-    `;
-  });
-
-  container.innerHTML = html;
-
-  // Add event listeners for weather dropdowns
-  container.querySelectorAll('.weather-select').forEach(select => {
-    select.addEventListener('change', (e) => {
-      const date = e.target.dataset.date;
-      state.weatherSettings[date] = e.target.value;
-      saveWeather();
-      renderAllViews();
-      showToast(`Weather on ${date} set to ${e.target.value}. Recalculated week overview & carryovers.`);
-    });
-  });
-
-  // Open day detail buttons
-  container.querySelectorAll('.btn-open-day').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.selectedDay = btn.dataset.date;
-      switchTab('view-day');
-    });
-  });
-}
-
-/**
- * Glanceable Busy-Hours Heatmap (Days x Hours)
+ * SECTION A: 7-Day x 24-Hour Calendar / Heatmap (The Core Landing Angle)
  */
 function renderHeatmap() {
   if (!state.data) return;
@@ -797,6 +632,7 @@ function renderHeatmap() {
       if (metric === 'arrivals') val = h.arrExp;
       else if (metric === 'departures') val = h.depExp;
 
+      // Determine heat scale level (0 to 4 + peak)
       let heatClass = 'heat-level-0';
       if (val >= 1.0) heatClass = 'heat-level-peak';
       else if (val >= 0.7) heatClass = 'heat-level-4';
@@ -851,10 +687,6 @@ function renderHeatmap() {
   });
 }
 
-/**
- * XSS-Safe Heatmap Inspector
- * Construct DOM elements with textContent to ensure no unescaped user text can ever be injected.
- */
 function updateHeatmapInspector(cell) {
   const inspector = document.getElementById('heatmap-inspector');
   if (!inspector) return;
@@ -870,117 +702,225 @@ function updateHeatmapInspector(cell) {
   const dayObj = state.data.days.find(d => d.date === date);
   const hourLabel = `${hour.toString().padStart(2, '0')}:00 – ${(hour + 1).toString().padStart(2, '0')}:00 PST`;
 
-  inspector.textContent = ''; // Clear previous content safely
-  const rowDiv = document.createElement('div');
-  rowDiv.className = 'inspector-data-row';
-
-  const tagSpan = document.createElement('span');
-  tagSpan.className = 'inspector-tag';
-  tagSpan.textContent = `${dayObj ? dayObj.weekday : ''} ${formatDateShort(date)} at ${hourLabel}:`;
-  rowDiv.appendChild(tagSpan);
-
-  const arrSpan = document.createElement('span');
-  arrSpan.innerHTML = `Landings: <strong>${arr.toFixed(2)}</strong>`;
-  rowDiv.appendChild(arrSpan);
-
-  const depSpan = document.createElement('span');
-  depSpan.innerHTML = `Departures: <strong>${dep.toFixed(2)}</strong>`;
-  rowDiv.appendChild(depSpan);
-
-  const totSpan = document.createElement('span');
-  totSpan.innerHTML = `Combined: <strong>${total.toFixed(2)} movements</strong>`;
-  rowDiv.appendChild(totSpan);
-
-  if (isTfr) {
-    const tfrBadge = document.createElement('span');
-    tfrBadge.className = 'badge badge-restriction';
-    tfrBadge.textContent = 'TFR RESTRICTION: No GA Part 91 (14:30–20:30)';
-    rowDiv.appendChild(tfrBadge);
-  }
-
+  let userDetail = '';
   if (userCount > 0) {
     const flights = state.userMovements.filter(m => m.date === date && parseInt(m.time.split(':')[0], 10) === hour);
-    const userSpan = document.createElement('span');
-    const labelStrong = document.createElement('strong');
-    labelStrong.textContent = ` • ${userCount} Logged Flight${userCount > 1 ? 's' : ''}: `;
-    userSpan.appendChild(labelStrong);
-
-    flights.forEach((f, idx) => {
-      if (idx > 0) userSpan.appendChild(document.createTextNode(', '));
-      const flightText = document.createTextNode(`${f.tail || 'NoTail'} (${f.type})`);
-      userSpan.appendChild(flightText);
-    });
-    rowDiv.appendChild(userSpan);
+    const tails = flights.map(f => `${escapeHtml(f.tail || 'NoTail')} (${escapeHtml(f.type)})`).join(', ');
+    userDetail = ` • <strong>${userCount} Logged Flight${userCount > 1 ? 's' : ''}:</strong> ${tails}`;
   }
 
-  const hintSpan = document.createElement('span');
-  hintSpan.style.cssText = 'margin-left:auto; font-size:0.75rem; color:var(--brand-accent); font-weight:600;';
-  hintSpan.textContent = 'Click cell to open 24h detail →';
-  rowDiv.appendChild(hintSpan);
+  let tfrNotice = '';
+  if (isTfr) {
+    tfrNotice = ` • <span class="badge badge-restriction">TFR RESTRICTION: No GA Part 91</span>`;
+  }
 
-  inspector.appendChild(rowDiv);
+  inspector.innerHTML = `<div class="inspector-data-row">
+    <span class="inspector-tag">${dayObj.weekday} ${formatDateShort(date)} at ${hourLabel}:</span>
+    <span>Expected Landings: <strong>${arr.toFixed(2)}</strong></span>
+    <span>Expected Departures: <strong>${dep.toFixed(2)}</strong></span>
+    <span>Combined: <strong>${total.toFixed(2)} movements</strong></span>
+    ${tfrNotice}
+    ${userDetail}
+    <span style="margin-left:auto; font-size:0.7rem; color:var(--brand-accent); font-weight:600;">Click cell to open 24h detail →</span>
+  </div>`;
 }
 
 /**
- * Collapsible Compare Cases Section (Sensitivity Analysis)
+ * SECTION B: 7 Days Operational Table & Per-Day Weather Scenarios
  */
-function renderCompareCases() {
+function renderDayCards() {
   if (!state.data) return;
-  const tbody = document.getElementById('compare-cases-tbody');
-  if (!tbody) return;
+  const container = document.getElementById('days-cards-container');
+  if (!container) return;
 
-  const scenarios = ['Low', 'Medium', 'High'];
-  const scenLabels = {
-    'Low': 'Low (+3.1% general aviation)',
-    'Medium': 'Medium (+15.5% air taxi) • Central Forecast',
-    'High': 'High (+31% stress case)'
-  };
-
+  const impacts = computeDailyWeatherImpacts();
+  const scen = state.scenario;
+  const peakArr = impacts.reduce((a, d) => (d.finalArrivals > a.finalArrivals ? d : a), impacts[0]);
+  const peakDep = impacts.reduce((a, d) => (d.finalDepartures > a.finalDepartures ? d : a), impacts[0]);
   let html = '';
 
-  scenarios.forEach(scenKey => {
-    let weekArr = 0;
-    let weekDep = 0;
-    const isMedium = scenKey === 'Medium';
+  impacts.forEach(impact => {
+    const day = impact.day;
+    const rawScen = day.scenarios[scen];
+    const isSelected = day.date === state.selectedDay;
 
-    let rowHtml = `<tr style="${isMedium ? 'font-weight:700; background:var(--brand-accent-subtle);' : ''}">
-      <td><strong>${scenKey} ${isMedium ? '⭐ (Forecast)' : ''}</strong></td>
-      <td>${state.data.scenarios[scenKey]}</td>`;
+    // Badges
+    const badges = [];
+    if (day.game_day) badges.push('<span class="badge badge-restriction">GAME DAY</span>');
+    if (day.presidents_day) badges.push('<span class="badge badge-peak-dep">PRESIDENTS\' DAY</span>');
+    if (isRestrictionDay(day)) badges.push(`<span class="badge badge-restriction">PAUSE ${restrictionLabel()} (ASSUMED)</span>`);
+    if (impact === peakArr) badges.push('<span class="badge badge-peak">BUSIEST ARRIVAL DAY</span>');
+    if (impact === peakDep) badges.push('<span class="badge badge-peak-dep">BUSIEST DEPARTURE DAY</span>');
 
-    state.data.days.forEach(day => {
-      const s = day.scenarios[scenKey];
-      const tot = s.expected_arrivals + s.expected_departures;
-      weekArr += s.expected_arrivals;
-      weekDep += s.expected_departures;
-      rowHtml += `<td>${tot.toFixed(1)}</td>`;
+    // Weather impact description
+    let weatherBadgeHtml = '';
+    if (impact.weather !== 'clear') {
+      const pctFormatted = (impact.effectPct * 100).toFixed(1);
+      weatherBadgeHtml = `<div class="weather-spillover-alert">
+        <span>⚠️ ${impact.weather.replace('_', ' ').toUpperCase()}: ${pctFormatted}% measured effect → landings ${impact.weatherDeltaArr.toFixed(1)}, departures ${impact.weatherDeltaDep.toFixed(1)} vs clear.</span>
+        <span>${impact.lostArrivals.toFixed(1)} arr & ${impact.lostDepartures.toFixed(1)} dep shifted to next day.</span>
+      </div>`;
+    }
+
+    // Carried over from yesterday notice
+    let carryoverHtml = '';
+    if (impact.carriedOverArrivals + impact.carriedOverDepartures > 0) {
+      const totalCarried = (impact.carriedOverArrivals + impact.carriedOverDepartures).toFixed(1);
+      carryoverHtml = `<div class="weather-spillover-alert" style="background:var(--brand-accent-subtle); border-color:var(--brand-accent-border); color:var(--brand-accent);">
+        ⚡ +${totalCarried} delayed movements carried over from ${impact.carriedOverFromDay} (bad weather rule).
+      </div>`;
+    }
+
+    // Parking indicator
+    let rampBadgeClass = 'badge-ok';
+    let rampStatusText = 'Capacity OK';
+    if (rawScen.prob_ramp_full > 0.7) {
+      rampBadgeClass = 'badge-critical';
+      rampStatusText = 'High Ramp Risk';
+    } else if (rawScen.prob_ramp_full > 0.3) {
+      rampBadgeClass = 'badge-warning';
+      rampStatusText = 'Moderate Ramp Risk';
+    }
+
+    // Peak windows: busiest 3 hours of the day's hour profile (game day uses the restriction shares)
+    const wA = peakWindow(dayHourShares(day, 'arrivals')), wD = peakWindow(dayHourShares(day, 'departures'));
+    const arrPeak = `${fmtWindow(wA)} (${Math.round(wA.share * 100)}% of landings)`;
+    const depPeak = `${fmtWindow(wD)} (${Math.round(wD.share * 100)}% of departures)`;
+
+    // Range visual bar calculations (0 to 20 scale)
+    const maxScale = 20;
+    const arrP10Pct = (impact.arrRange[0] / maxScale) * 100;
+    const arrP90Pct = (impact.arrRange[1] / maxScale) * 100;
+    const arrWidth = Math.max(4, arrP90Pct - arrP10Pct);
+    const arrExpPct = (impact.finalArrivals / maxScale) * 100;
+    const arrOrdPct = (rawScen.ordinary_arrivals / maxScale) * 100;
+
+    const depP10Pct = (impact.depRange[0] / maxScale) * 100;
+    const depP90Pct = (impact.depRange[1] / maxScale) * 100;
+    const depWidth = Math.max(4, depP90Pct - depP10Pct);
+    const depExpPct = (impact.finalDepartures / maxScale) * 100;
+    const depOrdPct = (rawScen.ordinary_departures / maxScale) * 100;
+
+    html += `
+    <article class="day-card ${isSelected ? 'is-selected' : ''}" data-date="${day.date}">
+      <!-- Col 1: Day & Weather -->
+      <div class="day-col-meta">
+        <div class="day-date-line">
+          <div>
+            <div class="day-name">${day.weekday}</div>
+            <div class="day-date-sub">${formatDateLong(day.date)}</div>
+          </div>
+          <span class="badge ${day.day_type === 'weekend' ? 'badge-assumed' : 'badge-info'}">${day.day_type}</span>
+        </div>
+
+        <div class="day-badges-row">
+          ${badges.join(' ')}
+        </div>
+
+        <!-- Weather Box -->
+        <div class="day-weather-box">
+          <div class="weather-header">
+            <span class="weather-label">Set Day Weather</span>
+            <span class="weather-prob-tag">Feb Probabilities</span>
+          </div>
+          <select class="select-input select-sm weather-select" data-date="${day.date}" aria-label="Weather condition for ${day.weekday}">
+            <option value="clear" ${impact.weather === 'clear' ? 'selected' : ''}>☀️ Clear (Baseline)</option>
+            <option value="rain" ${impact.weather === 'rain' ? 'selected' : ''}>🌧️ Rain (${weatherProbLabel('rain')})</option>
+            <option value="heavy_rain" ${impact.weather === 'heavy_rain' ? 'selected' : ''}>⛈️ Heavy rain (${weatherProbLabel('heavy_rain')})</option>
+            <option value="heavy_fog" ${impact.weather === 'heavy_fog' ? 'selected' : ''}>🌫️ Heavy fog (${weatherProbLabel('heavy_fog')})</option>
+          </select>
+          ${weatherBadgeHtml}
+          ${carryoverHtml}
+        </div>
+      </div>
+
+      <!-- Col 2: Landings & Departures Range Comparison -->
+      <div class="day-col-movements">
+        <!-- Landings / Arrivals -->
+        <div class="metric-bar-group">
+          <div class="metric-bar-header">
+            <span class="metric-title" style="color:var(--color-arrivals);">
+              <span>🛬 Landings (Arrivals)</span>
+            </span>
+            <span class="metric-numbers">
+              <span class="stat-expected">${impact.finalArrivals.toFixed(1)}</span>
+              <span class="stat-range"> [90% range ${impact.arrRange[0].toFixed(1)}–${impact.arrRange[1].toFixed(1)}]</span>
+              <span class="stat-ord"> vs Ord: ${rawScen.ordinary_arrivals.toFixed(1)}</span>
+            </span>
+          </div>
+          <div class="range-track" title="90% range ${impact.arrRange[0].toFixed(1)}–${impact.arrRange[1].toFixed(1)} vs ordinary ${rawScen.ordinary_arrivals}. ${state.data.range_note}">
+            <div class="range-band" style="left:${arrP10Pct}%; width:${arrWidth}%;"></div>
+            <div class="range-marker-p50" style="left:${arrExpPct}%;" title="Expected: ${impact.finalArrivals.toFixed(1)}"></div>
+            <div class="range-marker-ord" style="left:${arrOrdPct}%;" title="Ordinary Week: ${rawScen.ordinary_arrivals.toFixed(1)}"></div>
+          </div>
+        </div>
+
+        <!-- Takeoffs / Departures -->
+        <div class="metric-bar-group">
+          <div class="metric-bar-header">
+            <span class="metric-title" style="color:var(--color-departures);">
+              <span>🛫 Takeoffs (Departures)</span>
+            </span>
+            <span class="metric-numbers">
+              <span class="stat-expected">${impact.finalDepartures.toFixed(1)}</span>
+              <span class="stat-range"> [90% range ${impact.depRange[0].toFixed(1)}–${impact.depRange[1].toFixed(1)}]</span>
+              <span class="stat-ord"> vs Ord: ${rawScen.ordinary_departures.toFixed(1)}</span>
+            </span>
+          </div>
+          <div class="range-track" title="90% range ${impact.depRange[0].toFixed(1)}–${impact.depRange[1].toFixed(1)} vs ordinary ${rawScen.ordinary_departures}. ${state.data.range_note}">
+            <div class="range-band range-dep-band" style="left:${depP10Pct}%; width:${depWidth}%;"></div>
+            <div class="range-marker-p50 range-marker-dep-p50" style="left:${depExpPct}%;" title="Expected: ${impact.finalDepartures.toFixed(1)}"></div>
+            <div class="range-marker-ord" style="left:${depOrdPct}%;" title="Ordinary Week: ${rawScen.ordinary_departures.toFixed(1)}"></div>
+          </div>
+        </div>
+
+        <!-- Ramp space secondary indicator -->
+        <div class="ramp-mini-indicator">
+          <span class="ramp-mini-text">Ramp: P50 <strong>${rawScen.parking_su_p50.toFixed(1)} su</strong> | P90 <strong>${rawScen.parking_su_p90.toFixed(1)} su</strong> (Ramp Cap: ${rawScen.ramp_capacity_su.toFixed(1)} su)</span>
+          <span class="badge ${rampBadgeClass}">${rampStatusText} (${Math.round(rawScen.prob_ramp_full * 100)}%)</span>
+        </div>
+      </div>
+
+      <!-- Col 3: Operational Peak Windows & Action -->
+      <div class="day-col-action">
+        <div class="peak-windows-box">
+          <div class="peak-window-item">🛬 Inbound Window: <strong>${arrPeak}</strong></div>
+          <div class="peak-window-item">🛫 Outbound Window: <strong>${depPeak}</strong></div>
+          <div class="peak-window-item" style="color:var(--text-muted); font-size:0.7rem; margin-top:4px;">
+            Part 91: ${Math.round(rawScen.share_part91 * 100)}% • Part 135: ${Math.round(rawScen.share_part135 * 100)}%
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-open-day" data-date="${day.date}">
+          Open Day Detail & Movements (24h) →
+        </button>
+      </div>
+    </article>`;
+  });
+
+  container.innerHTML = html;
+
+  // Add event listeners for day cards and weather selects
+  container.querySelectorAll('.weather-select').forEach(select => {
+    select.addEventListener('change', (e) => {
+      const date = e.target.dataset.date;
+      state.weatherSettings[date] = e.target.value;
+      saveWeather();
+      renderAllViews();
+      showToast(`Weather on ${date} set to ${e.target.value}. Recalculated traffic and spillover.`);
     });
-
-    const weekTot = weekArr + weekDep;
-    rowHtml += `<td><strong>${weekTot.toFixed(1)}</strong></td></tr>`;
-    html += rowHtml;
   });
 
-  // Add Ordinary Week baseline row
-  let ordWeekTot = 0;
-  let ordRowHtml = `<tr style="color:var(--text-muted); font-style:italic;">
-    <td>Ordinary Baseline</td>
-    <td>Non-Super Bowl LAX baseline week</td>`;
-  state.data.days.forEach(day => {
-    const s = day.scenarios['Medium'];
-    const tot = s.ordinary_arrivals + s.ordinary_departures;
-    ordWeekTot += tot;
-    ordRowHtml += `<td>${tot.toFixed(1)}</td>`;
+  container.querySelectorAll('.btn-open-day').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.selectedDay = btn.dataset.date;
+      switchTab('view-day');
+    });
   });
-  ordRowHtml += `<td><strong>${ordWeekTot.toFixed(1)}</strong></td></tr>`;
-  html += ordRowHtml;
-
-  tbody.innerHTML = html;
 }
 
 /**
- * Operational Proposals Panel
- * Strictly adheres to FBO role (confirm ETAs/ETDs and reservations, keep board current).
- * Never mentions clearance delivery, tower coordination, ground holds, fuel, or staffing.
+ * SECTION C: Day-Specific Operational Proposals
  */
 function renderProposals() {
   if (!state.data) return;
@@ -989,76 +929,49 @@ function renderProposals() {
   if (!container) return;
 
   const impacts = computeDailyWeatherImpacts();
-  const scenKey = state.scenario || 'Medium';
+  const scen = state.scenario;
 
-  const proposals = [
-    {
-      id: 'prop-thu',
-      date: '2027-02-11',
-      dayLabel: 'Thu 11 Feb',
-      title: 'Inbound Staging & Arrival Reservation Verification',
-      category: 'Arrival Slot Confirmation',
-      text: `Expected arrivals build to ${impacts[0].finalArrivals.toFixed(1)} landings (90% range ${impacts[0].adjArrivalsRange90[0].toFixed(1)}–${impacts[0].adjArrivalsRange90[1].toFixed(1)}). Ramp parking reaches P50 ${impacts[0].day.scenarios[scenKey].parking_su_p50.toFixed(1)} su vs 15.0 su capacity. Proposal: Confirm arrival reservation times for corporate arrivals between 10:00 and 14:00 to verify parking positions before Friday inbound wave.`,
-      actionHint: 'Acknowledge to confirm slots on the arrival board.'
-    },
-    {
-      id: 'prop-fri',
-      date: '2027-02-12',
-      dayLabel: 'Fri 12 Feb (Peak Inbound)',
-      title: 'Arrival Reservation Check (Busiest Inbound Day)',
-      category: 'PPR Slot Prioritization',
-      text: `Busiest arrival day of the week: ${impacts[1].finalArrivals.toFixed(1)} expected arrivals (90% range ${impacts[1].adjArrivalsRange90[0].toFixed(1)}–${impacts[1].adjArrivalsRange90[1].toFixed(1)}), with ramp overflow probability at ${Math.round(impacts[1].day.scenarios[scenKey].prob_ramp_full * 100)}% (P90 ${impacts[1].day.scenarios[scenKey].parking_su_p90.toFixed(1)} su). Proposal: Reconfirm arrival reservations (PPR) and ETAs for 09:00–18:00 a day ahead; keep the arrival board current as confirmations come in.`,
-      actionHint: 'Human agent approval required.'
-    },
-    {
-      id: 'prop-sat',
-      date: '2027-02-13',
-      dayLabel: 'Sat 13 Feb',
-      title: 'Mid-Event Ramp Dwell & Parking Rebalancing',
-      category: 'Parking & Slot Protocol',
-      text: `Flight movements pause at ${impacts[2].finalArrivals.toFixed(1)} arrivals / ${impacts[2].finalDepartures.toFixed(1)} departures, but ramp parking remains saturated at P50 ${impacts[2].day.scenarios[scenKey].parking_su_p50.toFixed(1)} su. Proposal: Confirm weekend parking reservations; verify quick-turn status on Saturday arrivals and stage aircraft accordingly.`,
-      actionHint: 'Operational planning guidance.'
-    },
-    {
-      id: 'prop-sun-tfr',
-      date: '2027-02-14',
-      dayLabel: 'Sun 14 Feb (Game Day)',
-      title: 'Game-Day Advisory Window (Super Bowl LVI Precedent, 14:30–20:30)',
-      category: 'Security Advisory / TFR',
-      text: `The Super Bowl LVI FAA advisory prohibited Part 91 private movements within 10 NM, surface to FL180, from 14:30 to 20:30; this plan assumes the same window in 2027 (no 2027 notice is published). Proposal: Contact the crews of aircraft due between 14:00 and 20:30 to confirm their timing and keep the board current. The actual restriction is set by the official FAA notice, not by this tool.`,
-      actionHint: 'Confirm flight schedules & reservation status.'
-    },
-    {
-      id: 'prop-sun-night',
-      date: '2027-02-14',
-      dayLabel: 'Sun 14 Feb (Post-Game)',
-      title: 'Post-Game Departure Surge Staging Window (20:30–24:00)',
-      category: 'Outbound Surge Window',
-      text: `40.5% of Sunday departures are compressed between 20:30 and 24:00 (${(impacts[3].finalDepartures * 0.405).toFixed(1)} departures in 3.5 hours). Proposal: Have the outbound list ready by 20:00: reconfirm each ETD and tail on the board so ramp staging is prepared when the restriction ends.`,
-      actionHint: 'Stage ramp parking and verify ETDs.'
-    },
-    {
-      id: 'prop-mon',
-      date: '2027-02-15',
-      dayLabel: 'Mon 15 Feb (Peak Outbound)',
-      title: 'Presidents\' Day Departure Surge Management (Busiest Outbound Day)',
-      category: 'Outbound Slot Sequencing',
-      text: `Busiest departure day of the week: ${impacts[4].finalDepartures.toFixed(1)} departures (90% range up to ${impacts[4].adjDeparturesRange90[1].toFixed(1)}), with over 35% departing between 07:00 and 11:00. Proposal: Reconfirm ETDs the evening before and keep the departure board current from 07:00.`,
-      actionHint: 'Confirm departure reservations and ETDs.'
+  // Day-specific proposals generated from agent_data.json (busiest days found by calculation)
+  const proposals = [];
+  const peakArr = impacts.reduce((a, d) => (d.finalArrivals > a.finalArrivals ? d : a), impacts[0]);
+  const peakDep = impacts.reduce((a, d) => (d.finalDepartures > a.finalDepartures ? d : a), impacts[0]);
+  impacts.forEach(imp => {
+    const day = imp.day, raw = day.scenarios[scen];
+    const wA = peakWindow(dayHourShares(day, 'arrivals')), wD = peakWindow(dayHourShares(day, 'departures'));
+    const label = `${day.weekday.slice(0, 3)} ${formatDateShort(day.date)}`;
+    const vsA = signedPct(imp.finalArrivals / raw.ordinary_arrivals - 1), vsD = signedPct(imp.finalDepartures / raw.ordinary_departures - 1);
+    if (imp === peakArr) proposals.push({ id: `prop-peak-arr-${day.date}`, date: day.date, dayLabel: `${label} (busiest arrivals)`,
+      title: 'Busiest arrival day of the week', category: 'Arrivals',
+      text: `${imp.finalArrivals.toFixed(1)} landings expected (90% range ${imp.arrRange[0].toFixed(1)}–${imp.arrRange[1].toFixed(1)}; ordinary ${raw.ordinary_arrivals.toFixed(1)}, ${vsA}). Busiest window ${fmtWindow(wA)} (${Math.round(wA.share * 100)}% of the day's landings). Proposal: reconfirm arrival reservations and ETAs for that window a day ahead; keep the board current.` });
+    if (imp === peakDep) proposals.push({ id: `prop-peak-dep-${day.date}`, date: day.date, dayLabel: `${label} (busiest departures)`,
+      title: `Busiest departure day of the week${day.presidents_day ? " (Presidents' Day)" : ''}`, category: 'Departures',
+      text: `${imp.finalDepartures.toFixed(1)} departures expected (90% range ${imp.depRange[0].toFixed(1)}–${imp.depRange[1].toFixed(1)}; ordinary ${raw.ordinary_departures.toFixed(1)}, ${vsD}). Busiest window ${fmtWindow(wD)} (${Math.round(wD.share * 100)}% of the day's departures). Proposal: reconfirm ETDs the evening before and keep the departure board current from ${fmtHour(wD.start)}.` });
+    if (isRestrictionDay(day)) {
+      const r = restriction(), after = shareAfterRestriction('departures');
+      proposals.push({ id: `prop-pause-${day.date}`, date: day.date, dayLabel: `${label} (game day)`,
+        title: `Assumed pause ${restrictionLabel()}`, category: 'Game day',
+        text: `No private movements are planned ${r.start}–${r.end} (${r.status}). Landings concentrate before it: busiest ${fmtWindow(wA)}. Proposal: confirm with the crews of aircraft due near the window when they will arrive or leave, and update the board. The actual restriction is set by the FAA notice, not by this tool.` });
+      proposals.push({ id: `prop-after-${day.date}`, date: day.date, dayLabel: `${label} (after the pause)`,
+        title: `Departure wave after ${r.end}`, category: 'Game day',
+        text: `${Math.round(after * 100)}% of the day's departures (~${(imp.finalDepartures * after).toFixed(1)}) are planned between ${r.end} and midnight. Proposal: have the outbound list ready before ${r.end}: reconfirm each ETD and tail number. Air traffic control issues clearances and sequences departures.` });
     }
-  ];
+    if (imp !== peakArr && imp !== peakDep && !isRestrictionDay(day)) proposals.push({ id: `prop-day-${day.date}`, date: day.date, dayLabel: label,
+      title: `${vsA} landings, ${vsD} departures vs an ordinary ${day.weekday}`, category: 'Day plan',
+      text: `${imp.finalArrivals.toFixed(1)} landings and ${imp.finalDepartures.toFixed(1)} departures expected (ordinary ${raw.ordinary_arrivals.toFixed(1)} / ${raw.ordinary_departures.toFixed(1)}). Busiest landings ${fmtWindow(wA)}, departures ${fmtWindow(wD)}. Proposal: confirm ETAs and ETDs for those windows; keep the board current.` });
+  });
+  proposals.sort((a, b) => a.date.localeCompare(b.date));
 
   // Dynamic Weather Spillover Proposals
   impacts.forEach((imp, idx) => {
-    if (imp.carriedInArrivals + imp.carriedInDepartures > 0) {
-      const tot = (imp.carriedInArrivals + imp.carriedInDepartures).toFixed(1);
-      proposals.splice(idx, 0, {
+    if (imp.carriedOverArrivals + imp.carriedOverDepartures > 0) {
+      const tot = (imp.carriedOverArrivals + imp.carriedOverDepartures).toFixed(1);
+      proposals.push({
         id: `prop-weather-${imp.date}`,
         date: imp.date,
         dayLabel: `${imp.weekday} ${formatDateShort(imp.date)} (Weather Spillover)`,
-        title: `Absorb +${tot} Delayed Movements from ${imp.carriedFromWeekday}`,
+        title: `Absorb +${tot} Delayed Movements from ${imp.carriedOverFromDay}`,
         category: 'Weather Delay Spillover',
-        text: `Bad weather on ${imp.carriedFromWeekday} displaced ${tot} movements into ${imp.weekday}'s schedule (+${imp.carriedInArrivals.toFixed(1)} arr, +${imp.carriedInDepartures.toFixed(1)} dep). Proposal: Confirm revised arrival and departure times with incoming operators and update the flight board.`,
+        text: `Bad weather on ${imp.carriedOverFromDay} moved ${tot} movements into ${imp.weekday} (+${imp.carriedOverArrivals.toFixed(1)} landings, +${imp.carriedOverDepartures.toFixed(1)} departures). Proposal: confirm the new ETAs and ETDs of the delayed aircraft early in the day.`,
         actionHint: 'Weather contingency response.'
       });
     }
@@ -1114,29 +1027,34 @@ function renderProposals() {
           <button type="button" class="btn btn-secondary btn-sm btn-save-note" data-id="${prop.id}">Save Note</button>
         </div>
       </div>
-    </div>
-    `;
+    </div>`;
   });
 
   container.innerHTML = html;
 
-  // Add listeners
+  // Add event listeners for proposals
   container.querySelectorAll('.btn-ack-prop').forEach(btn => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.id;
-      if (!state.proposalStates[id]) state.proposalStates[id] = { status: 'pending', note: '' };
-      state.proposalStates[id].status = 'acknowledged';
+      const noteInput = container.querySelector(`.proposal-note-input[data-id="${id}"]`);
+      state.proposalStates[id] = {
+        status: 'acknowledged',
+        note: noteInput ? noteInput.value : ''
+      };
       saveProposals();
       renderProposals();
-      showToast('Proposal acknowledged.');
+      showToast('Proposal acknowledged by agent.');
     });
   });
 
   container.querySelectorAll('.btn-dismiss-prop').forEach(btn => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.id;
-      if (!state.proposalStates[id]) state.proposalStates[id] = { status: 'pending', note: '' };
-      state.proposalStates[id].status = 'dismissed';
+      const noteInput = container.querySelector(`.proposal-note-input[data-id="${id}"]`);
+      state.proposalStates[id] = {
+        status: 'dismissed',
+        note: noteInput ? noteInput.value : ''
+      };
       saveProposals();
       renderProposals();
       showToast('Proposal dismissed.');
@@ -1146,28 +1064,28 @@ function renderProposals() {
   container.querySelectorAll('.btn-save-note').forEach(btn => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.id;
-      const input = container.querySelector(`.proposal-note-input[data-id="${id}"]`);
-      if (input) {
-        if (!state.proposalStates[id]) state.proposalStates[id] = { status: 'pending', note: '' };
-        state.proposalStates[id].note = input.value.trim();
-        saveProposals();
-        showToast('Operational note saved.');
-      }
+      const noteInput = container.querySelector(`.proposal-note-input[data-id="${id}"]`);
+      const existing = state.proposalStates[id] || { status: 'pending', note: '' };
+      existing.note = noteInput ? noteInput.value : '';
+      state.proposalStates[id] = existing;
+      saveProposals();
+      showToast('Agent note saved.');
     });
   });
 }
 
 /**
- * VIEW 2: DAY DETAIL & HOURLY TIMELINE
+ * VIEW 2: DAY DETAIL VIEW (24h Timeline & Reality Check)
  */
 function renderDayDetail() {
   if (!state.data) return;
+  const day = state.data.days.find(d => d.date === state.selectedDay);
+  if (!day) return;
 
-  const day = state.data.days.find(d => d.date === state.selectedDay) || state.data.days[1];
   const impacts = computeDailyWeatherImpacts();
-  const impact = impacts.find(i => i.date === day.date) || impacts[1];
-  const scenKey = state.scenario || 'Medium';
-  const rawScen = day.scenarios[scenKey];
+  const impact = impacts.find(d => d.date === state.selectedDay) || impacts[0];
+  const scen = state.scenario;
+  const rawScen = day.scenarios[scen];
 
   // Header Title & Badges
   const titleEl = document.getElementById('day-detail-title');
@@ -1175,28 +1093,26 @@ function renderDayDetail() {
   if (titleEl) titleEl.textContent = `${day.weekday} ${formatDateLong(day.date)}`;
 
   if (badgesEl) {
-    const badges = [];
-    if (day.date === '2027-02-12') badges.push('<span class="badge badge-peak">PEAK ARRIVAL DAY</span>');
-    if (day.date === '2027-02-15') badges.push('<span class="badge badge-peak-dep">PEAK DEPARTURE DAY</span>');
-    if (day.game_day) badges.push('<span class="badge badge-restriction">GAME DAY (TFR ACTIVE)</span>');
-    if (day.presidents_day) badges.push('<span class="badge badge-peak-dep">PRESIDENTS\' DAY</span>');
-    if (impact.weather !== 'clear') badges.push(`<span class="badge badge-warning">WEATHER: ${impact.weather.toUpperCase()}</span>`);
-    badgesEl.innerHTML = badges.join(' ');
+    const b = [];
+    if (day.game_day) b.push('<span class="badge badge-restriction">GAME DAY</span>');
+    if (day.presidents_day) b.push('<span class="badge badge-peak-dep">PRESIDENTS\' DAY</span>');
+    if (isRestrictionDay(day)) b.push(`<span class="badge badge-restriction">PAUSE ${restrictionLabel()} (ASSUMED)</span>`);
+    b.push(`<span class="badge ${impact.weather !== 'clear' ? 'badge-warning' : 'badge-ok'}">Weather: ${impact.weather}</span>`);
+    badgesEl.innerHTML = b.join(' ');
   }
 
-  // Pill Selector
-  const pillSelector = document.getElementById('day-pill-selector');
-  if (pillSelector) {
+  // Day Selector Pills
+  const pillContainer = document.getElementById('day-pill-selector');
+  if (pillContainer) {
     let pillsHtml = '';
     state.data.days.forEach(d => {
-      const isSel = d.date === day.date;
-      pillsHtml += `<button type="button" class="day-pill-btn ${isSel ? 'active' : ''}" data-date="${d.date}">
+      const isAct = d.date === state.selectedDay;
+      pillsHtml += `<button type="button" class="day-pill-btn ${isAct ? 'active' : ''}" data-date="${d.date}">
         ${d.weekday.slice(0, 3)} ${formatDateShort(d.date)}
       </button>`;
     });
-    pillSelector.innerHTML = pillsHtml;
-
-    pillSelector.querySelectorAll('.day-pill-btn').forEach(btn => {
+    pillContainer.innerHTML = pillsHtml;
+    pillContainer.querySelectorAll('.day-pill-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         state.selectedDay = btn.dataset.date;
         renderDayDetail();
@@ -1204,8 +1120,30 @@ function renderDayDetail() {
     });
   }
 
-  // Reality Check Comparison
-  renderRealityCheck(day, impact, rawScen);
+  // Booked vs Forecast Comparison (Reality Check)
+  const realityContainer = document.getElementById('reality-comparison-container');
+  if (realityContainer) {
+    const dayMovements = state.userMovements.filter(m => m.date === state.selectedDay);
+    const bookedArr = dayMovements.filter(m => m.type === 'arrival').length;
+    const bookedDep = dayMovements.filter(m => m.type === 'departure').length;
+
+    const expArr = impact.finalArrivals;
+    const expDep = impact.finalDepartures;
+
+    const unannouncedArr = Math.max(0, Math.round(expArr - bookedArr));
+    const unannouncedDep = Math.max(0, Math.round(expDep - bookedDep));
+
+    realityContainer.innerHTML = `
+      <div class="reality-line">
+        <span><strong>Landings:</strong> ${bookedArr} booked vs ~${expArr.toFixed(1)} expected</span>
+        <span class="reality-guidance">Plan for ~${unannouncedArr} unannounced landing${unannouncedArr !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="reality-line">
+        <span><strong>Departures:</strong> ${bookedDep} booked vs ~${expDep.toFixed(1)} expected</span>
+        <span class="reality-guidance">Plan for ~${unannouncedDep} unannounced departure${unannouncedDep !== 1 ? 's' : ''}</span>
+      </div>
+    `;
+  }
 
   // Next 3 Hours Radar
   renderNext3HoursRadar(day, impact);
@@ -1218,45 +1156,7 @@ function renderDayDetail() {
 }
 
 /**
- * Reality Check: Booked vs. Forecast
- */
-function renderRealityCheck(day, impact, rawScen) {
-  const container = document.getElementById('reality-comparison-container');
-  if (!container) return;
-
-  const dayFlights = state.userMovements.filter(m => m.date === day.date);
-  const bookedArr = dayFlights.filter(m => m.type === 'arrival').length;
-  const bookedDep = dayFlights.filter(m => m.type === 'departure').length;
-  const bookedTot = bookedArr + bookedDep;
-
-  const expArr = impact.finalArrivals;
-  const expDep = impact.finalDepartures;
-  const expTot = expArr + expDep;
-
-  const unannouncedArr = Math.max(0, Math.round(expArr - bookedArr));
-  const unannouncedDep = Math.max(0, Math.round(expDep - bookedDep));
-  const unannouncedTot = unannouncedArr + unannouncedDep;
-
-  container.innerHTML = `
-    <div class="reality-metric">
-      <div class="reality-val" style="color:var(--color-arrivals);">${bookedArr} <span style="font-size:1rem; font-weight:normal; color:var(--text-muted);">/ ${expArr.toFixed(1)} exp</span></div>
-      <div class="reality-label">Booked Landings (${unannouncedArr} unannounced expected)</div>
-    </div>
-    <div class="reality-metric">
-      <div class="reality-val" style="color:var(--color-departures);">${bookedDep} <span style="font-size:1rem; font-weight:normal; color:var(--text-muted);">/ ${expDep.toFixed(1)} exp</span></div>
-      <div class="reality-label">Booked Takeoffs (${unannouncedDep} unannounced expected)</div>
-    </div>
-    <div class="reality-metric">
-      <div class="reality-val">${bookedTot} <span style="font-size:1rem; font-weight:normal; color:var(--text-muted);">/ ${expTot.toFixed(1)} exp</span></div>
-      <div class="reality-label">Total Booked Movements (${unannouncedTot} unannounced)</div>
-    </div>
-  `;
-}
-
-/**
  * Render Next 3 Hours Radar Window
- * Computes exact window from selected date and exact simulated minute (e.g. 10:45 to 13:45),
- * prorates partial hours, rolls over midnight into next planning day, and handles past Wed 17 Feb boundary.
  */
 function renderNext3HoursRadar(day, impact) {
   const windowTag = document.getElementById('next-hours-window-tag');
@@ -1264,97 +1164,35 @@ function renderNext3HoursRadar(day, impact) {
   const noteEl = document.getElementById('next-hours-note');
   if (!statsContainer) return;
 
-  const simDate = state.simulatedNow.split('T')[0];
-  const simTimeStr = state.simulatedNow.split('T')[1] || '10:00';
-  const [startH, startM] = simTimeStr.split(':').map(Number);
-
-  const startDayIdx = PLANNING_DATES.indexOf(simDate);
-  if (startDayIdx === -1) {
-    if (windowTag) windowTag.textContent = `${simDate} ${simTimeStr}`;
-    statsContainer.innerHTML = `<div class="next-stat-box" style="grid-column: 1 / -1;"><span class="next-stat-lbl">Simulated time is outside the planning week (11–17 Feb).</span></div>`;
-    if (noteEl) noteEl.textContent = 'No planning data available for dates outside 11–17 Feb 2027.';
-    return;
-  }
-
-  const startTotalMins = startDayIdx * 1440 + startH * 60 + startM;
-  const endTotalMins = startTotalMins + 180; // exactly 3 hours (180 minutes)
-
-  const endDayIdx = Math.floor(endTotalMins / 1440);
-  const endMinInDay = endTotalMins % 1440;
-  const endH = Math.floor(endMinInDay / 60);
-  const endM = endMinInDay % 60;
-  const endDateStr = endDayIdx < PLANNING_DATES.length ? PLANNING_DATES[endDayIdx] : '2027-02-18';
-  const hasOutsidePortion = endDayIdx >= PLANNING_DATES.length;
-
-  const startFmt = `${startH.toString().padStart(2, '0')}:${startM.toString().padStart(2, '0')}`;
-  const endFmt = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
-  
-  let windowDisplayStr = `${formatDateShort(simDate)} ${startFmt} – `;
-  if (simDate === endDateStr) {
-    windowDisplayStr += `${endFmt} PST`;
-  } else {
-    windowDisplayStr += `${formatDateShort(endDateStr)} ${endFmt} PST`;
-  }
-  if (windowTag) windowTag.textContent = windowDisplayStr;
-
+  // Exact window: from the simulated minute for 180 minutes, prorating partial hours and crossing midnight
+  const [simDate, simTime] = state.simulatedNow.split('T');
+  const dates = state.data.days.map(d => d.date);
   const impacts = computeDailyWeatherImpacts();
-
-  let nextArrExp = 0;
-  let nextDepExp = 0;
-  let inTfrWindow = false;
-
-  // Slices into hour segments and prorates partial minutes
-  let curMins = startTotalMins;
-  while (curMins < endTotalMins) {
-    const curDayIdx = Math.floor(curMins / 1440);
-    const minInDay = curMins % 1440;
-    const hour = Math.floor(minInDay / 60);
-    const hourStartMin = curDayIdx * 1440 + hour * 60;
-    const hourEndMin = hourStartMin + 60;
-
-    const segStart = curMins;
-    const segEnd = Math.min(endTotalMins, hourEndMin);
-    const duration = segEnd - segStart;
-    const frac = duration / 60.0;
-
-    if (curDayIdx < PLANNING_DATES.length) {
-      const curDate = PLANNING_DATES[curDayIdx];
-      const curDayObj = state.data.days.find(d => d.date === curDate);
-      const curImpact = impacts.find(imp => imp.date === curDate) || impact;
-      const hourly = getHourlyProfileForDay(curDayObj, curImpact.finalArrivals, curImpact.finalDepartures);
-      const hrData = hourly[hour];
-
-      nextArrExp += hrData.arrExp * frac;
-      nextDepExp += hrData.depExp * frac;
-
-      // Check TFR on Sun 14 Feb between 14:30 and 20:30
-      if (curDate === '2027-02-14') {
-        const segStartHourMin = minInDay;
-        const segEndHourMin = minInDay + duration;
-        // TFR: 14:30 (870 min) to 20:30 (1230 min)
-        if (segEndHourMin > 870 && segStartHourMin < 1230) {
-          inTfrWindow = true;
-        }
-      }
+  const startIdx = dates.indexOf(simDate);
+  let nextArrExp = 0, nextDepExp = 0, nextBookedArr = 0, nextBookedDep = 0, inTfrWindow = false, outside = false;
+  if (startIdx === -1) {
+    outside = true;
+  } else {
+    const start = startIdx * 24 + clockToHours(simTime || '10:00'), end = start + 3;
+    for (let t = Math.floor(start); t < end; t++) {
+      const dIdx = Math.floor(t / 24), h = t % 24;
+      if (dIdx >= dates.length) { outside = true; break; }
+      const portion = Math.min(end, t + 1) - Math.max(start, t);
+      const imp = impacts[dIdx];
+      const hr = getHourlyProfileForDay(imp.day, imp.finalArrivals, imp.finalDepartures)[h];
+      nextArrExp += hr.arrExp * portion;
+      nextDepExp += hr.depExp * portion;
+      const inWin = m => { const mt = dIdx * 24 + clockToHours(m.time); return m.date === dates[dIdx] && mt >= start && mt < end; };
+      nextBookedArr += hr.userFlights.filter(m => m.type === 'arrival' && inWin(m)).length;
+      nextBookedDep += hr.userFlights.filter(m => m.type === 'departure' && inWin(m)).length;
+      if (inRestriction(imp.day, Math.max(start, t) - dIdx * 24, Math.min(end, t + 1) - dIdx * 24)) inTfrWindow = true;
     }
-
-    curMins = segEnd;
+    const endAbs = start + 3, endIdx = Math.floor(endAbs / 24), endClock = endAbs - endIdx * 24;
+    const hhmm = x => `${String(Math.floor(x)).padStart(2, '0')}:${String(Math.round((x % 1) * 60)).padStart(2, '0')}`;
+    const endDay = endIdx < dates.length ? formatDateShort(dates[endIdx]) : 'after the planning week';
+    if (windowTag) windowTag.textContent = `${formatDateShort(simDate)} ${hhmm(start - startIdx * 24)} – ${endIdx !== startIdx ? endDay + ' ' : ''}${hhmm(endClock)}`;
   }
-
-  // Count booked flights in the exact 3-hour window
-  let nextBookedArr = 0;
-  let nextBookedDep = 0;
-  state.userMovements.forEach(m => {
-    const mDayIdx = PLANNING_DATES.indexOf(m.date);
-    if (mDayIdx !== -1 && m.time) {
-      const [mH, mM] = m.time.split(':').map(Number);
-      const mTotalMins = mDayIdx * 1440 + mH * 60 + mM;
-      if (mTotalMins >= startTotalMins && mTotalMins < endTotalMins) {
-        if (m.type === 'arrival') nextBookedArr++;
-        else if (m.type === 'departure') nextBookedDep++;
-      }
-    }
-  });
+  if (outside && windowTag && startIdx === -1) windowTag.textContent = 'Outside the planning week';
 
   statsContainer.innerHTML = `
     <div class="next-stat-box">
@@ -1363,7 +1201,7 @@ function renderNext3HoursRadar(day, impact) {
     </div>
     <div class="next-stat-box">
       <span class="next-stat-val" style="color:var(--color-departures);">${nextDepExp.toFixed(1)}</span>
-      <span class="next-stat-lbl">Exp Departures (${nextBookedDep} Booked)</span>
+      <span class="next-stat-lbl">Exp Takeoffs (${nextBookedDep} Booked)</span>
     </div>
     <div class="next-stat-box">
       <span class="next-stat-val">${(nextArrExp + nextDepExp).toFixed(1)}</span>
@@ -1372,103 +1210,122 @@ function renderNext3HoursRadar(day, impact) {
   `;
 
   if (noteEl) {
-    if (hasOutsidePortion) {
-      noteEl.innerHTML = `<strong>Note:</strong> Window extends past Wed 17 Feb 24:00 into Thu 18 Feb (outside the 7-day planning week). Movements shown are for the covered planning period.`;
+    if (outside) {
+      noteEl.textContent = 'Part of this window is outside the planning week (11–17 Feb); only the covered hours are counted.';
     } else if (inTfrWindow) {
-      noteEl.innerHTML = `<strong style="color:var(--status-critical);">⚠️ TFR Active Window:</strong> Super Bowl TFR active (14:30–20:30 PST). General aviation Part 91 flights prohibited. Verify Part 135 air taxi schedules and keep board current.`;
-    } else if (nextArrExp > 2.0) {
-      noteEl.innerHTML = `<strong>Inbound Wave:</strong> Heavy landing wave in progress (~${nextArrExp.toFixed(1)} landings expected). Confirm ramp parking assignments and update arrival board.`;
-    } else if (nextDepExp > 2.0) {
-      noteEl.innerHTML = `<strong>Outbound Wave:</strong> Heavy departure push in progress (~${nextDepExp.toFixed(1)} takeoffs expected). Verify departure ETDs and ensure aircraft are ready on the ramp.`;
+      noteEl.textContent = `The assumed pause ${restrictionLabel()} falls in this window: no private movements are planned during it (${restriction().status}).`;
+    } else if (nextArrExp + nextDepExp >= 2.0) {
+      noteEl.textContent = `Busy window: about ${nextArrExp.toFixed(1)} landings and ${nextDepExp.toFixed(1)} departures expected. Confirm ETAs and ETDs and keep the board current.`;
     } else {
-      noteEl.textContent = `Steady baseline operations during this 3-hour shift window. Monitor slot confirmations and keep movement log current.`;
+      noteEl.textContent = 'Quiet window. Keep the board current as confirmations come in.';
     }
   }
 }
 
 /**
- * 24-Hour Timeline Chart (Clean SVG)
+ * Hand-Rolled Responsive SVG 24-Hour Timeline Chart
+ * Shows paired bars for Landings vs Departures, 90% uncertainty indicators, and TFR overlay
  */
 function render24HourTimelineChart(day, impact) {
   const container = document.getElementById('timeline-chart-container');
   if (!container) return;
 
   const hours = getHourlyProfileForDay(day, impact.finalArrivals, impact.finalDepartures);
-  const maxVal = Math.max(1.5, ...hours.map(h => Math.max(h.arrExp, h.depExp, h.totalExp)));
-
-  const width = 800;
+  const width = 850;
   const height = 260;
-  const padLeft = 40;
-  const padRight = 20;
-  const padTop = 30;
-  const padBottom = 40;
-  const chartW = width - padLeft - padRight;
-  const chartH = height - padTop - padBottom;
-  const barW = (chartW / 24) * 0.38;
+  const padding = { top: 25, right: 20, bottom: 40, left: 45 };
+  const chartW = width - padding.left - padding.right;
+  const chartH = height - padding.top - padding.bottom;
 
-  let svg = `<svg viewBox="0 0 ${width} ${height}" class="timeline-svg" role="img" aria-label="24-hour timeline chart">`;
+  // Find max hourly value for Y-axis scale
+  let maxVal = 0.5;
+  hours.forEach(h => {
+    maxVal = Math.max(maxVal, h.arrExp, h.depExp, h.userArrCount, h.userDepCount);
+  });
+  maxVal = Math.ceil(maxVal * 10) / 10 + 0.2; // Round up cleanly
+
+  const colW = chartW / 24;
+  const barW = Math.max(3, colW * 0.35);
+
+  let svg = `<svg class="svg-timeline" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="24-hour landings and departures timeline">
+    <defs>
+      <pattern id="tfr-stripe" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <line x1="0" y1="0" x2="0" y2="8" stroke="rgba(100, 116, 139, 0.4)" stroke-width="3" />
+      </pattern>
+    </defs>`;
 
   // Grid lines
-  for (let g = 0; g <= 4; g++) {
-    const yVal = (maxVal / 4) * g;
-    const yPos = padTop + chartH - (yVal / maxVal) * chartH;
-    svg += `<line x1="${padLeft}" y1="${yPos}" x2="${width - padRight}" y2="${yPos}" stroke="var(--border-subtle)" stroke-dasharray="3 3"/>`;
-    svg += `<text x="${padLeft - 6}" y="${yPos + 4}" font-size="10" fill="var(--text-muted)" text-anchor="end">${yVal.toFixed(1)}</text>`;
+  const yTicks = 4;
+  for (let i = 0; i <= yTicks; i++) {
+    const val = (maxVal / yTicks) * i;
+    const y = padding.top + chartH - (val / maxVal) * chartH;
+    svg += `<line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" stroke="var(--border-subtle)" stroke-width="1" />
+      <text x="${padding.left - 8}" y="${y + 4}" font-size="10" fill="var(--text-muted)" text-anchor="end">${val.toFixed(1)}</text>`;
   }
 
-  // TFR Band shading on Sunday 14:30 to 20:30
-  if (day.date === '2027-02-14') {
-    const tfrStartH = 14.5;
-    const tfrEndH = 20.5;
-    const tfrX = padLeft + (tfrStartH / 24) * chartW;
-    const tfrW = ((tfrEndH - tfrStartH) / 24) * chartW;
-    svg += `<rect x="${tfrX}" y="${padTop}" width="${tfrW}" height="${chartH}" fill="rgba(100, 116, 139, 0.12)" stroke="var(--status-warning)" stroke-dasharray="4 4"/>`;
-    svg += `<text x="${tfrX + tfrW / 2}" y="${padTop + 14}" font-size="11" font-weight="700" fill="var(--status-warning)" text-anchor="middle">TFR 14:30–20:30</text>`;
+  // TFR Shaded Window on Sunday (14:30 to 20:30)
+  if (isRestrictionDay(day)) {
+    const tfrX = padding.left + (clockToHours(restriction().start) * colW);
+    const tfrW = (clockToHours(restriction().end) - clockToHours(restriction().start)) * colW;
+    svg += `<rect x="${tfrX}" y="${padding.top}" width="${tfrW}" height="${chartH}" fill="url(#tfr-stripe)" />
+      <rect x="${tfrX}" y="${padding.top}" width="${tfrW}" height="20" fill="rgba(217, 119, 6, 0.15)" />
+      <text x="${tfrX + tfrW / 2}" y="${padding.top + 14}" font-size="10" font-weight="bold" fill="var(--status-warning)" text-anchor="middle">
+        Assumed pause ${restrictionLabel()}
+      </text>`;
   }
 
-  // Bars and Points
-  hours.forEach((h, i) => {
-    const slotW = chartW / 24;
-    const slotX = padLeft + i * slotW;
-    const centerX = slotX + slotW / 2;
+  // Render Bars for each of the 24 hours
+  hours.forEach(h => {
+    const xBase = padding.left + (h.hour * colW);
+    const xArr = xBase + (colW * 0.12);
+    const xDep = xArr + barW + 2;
 
     const arrH = (h.arrExp / maxVal) * chartH;
     const depH = (h.depExp / maxVal) * chartH;
 
-    const arrX = centerX - barW;
-    const arrY = padTop + chartH - arrH;
+    const yArr = padding.top + chartH - arrH;
+    const yDep = padding.top + chartH - depH;
 
-    const depX = centerX;
-    const depY = padTop + chartH - depH;
-
-    svg += `<rect x="${arrX}" y="${arrY}" width="${barW}" height="${arrH}" fill="var(--color-arrivals)" rx="2">
-      <title>${h.hour}:00 - Exp Landings: ${h.arrExp.toFixed(2)}</title>
+    // Landings bar (Blue)
+    svg += `<rect x="${xArr}" y="${yArr}" width="${barW}" height="${arrH}" rx="2" fill="var(--color-arrivals)">
+      <title>Hour ${h.hour}:00 - Exp Landings: ${h.arrExp.toFixed(2)}</title>
     </rect>`;
 
-    svg += `<rect x="${depX}" y="${depY}" width="${barW}" height="${depH}" fill="var(--color-departures)" rx="2">
-      <title>${h.hour}:00 - Exp Departures: ${h.depExp.toFixed(2)}</title>
+    // Departures bar (Teal)
+    svg += `<rect x="${xDep}" y="${yDep}" width="${barW}" height="${depH}" rx="2" fill="var(--color-departures)">
+      <title>Hour ${h.hour}:00 - Exp Takeoffs: ${h.depExp.toFixed(2)}</title>
     </rect>`;
 
-    // Booked flights dot
-    if (h.hasUserFlight) {
-      const dotY = Math.min(arrY, depY) - 8;
-      svg += `<circle cx="${centerX}" cy="${Math.max(padTop + 4, dotY)}" r="4" fill="var(--text-primary)" stroke="#fff" stroke-width="1.5">
-        <title>${h.userFlights.length} booked flights at ${h.hour}:00</title>
+    // User flight dots/badges if flights entered
+    if (h.userArrCount > 0) {
+      svg += `<circle cx="${xArr + barW / 2}" cy="${Math.max(padding.top + 10, yArr - 6)}" r="3.5" fill="var(--status-warning)">
+        <title>${h.userArrCount} booked landing(s)</title>
+      </circle>`;
+    }
+    if (h.userDepCount > 0) {
+      svg += `<circle cx="${xDep + barW / 2}" cy="${Math.max(padding.top + 10, yDep - 6)}" r="3.5" fill="var(--status-warning)">
+        <title>${h.userDepCount} booked takeoff(s)</title>
       </circle>`;
     }
 
-    // Hour label
-    if (i % 2 === 0) {
-      svg += `<text x="${centerX}" y="${height - padBottom + 16}" font-size="10" fill="var(--text-muted)" text-anchor="middle">${i.toString().padStart(2, '0')}</text>`;
+    // X-axis Hour Label
+    const hourFmt = h.hour.toString().padStart(2, '0');
+    if (h.hour % 2 === 0) {
+      svg += `<text x="${xBase + colW / 2}" y="${height - padding.bottom + 16}" font-size="9" fill="var(--text-muted)" text-anchor="middle">${hourFmt}</text>`;
     }
   });
+
+  // X Axis Label
+  svg += `<text x="${width / 2}" y="${height - 8}" font-size="11" font-weight="600" fill="var(--text-secondary)" text-anchor="middle">Hour of Day (PST America/Los_Angeles)</text>`;
+  // Y Axis Label
+  svg += `<text transform="rotate(-90)" x="${-(height / 2)}" y="14" font-size="11" font-weight="600" fill="var(--text-secondary)" text-anchor="middle">Movements / Hour</text>`;
 
   svg += `</svg>`;
   container.innerHTML = svg;
 }
 
 /**
- * Movements Table for Selected Day (Safe textContent)
+ * Render Day Movements Table
  */
 function renderDayMovementsTable() {
   const tbody = document.getElementById('day-movements-tbody');
@@ -1477,70 +1334,52 @@ function renderDayMovementsTable() {
   const dayFlights = state.userMovements.filter(m => m.date === state.selectedDay);
   dayFlights.sort((a, b) => a.time.localeCompare(b.time));
 
-  tbody.textContent = ''; // Clear safely
-
   if (dayFlights.length === 0) {
-    const tr = document.createElement('tr');
-    const td = document.createElement('td');
-    td.colSpan = 6;
-    td.style.textAlign = 'center';
-    td.style.color = 'var(--text-muted)';
-    td.style.padding = '24px';
-    td.textContent = 'No recorded flight movements for this day. Click "Add Flight Movement" above to enter scheduled arrivals or takeoffs.';
-    tr.appendChild(td);
-    tbody.appendChild(tr);
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted);">
+      No flights recorded for ${formatDateLong(state.selectedDay)}. Use "+ Add Flight Movement" above to add real shift traffic.
+    </td></tr>`;
     return;
   }
 
+  let html = '';
   dayFlights.forEach(f => {
-    const tr = document.createElement('tr');
+    const isArr = f.type === 'arrival';
+    const typeBadge = isArr 
+      ? '<span class="badge" style="background:var(--color-arrivals-bg); color:var(--color-arrivals);">🛬 Arrival</span>'
+      : '<span class="badge" style="background:var(--color-departures-bg); color:var(--color-departures);">🛫 Departure</span>';
 
-    const tdTime = document.createElement('td');
-    tdTime.textContent = f.time;
-    tr.appendChild(tdTime);
+    let statusBadge = `<span class="badge badge-info">${f.status.toUpperCase()}</span>`;
+    if (f.status === 'landed' || f.status === 'departed') statusBadge = `<span class="badge badge-ok">${f.status.toUpperCase()}</span>`;
 
-    const tdType = document.createElement('td');
-    const typeBadge = document.createElement('span');
-    typeBadge.className = f.type === 'arrival' ? 'badge badge-peak' : 'badge badge-peak-dep';
-    typeBadge.textContent = f.type === 'arrival' ? '🛬 Landing' : '🛫 Takeoff';
-    tdType.appendChild(typeBadge);
-    tr.appendChild(tdType);
+    let quickActionBtn = '';
+    if (isArr && f.status !== 'landed') {
+      quickActionBtn = `<button type="button" class="btn btn-ok btn-sm btn-quick-status" data-id="${f.id}" data-status="landed">Mark Landed</button>`;
+    } else if (!isArr && f.status !== 'departed') {
+      quickActionBtn = `<button type="button" class="btn btn-ok btn-sm btn-quick-status" data-id="${f.id}" data-status="departed">Mark Departed</button>`;
+    }
 
-    const tdTail = document.createElement('td');
-    const strongTail = document.createElement('strong');
-    strongTail.textContent = f.tail || 'Unspecified';
-    tdTail.appendChild(strongTail);
-    tr.appendChild(tdTail);
-
-    const tdSize = document.createElement('td');
-    tdSize.textContent = f.size ? f.size.charAt(0).toUpperCase() + f.size.slice(1) : 'Midsize';
-    tr.appendChild(tdSize);
-
-    const tdStatus = document.createElement('td');
-    tdStatus.textContent = f.status ? f.status.charAt(0).toUpperCase() + f.status.slice(1) : 'Confirmed';
-    tr.appendChild(tdStatus);
-
-    const tdActions = document.createElement('td');
-    const editBtn = document.createElement('button');
-    editBtn.className = 'btn btn-secondary btn-xs';
-    editBtn.textContent = 'Edit';
-    editBtn.addEventListener('click', () => editMovement(f.id));
-    tdActions.appendChild(editBtn);
-
-    const delBtn = document.createElement('button');
-    delBtn.className = 'btn btn-danger btn-xs';
-    delBtn.style.marginLeft = '4px';
-    delBtn.textContent = 'Delete';
-    delBtn.addEventListener('click', () => deleteMovement(f.id));
-    tdActions.appendChild(delBtn);
-
-    tr.appendChild(tdActions);
-    tbody.appendChild(tr);
+    html += `<tr>
+      <td><strong>${f.time} PST</strong></td>
+      <td>${typeBadge}</td>
+      <td><strong>${f.tail ? escapeHtml(f.tail) : '<span style="color:var(--text-muted)">Unspecified</span>'}</strong></td>
+      <td><span class="badge badge-secondary">${f.size.toUpperCase()}</span></td>
+      <td>${statusBadge}</td>
+      <td>
+        <div class="table-actions">
+          ${quickActionBtn}
+          <button type="button" class="btn btn-secondary btn-sm btn-edit-mov" data-id="${f.id}">Edit</button>
+          <button type="button" class="btn btn-danger btn-sm btn-del-mov" data-id="${f.id}">Del</button>
+        </div>
+      </td>
+    </tr>`;
   });
+
+  tbody.innerHTML = html;
+  attachMovementActionListeners(tbody);
 }
 
 /**
- * VIEW 3: FULL FLIGHT MOVEMENT BOARD
+ * VIEW 3: FULL FLIGHT MOVEMENT BOARD (CRUD + Filters)
  */
 function renderMovementsBoard() {
   const tbody = document.getElementById('all-movements-tbody');
@@ -1550,104 +1389,96 @@ function renderMovementsBoard() {
   const typeFilter = document.getElementById('filter-type-select') ? document.getElementById('filter-type-select').value : 'all';
   const statusFilter = document.getElementById('filter-status-select') ? document.getElementById('filter-status-select').value : 'all';
 
-  let filtered = [...state.userMovements];
-  if (dateFilter !== 'all') filtered = filtered.filter(m => m.date === dateFilter);
-  if (typeFilter !== 'all') filtered = filtered.filter(m => m.type === typeFilter);
-  if (statusFilter !== 'all') filtered = filtered.filter(m => m.status === statusFilter);
+  let list = [...state.userMovements];
+  if (dateFilter !== 'all') list = list.filter(m => m.date === dateFilter);
+  if (typeFilter !== 'all') list = list.filter(m => m.type === typeFilter);
+  if (statusFilter !== 'all') list = list.filter(m => m.status === statusFilter);
 
-  filtered.sort((a, b) => {
+  list.sort((a, b) => {
     if (a.date !== b.date) return a.date.localeCompare(b.date);
     return a.time.localeCompare(b.time);
   });
 
-  tbody.textContent = ''; // Clear safely
-
-  if (filtered.length === 0) {
-    const tr = document.createElement('tr');
-    const td = document.createElement('td');
-    td.colSpan = 7;
-    td.style.textAlign = 'center';
-    td.style.color = 'var(--text-muted)';
-    td.style.padding = '24px';
-    td.textContent = 'No flight movements matching filters. Click "Load Sample Movements" or enter new records.';
-    tr.appendChild(td);
-    tbody.appendChild(tr);
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:32px; color:var(--text-muted);">
+      No movements match current filter criteria. Use form above to log flight movements.
+    </td></tr>`;
     return;
   }
 
-  filtered.forEach(f => {
-    const tr = document.createElement('tr');
+  let html = '';
+  list.forEach(f => {
+    const isArr = f.type === 'arrival';
+    const typeBadge = isArr 
+      ? '<span class="badge" style="background:var(--color-arrivals-bg); color:var(--color-arrivals);">🛬 Arrival</span>'
+      : '<span class="badge" style="background:var(--color-departures-bg); color:var(--color-departures);">🛫 Departure</span>';
 
-    const tdDate = document.createElement('td');
-    tdDate.textContent = formatDateShort(f.date);
-    tr.appendChild(tdDate);
+    let statusBadge = `<span class="badge badge-info">${f.status.toUpperCase()}</span>`;
+    if (f.status === 'landed' || f.status === 'departed') statusBadge = `<span class="badge badge-ok">${f.status.toUpperCase()}</span>`;
 
-    const tdTime = document.createElement('td');
-    tdTime.textContent = f.time;
-    tr.appendChild(tdTime);
+    let quickActionBtn = '';
+    if (isArr && f.status !== 'landed') {
+      quickActionBtn = `<button type="button" class="btn btn-ok btn-sm btn-quick-status" data-id="${f.id}" data-status="landed">Mark Landed</button>`;
+    } else if (!isArr && f.status !== 'departed') {
+      quickActionBtn = `<button type="button" class="btn btn-ok btn-sm btn-quick-status" data-id="${f.id}" data-status="departed">Mark Departed</button>`;
+    }
 
-    const tdType = document.createElement('td');
-    const typeBadge = document.createElement('span');
-    typeBadge.className = f.type === 'arrival' ? 'badge badge-peak' : 'badge badge-peak-dep';
-    typeBadge.textContent = f.type === 'arrival' ? '🛬 Arrival' : '🛫 Departure';
-    tdType.appendChild(typeBadge);
-    tr.appendChild(tdType);
+    html += `<tr>
+      <td>${formatDateShort(f.date)}</td>
+      <td><strong>${f.time} PST</strong></td>
+      <td>${typeBadge}</td>
+      <td><strong>${f.tail ? escapeHtml(f.tail) : '<span style="color:var(--text-muted)">Unspecified</span>'}</strong></td>
+      <td><span class="badge badge-secondary">${f.size.toUpperCase()}</span></td>
+      <td>${statusBadge}</td>
+      <td>
+        <div class="table-actions">
+          ${quickActionBtn}
+          <button type="button" class="btn btn-secondary btn-sm btn-edit-mov" data-id="${f.id}">Edit</button>
+          <button type="button" class="btn btn-danger btn-sm btn-del-mov" data-id="${f.id}">Del</button>
+        </div>
+      </td>
+    </tr>`;
+  });
 
-    const tdTail = document.createElement('td');
-    const strongTail = document.createElement('strong');
-    strongTail.textContent = f.tail || 'Unspecified';
-    tdTail.appendChild(strongTail);
-    tr.appendChild(tdTail);
+  tbody.innerHTML = html;
+  attachMovementActionListeners(tbody);
+}
 
-    const tdSize = document.createElement('td');
-    tdSize.textContent = f.size ? f.size.charAt(0).toUpperCase() + f.size.slice(1) : 'Midsize';
-    tr.appendChild(tdSize);
-
-    const tdStatus = document.createElement('td');
-    const selectStatus = document.createElement('select');
-    selectStatus.className = 'select-input select-xs';
-    ['expected', 'confirmed', 'landed', 'departed'].forEach(st => {
-      const opt = document.createElement('option');
-      opt.value = st;
-      opt.textContent = st.charAt(0).toUpperCase() + st.slice(1);
-      if (f.status === st) opt.selected = true;
-      selectStatus.appendChild(opt);
+function attachMovementActionListeners(container) {
+  container.querySelectorAll('.btn-quick-status').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      const newStatus = btn.dataset.status;
+      const flight = state.userMovements.find(m => m.id === id);
+      if (flight) {
+        flight.status = newStatus;
+        saveMovements();
+        renderAllViews();
+        showToast(`Flight ${flight.tail || 'movement'} marked as ${newStatus}.`);
+      }
     });
-    selectStatus.addEventListener('change', (e) => {
-      f.status = e.target.value;
+  });
+
+  container.querySelectorAll('.btn-del-mov').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      state.userMovements = state.userMovements.filter(m => m.id !== id);
       saveMovements();
       renderAllViews();
-      showToast(`Flight ${f.tail || 'movement'} status updated.`);
+      showToast('Movement removed from shift log.');
     });
-    tdStatus.appendChild(selectStatus);
-    tr.appendChild(tdStatus);
+  });
 
-    const tdActions = document.createElement('td');
-    const editBtn = document.createElement('button');
-    editBtn.className = 'btn btn-secondary btn-xs';
-    editBtn.textContent = 'Edit';
-    editBtn.addEventListener('click', () => editMovement(f.id));
-    tdActions.appendChild(editBtn);
-
-    const delBtn = document.createElement('button');
-    delBtn.className = 'btn btn-danger btn-xs';
-    delBtn.style.marginLeft = '4px';
-    delBtn.textContent = 'Delete';
-    delBtn.addEventListener('click', () => deleteMovement(f.id));
-    tdActions.appendChild(delBtn);
-
-    tr.appendChild(tdActions);
-    tbody.appendChild(tr);
+  container.querySelectorAll('.btn-edit-mov').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      startMovementEdit(id);
+    });
   });
 }
 
-/**
- * Handle Add/Edit Movement Submission with Strict Validation
- */
 function handleMovementSubmit(e) {
   e.preventDefault();
-
-  const id = document.getElementById('form-movement-id').value;
   const date = document.getElementById('form-date').value;
   const time = document.getElementById('form-time').value;
   const type = document.getElementById('form-type').value;
@@ -1655,34 +1486,8 @@ function handleMovementSubmit(e) {
   const size = document.getElementById('form-size').value;
   const status = document.getElementById('form-status').value;
 
-  // Validation
-  if (!PLANNING_DATES.includes(date)) {
-    showToast('Invalid date. Must be between 11 Feb and 17 Feb 2027.', true);
-    return;
-  }
-  if (!TIME_REGEX.test(time)) {
-    showToast('Invalid time format. Must be HH:MM.', true);
-    return;
-  }
-  if (!ALLOWED_TYPES.has(type)) {
-    showToast('Invalid movement type.', true);
-    return;
-  }
-  if (!TAIL_REGEX.test(tail)) {
-    showToast('Invalid tail number: letters, digits and dash only, max 10 chars.', true);
-    return;
-  }
-  if (!ALLOWED_SIZES.has(size)) {
-    showToast('Invalid aircraft size.', true);
-    return;
-  }
-  if (!ALLOWED_STATUSES.has(status)) {
-    showToast('Invalid flight status.', true);
-    return;
-  }
-
-  if (id) {
-    const flight = state.userMovements.find(m => m.id === id);
+  if (state.editingMovementId) {
+    const flight = state.userMovements.find(m => m.id === state.editingMovementId);
     if (flight) {
       flight.date = date;
       flight.time = time;
@@ -1690,32 +1495,38 @@ function handleMovementSubmit(e) {
       flight.tail = tail;
       flight.size = size;
       flight.status = status;
-      showToast(`Updated flight ${tail || 'movement'}.`);
+      showToast('Movement updated successfully.');
     }
     cancelMovementEdit();
   } else {
-    state.userMovements.push({
-      id: 'm-' + Date.now().toString(36),
+    const newMovement = {
+      id: 'm-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
       date,
       time,
       type,
       tail,
       size,
       status
-    });
+    };
+    state.userMovements.push(newMovement);
     showToast(`Added ${type} for ${tail || 'unspecified tail'} at ${time}.`);
   }
 
   saveMovements();
   renderAllViews();
-  e.target.reset();
+
+  // Reset form time slightly forward for convenient rapid logging
+  const [hh, mm] = time.split(':').map(Number);
+  const nextHour = (hh + 1) % 24;
+  document.getElementById('form-time').value = `${nextHour.toString().padStart(2, '0')}:${mm.toString().padStart(2, '0')}`;
   document.getElementById('form-tail').value = '';
 }
 
-function editMovement(id) {
+function startMovementEdit(id) {
   const flight = state.userMovements.find(m => m.id === id);
   if (!flight) return;
 
+  state.editingMovementId = id;
   switchTab('view-movements');
 
   document.getElementById('form-movement-id').value = flight.id;
@@ -1728,31 +1539,28 @@ function editMovement(id) {
 
   const saveBtn = document.getElementById('btn-save-movement');
   const cancelBtn = document.getElementById('btn-cancel-edit');
-  if (saveBtn) saveBtn.textContent = 'Save Changes';
+  if (saveBtn) saveBtn.textContent = 'Save Movement Changes';
   if (cancelBtn) cancelBtn.removeAttribute('hidden');
 
   document.getElementById('form-time').focus();
 }
 
 function cancelMovementEdit() {
-  document.getElementById('form-movement-id').value = '';
-  document.getElementById('movement-form').reset();
+  state.editingMovementId = null;
+  const form = document.getElementById('movement-form');
+  if (form) form.reset();
   const saveBtn = document.getElementById('btn-save-movement');
   const cancelBtn = document.getElementById('btn-cancel-edit');
   if (saveBtn) saveBtn.textContent = '+ Add Flight Movement';
   if (cancelBtn) cancelBtn.setAttribute('hidden', 'true');
 }
 
-function deleteMovement(id) {
-  state.userMovements = state.userMovements.filter(m => m.id !== id);
-  saveMovements();
-  renderAllViews();
-  showToast('Flight movement removed.');
-}
-
+/**
+ * CSV Import / Export
+ */
 function exportMovementsToCsv() {
   if (state.userMovements.length === 0) {
-    showToast('No flight movements to export.', true);
+    showToast('No movements to export.', true);
     return;
   }
 
@@ -1766,23 +1574,17 @@ function exportMovementsToCsv() {
     m.status
   ]);
 
-  const csvContent = 'data:text/csv;charset=utf-8,' +
-    [header.join(','), ...rows.map(e => e.join(','))].join('\n');
-
+  const csvContent = 'data:text/csv;charset=utf-8,' + [header.join(','), ...rows.map(r => r.join(','))].join('\n');
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement('a');
   link.setAttribute('href', encodedUri);
-  link.setAttribute('download', `lax_fbo_movements_${new Date().toISOString().slice(0, 10)}.csv`);
+  link.setAttribute('download', `lax_fbo_movements_sb_lxi_${state.selectedDay}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
   showToast('Downloaded movements CSV file.');
 }
 
-/**
- * Import Movements with Strict Validation (Review Finding C.2)
- * Validates every imported field. Rejects other rows and reports how many were skipped.
- */
 function importMovementsFromCsv(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -1802,75 +1604,33 @@ function importMovementsFromCsv(e) {
       const sizeIdx = headers.indexOf('aircraft_size') !== -1 ? headers.indexOf('aircraft_size') : headers.indexOf('size');
       const statusIdx = headers.indexOf('status');
 
-      if (dateIdx === -1 || timeIdx === -1 || typeIdx === -1) {
-        throw new Error('CSV must contain date, time, and type columns');
-      }
-
-      let imported = 0;
-      let skipped = 0;
-
+      if (dateIdx === -1 || timeIdx === -1 || typeIdx === -1) throw new Error('CSV needs date, time and type columns');
+      const dates = state.data.days.map(d => d.date);
+      let imported = 0, skipped = 0;
       for (let i = 1; i < lines.length; i++) {
         const parts = lines[i].split(',').map(p => p.trim());
-        if (parts.length < 3) {
-          skipped++;
-          continue;
-        }
-
-        const date = parts[dateIdx];
-        const time = parts[timeIdx];
-        const type = (parts[typeIdx] || '').toLowerCase();
-        const tail = tailIdx !== -1 ? parts[tailIdx].toUpperCase() : '';
-        const size = sizeIdx !== -1 ? parts[sizeIdx].toLowerCase() : 'midsize';
-        const status = statusIdx !== -1 ? parts[statusIdx].toLowerCase() : 'confirmed';
-
-        // Strict field validation per Review Finding C.2
-        if (!PLANNING_DATES.includes(date)) {
-          skipped++;
-          continue;
-        }
-        if (!TIME_REGEX.test(time)) {
-          skipped++;
-          continue;
-        }
-        if (!ALLOWED_TYPES.has(type)) {
-          skipped++;
-          continue;
-        }
-        if (!TAIL_REGEX.test(tail)) {
-          skipped++;
-          continue;
-        }
-        if (!ALLOWED_SIZES.has(size)) {
-          skipped++;
-          continue;
-        }
-        if (!ALLOWED_STATUSES.has(status)) {
-          skipped++;
-          continue;
-        }
-
-        state.userMovements.push({
-          id: 'imp-' + Date.now().toString(36) + '-' + i,
-          date,
-          time,
-          type,
-          tail,
-          size,
-          status
-        });
+        const date = parts[dateIdx] || '', time = parts[timeIdx] || '', type = (parts[typeIdx] || '').toLowerCase();
+        const tail = tailIdx !== -1 ? (parts[tailIdx] || '').toUpperCase() : '';
+        const size = sizeIdx !== -1 ? (parts[sizeIdx] || '').toLowerCase() : 'midsize';
+        const status = statusIdx !== -1 ? (parts[statusIdx] || '').toLowerCase() : 'expected';
+        const valid = dates.includes(date) && /^([01]\d|2[0-3]):[0-5]\d$/.test(time) && ['arrival', 'departure'].includes(type)
+          && /^[A-Z0-9-]{0,10}$/.test(tail) && ['light', 'midsize', 'large'].includes(size)
+          && ['expected', 'confirmed', 'landed', 'departed'].includes(status);
+        if (!valid) { skipped++; continue; }
+        state.userMovements.push({ id: 'imp-' + Date.now().toString(36) + i, date, time, type, tail, size, status });
         imported++;
       }
 
       saveMovements();
       renderAllViews();
-      showToast(`Imported ${imported} flight movements (${skipped} invalid rows skipped).`);
+      showToast(`Imported ${imported} movements${skipped ? ` (${skipped} invalid rows skipped)` : ''}.`, imported === 0 && skipped > 0);
     } catch (err) {
       console.error('CSV parse error:', err);
-      showToast('Failed to import CSV: Invalid format or missing required columns.', true);
+      showToast('Failed to import CSV: Invalid format.', true);
     }
   };
   reader.readAsText(file);
-  e.target.value = ''; // Reset file input
+  e.target.value = ''; // Reset input
 }
 
 /**
@@ -1879,146 +1639,153 @@ function importMovementsFromCsv(e) {
 function renderTrustView() {
   if (!state.data) return;
 
+  // Forecast accuracy backtest bars
   const acc = state.data.accuracy;
   const backtestContainer = document.getElementById('backtest-bars');
   if (backtestContainer && acc && acc.rolling_backtest_2025_wape) {
-    const models = [
-      { name: 'Antigravity Model', wape: acc.rolling_backtest_2025_wape.model, isOurs: true },
-      { name: 'Weekday Mean (8 Weeks)', wape: acc.rolling_backtest_2025_wape.weekday_mean_8w },
-      { name: 'Seasonal Naive (Last Year)', wape: acc.rolling_backtest_2025_wape.seasonal_naive_last_year },
-      { name: 'Overall Mean Baseline', wape: acc.rolling_backtest_2025_wape.overall_mean },
-      { name: 'Naive (Last Week)', wape: acc.rolling_backtest_2025_wape.naive_last_week }
+    const wape = acc.rolling_backtest_2025_wape;
+    const items = [
+      { name: 'Our Model (Backtest)', val: wape.model, isModel: true },
+      { name: 'Weekday Mean (8-Week)', val: wape.weekday_mean_8w, isModel: false },
+      { name: 'Seasonal Naive (Last Year)', val: wape.seasonal_naive_last_year, isModel: false },
+      { name: 'Overall Mean Baseline', val: wape.overall_mean, isModel: false },
+      { name: 'Naive (Last Week)', val: wape.naive_last_week, isModel: false }
     ];
 
-    let barsHtml = '';
-    models.forEach(m => {
-      const pct = (m.wape * 100).toFixed(1);
-      const barWidth = Math.min(100, (m.wape / 0.25) * 100);
-      barsHtml += `
-        <div class="backtest-bar-item">
-          <div class="bar-name">
-            <strong>${m.name}</strong> ${m.isOurs ? '<span class="badge badge-ok">BEST ACCURACY</span>' : ''}
-          </div>
-          <div class="bar-track">
-            <div class="bar-fill ${m.isOurs ? 'fill-ours' : 'fill-naive'}" style="width: ${barWidth}%;"></div>
-            <span class="bar-label">${pct}% error</span>
-          </div>
+    let html = '';
+    const maxVal = 0.25;
+    items.forEach(it => {
+      const pct = (it.val * 100).toFixed(1);
+      const widthPct = (it.val / maxVal) * 100;
+      html += `
+      <div class="backtest-row">
+        <div class="backtest-row-header">
+          <span style="${it.isModel ? 'color:var(--status-ok); font-weight:800;' : ''}">${it.name}</span>
+          <span><strong>${pct}% WAPE</strong></span>
         </div>
-      `;
+        <div class="backtest-bar-track">
+          <div class="backtest-bar-fill ${it.isModel ? 'is-model' : ''}" style="width:${widthPct}%;"></div>
+        </div>
+      </div>`;
     });
-    backtestContainer.innerHTML = barsHtml;
+    backtestContainer.innerHTML = html;
   }
 
+  // Super Bowl Test Table
   renderSuperBowlTestTable();
-  renderAssumptionsTable();
-  renderSourcesList();
+
+  // Key Assumptions Table
+  const assumptionsTbody = document.getElementById('assumptions-tbody');
+  if (assumptionsTbody && state.data.key_assumptions) {
+    let html = '';
+    state.data.key_assumptions.forEach(a => {
+      let badgeClass = 'badge-assumed';
+      if (a.class.includes('measured')) badgeClass = 'badge-measured';
+      else if (a.class.includes('placeholder')) badgeClass = 'badge-placeholder';
+      else if (a.class.includes('estimated')) badgeClass = 'badge-estimated';
+
+      html += `<tr>
+        <td><strong>${escapeHtml(a.name)}</strong></td>
+        <td><code>${escapeHtml(a.value)}</code></td>
+        <td><span class="badge ${badgeClass}">${escapeHtml(a.class.toUpperCase())}</span></td>
+      </tr>`;
+    });
+    assumptionsTbody.innerHTML = html;
+  }
+
+  // Sources List
+  const sourcesList = document.getElementById('sources-list');
+  if (sourcesList && state.data.sources) {
+    let html = '';
+    state.data.sources.forEach(s => {
+      html += `<li class="source-item">
+        <span class="source-name">${escapeHtml(s.name)}</span>
+        <a class="source-url" href="${s.url}" target="_blank" rel="noopener noreferrer">${escapeHtml(s.url)} ↗</a>
+      </li>`;
+    });
+    sourcesList.innerHTML = html;
+  }
 }
 
 function renderSuperBowlTestTable() {
-  if (!state.data || !state.data.super_bowl_test) return;
   const tbody = document.getElementById('sb-test-tbody');
-  const filter = document.getElementById('sb-metric-filter') ? document.getElementById('sb-metric-filter').value : 'all';
-  if (!tbody) return;
+  const filterEl = document.getElementById('sb-metric-filter');
+  if (!tbody || !state.data || !state.data.super_bowl_test) return;
 
-  let tests = state.data.super_bowl_test;
-  if (filter !== 'all') {
-    tests = tests.filter(t => t.metric === filter);
+  const metricFilter = filterEl ? filterEl.value : 'all';
+  let rows = state.data.super_bowl_test;
+  if (metricFilter !== 'all') {
+    rows = rows.filter(r => r.metric === metricFilter);
   }
 
   let html = '';
-  tests.forEach(t => {
-    let posBadge = '<span class="badge badge-ok">INSIDE 90% RANGE</span>';
-    if (t.position === 'above_high') posBadge = '<span class="badge badge-warning">ABOVE HIGH (+Stress)</span>';
-    else if (t.position === 'below_low') posBadge = '<span class="badge badge-assumed">BELOW LOW</span>';
+  rows.forEach(r => {
+    const excessPct = (parseFloat(r.excess) * 100).toFixed(1);
+    const isPositive = parseFloat(r.excess) > 0;
 
-    const excessPct = (parseFloat(t.excess) * 100).toFixed(1);
+    let posBadge = '<span class="badge badge-info">LOW TO MED</span>';
+    if (r.position === 'above_high') posBadge = '<span class="badge badge-critical">ABOVE HIGH</span>';
+    else if (r.position === 'below_low') posBadge = '<span class="badge badge-warning">BELOW LOW</span>';
+    else if (r.position === 'medium_to_high') posBadge = '<span class="badge badge-ok">MED TO HIGH</span>';
 
     html += `<tr>
-      <td><strong>Super Bowl ${t.event}</strong></td>
-      <td>${t.game_sunday}</td>
-      <td><code>${t.airports}</code></td>
-      <td>${t.metric.replace('_', ' ')}</td>
-      <td style="font-weight:700;">+${excessPct}%</td>
+      <td><strong>${r.event}</strong></td>
+      <td>${r.game_sunday}</td>
+      <td><code>${r.airports}</code></td>
+      <td><span class="badge badge-secondary">${r.metric.replace('_', ' ').toUpperCase()}</span></td>
+      <td style="font-weight:700; color:${isPositive ? 'var(--status-critical)' : 'var(--text-muted)'};">
+        ${isPositive ? '+' : ''}${excessPct}%
+      </td>
       <td>${posBadge}</td>
     </tr>`;
   });
+
   tbody.innerHTML = html;
 }
 
-function renderAssumptionsTable() {
-  if (!state.data || !state.data.key_assumptions) return;
-  const tbody = document.getElementById('assumptions-tbody');
-  if (!tbody) return;
-
-  const assumptions = [
-    { name: 'Model Baseline Formula', val: state.data.key_assumptions.baseline, class: 'measured', label: 'MEASURED (FAA OPSNET)' },
-    { name: 'Air Taxi Super Bowl Growth', val: state.data.key_assumptions.super_bowl_effect, class: 'measured', label: 'MEASURED (LAX 2022 SB LVI)' },
-    { name: 'Hourly Distribution Shares', val: state.data.key_assumptions.hourly_profile, class: 'placeholder', label: 'PLACEHOLDER CURVE' },
-    { name: 'Game Day TFR Restriction', val: state.data.key_assumptions.game_day_restriction, class: 'assumed', label: 'ASSUMED PRECEDENT (2022)' },
-    { name: 'Weather Suppression Engine', val: state.data.key_assumptions.weather_suppression, class: 'measured', label: 'MEASURED (NOAA x FAA)' }
-  ];
-
-  let html = '';
-  assumptions.forEach(a => {
-    html += `<tr>
-      <td><strong>${a.name}</strong></td>
-      <td>${a.val}</td>
-      <td><span class="badge badge-${a.class}">${a.label}</span></td>
-    </tr>`;
-  });
-  tbody.innerHTML = html;
-}
-
-function renderSourcesList() {
-  if (!state.data || !state.data.sources) return;
-  const list = document.getElementById('sources-list');
-  if (!list) return;
-
-  let html = '';
-  state.data.sources.forEach(s => {
-    html += `<li><strong>${s.name}:</strong> ${s.dataset} (${s.coverage || s.rule})</li>`;
-  });
-  list.innerHTML = html;
-}
-
 /**
- * Toast Notification Utility
- */
-function showToast(message, isError = false) {
-  const toast = document.getElementById('toast');
-  if (!toast) return;
-
-  toast.textContent = message;
-  toast.style.background = isError ? 'var(--status-critical)' : 'var(--text-primary)';
-  toast.style.color = '#ffffff';
-  toast.removeAttribute('hidden');
-
-  clearTimeout(showToast._timer);
-  showToast._timer = setTimeout(() => {
-    toast.setAttribute('hidden', 'true');
-  }, 3500);
-}
-
-/**
- * Helper Date Formatting
+ * Utility Helpers
  */
 function formatDateShort(dateStr) {
   const parts = dateStr.split('-');
   if (parts.length < 3) return dateStr;
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const monthIdx = parseInt(parts[1], 10) - 1;
-  return `${parseInt(parts[2], 10)} ${months[monthIdx]}`;
+  const day = parseInt(parts[2], 10);
+  return `${day} Feb`;
 }
 
 function formatDateLong(dateStr) {
   const parts = dateStr.split('-');
   if (parts.length < 3) return dateStr;
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const monthIdx = parseInt(parts[1], 10) - 1;
-  return `${parseInt(parts[2], 10)} ${months[monthIdx]} ${parts[0]}`;
+  const day = parseInt(parts[2], 10);
+  return `${day} February 2027`;
 }
 
-function formatDateTime(isoStr) {
-  const [d, t] = isoStr.split('T');
-  return `${formatDateShort(d)} at ${t || '10:00'} PST`;
+function formatDateTime(dtStr) {
+  const [d, t] = dtStr.split('T');
+  return `${formatDateShort(d)} at ${t} PST`;
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function showToast(msg, isError = false) {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+
+  toast.textContent = msg;
+  toast.style.background = isError ? 'var(--status-critical)' : 'var(--text-primary)';
+  toast.style.color = isError ? '#fff' : 'var(--bg-app)';
+  toast.removeAttribute('hidden');
+
+  if (window._toastTimeout) clearTimeout(window._toastTimeout);
+  window._toastTimeout = setTimeout(() => {
+    toast.setAttribute('hidden', 'true');
+  }, 3200);
 }

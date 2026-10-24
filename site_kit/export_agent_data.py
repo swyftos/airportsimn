@@ -43,21 +43,27 @@ def hourly_profile():
 
 
 def game_day_shares(profile, start, end, release_hours):
-    """Game-day hour shares: no movements inside the restriction window; the blocked share is released evenly
-    over release_hours after it ends (same rule as the parking model's security_restriction variant)."""
+    """Game-day hour shares with no movements inside the restriction window. Blocked departures are released
+    evenly over release_hours after it ends (the parking model's security_restriction rule); blocked arrivals
+    land before the window instead, in proportion to the earlier hours (aircraft come in before the game)."""
     release_hours = min(release_hours, 24 - end)  # keep the released movements on game day (before midnight)
     out = {}
     for t in ("arrivals", "departures"):
         base = profile[f"weekend_{t}"]
-        shares = [0.0] * 24
-        blocked = 0.0
+        shares, blocked = [0.0] * 24, 0.0
         for h in range(24):
             inside = max(0.0, min(h + 1, end) - max(h, start))  # hours of [h, h+1) inside the window
             shares[h] = base[h] * (1 - inside)
             blocked += base[h] * inside
-        for h in range(24):
-            shares[h] += blocked * max(0.0, min(h + 1, end + release_hours) - max(h, end)) / release_hours
-        out[t] = [round(s, 5) for s in shares]
+        if t == "departures":
+            for h in range(24):
+                shares[h] += blocked * max(0.0, min(h + 1, end + release_hours) - max(h, end)) / release_hours
+        else:
+            before = [shares[h] * max(0.0, min(h + 1, start) - h) for h in range(24)]  # share sitting before the window
+            total_before = sum(before)
+            for h in range(24):
+                shares[h] += blocked * before[h] / total_before
+        out[t] = [round(x, 5) for x in shares]
     return out
 
 
@@ -131,6 +137,7 @@ def main():
                            "note": "Hour-of-day shares are a placeholder (no observed hourly FBO data in the repository). Movements the agent enters replace them for the hours they cover."},
         "game_day_restriction": {"date": sec["date"], "start": sec["start_time_local"], "end": sec["end_time_local"],
                                  "release_hours_after": release, "rule": sec["inner_ring_rule"],
+                                 "shares_rule": "Blocked departures leave in the hours after the window; blocked arrivals land before it.",
                                  "source": sec["source"], "status": "precedent-based assumption (Super Bowl LVI TFR); no 2027 TFR published",
                                  "hour_shares": game_day_shares(profile, start, end, release)},
         "weather": {"effects": {k: v for k, v in effects.items() if k in WEATHER},
