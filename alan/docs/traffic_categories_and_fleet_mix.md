@@ -49,25 +49,27 @@ charter jets." It legally bundles:
 - Air ambulance and other on-demand operations when flown under Part 135
   certification
 
-**Project scope**: the project initially considered including Part 135
-(see the original 47/33/20-style broader scope and Marvin's early
-provisional work), then **explicitly narrowed to Part 91 only** ("please
-do not include charter flights, only private" — Alan, mid-project). Part
-135/air_taxi is excluded from the current baseline (`alan/baseline.csv`)
-and from Marvin's `private_only_review/` folder.
+**Project scope**: the project initially included Part 135, then
+**narrowed to Part 91 only** partway through ("please do not include
+charter flights, only private" — Alan, mid-project), then **reverted back
+to Part 91 + Part 135 combined** per a later team requirements change
+(PR #42). See section 1.4 for the full scope history and current status
+— as of this writing, Part 135/air_taxi **is** included in
+`alan/baseline.csv`.
 
-**Real Part 135 records do exist in the repo, kept deliberately
-separate**: Elia's `alan/elia_output/data/processed/opsnet_lax_daily.csv`
-already has a full daily `air_taxi` column (FAA ATADS/OPSNET,
-`verified_public`) for the same 2015-2025 window as the GA data,
-cross-checked 132/132 months against `opsnet_lax_daily_check.csv`.
+**Real Part 135 records exist in the repo and now feed the baseline
+directly**: Elia's `alan/elia_output/data/processed/opsnet_lax_daily.csv`
+has a full daily `air_taxi` column (FAA ATADS/OPSNET, `verified_public`)
+for the same 2015-2025 window as the GA data, cross-checked 132/132
+months against `opsnet_lax_daily_check.csv`.
 `alan/scripts/build_historical_traffic_air_taxi.py` turns this into
 `alan/data/processed/historical_traffic_air_taxi_interim.csv` using the
-same daily-direct method as the Part 91 pipeline. **This output does not
-feed `alan/baseline.csv`** and is not meant to — it exists only for
-comparison/context, e.g. grounding the Medium forecast scenario's
-air-taxi-derived event-size uplift (+15.5%, confirmed with Marvin) in a
-real measured air-taxi baseline instead of an unsourced number.
+same daily-direct method as the Part 91 pipeline. This was originally
+built as a comparison/context-only reference series (e.g. grounding the
+Medium forecast scenario's air-taxi-derived event-size uplift, +15.5%,
+in a real measured baseline instead of an unsourced number) and did not
+feed `alan/baseline.csv` at first — PR #42 changed that, and it is now
+summed directly into the baseline alongside the Part 91 GA data.
 
 ### 1.3 Part 91 — general_aviation
 
@@ -97,7 +99,7 @@ further split:
 
 **Concrete sourced example of positioning-flight contamination**: Atlantic
 Aviation's own 2013 LAX hangar project filing
-(`alan/data/processed/alan_5010/` chain of custody; see Item 1a in
+(`alan/data/raw/nazar_apron/atlantic_lax_2013.pdf`; see Item 1a in
 `alan/docs/lax_private_capacity_and_cost_research.md`) states the explicit
 purpose of basing more aircraft at LAX was to let owners **stop flying
 in empty to position the aircraft before a passenger trip** — cutting
@@ -106,9 +108,10 @@ out with passengers) down to 2 (based at LAX, fly out and back with
 passengers only). This is a real, government-filed example of exactly the
 positioning-flight contamination described above, not a hypothetical.
 
-**Project scope**: this is the category the project's narrowed, private-
-only baseline is built on (`alan/scripts/build_historical_traffic.py`,
-`alan/scripts/build_baseline.py`). The project does **not** have a way to
+**Project scope**: this is one of the two categories the project's
+baseline is built on (`alan/scripts/build_historical_traffic.py`,
+`alan/scripts/build_baseline.py` — Part 91 + Part 135 combined, per
+section 1.4). The project does **not** have a way to
 strip training/positioning/non-FBO flights out of the raw `general_
 aviation` movement counts — LAWA/OPSNET do not report that sub-split
 publicly. This means the baseline's `general_aviation` input is a ceiling
@@ -117,30 +120,40 @@ is a known limitation, carried forward from `data_sources.md`'s
 cross-cutting limitations section, stated here explicitly rather than
 implicitly.
 
-### 1.4 Known scope inconsistency across the project
+### 1.4 Scope history: private-only, then reverted to Part 91 + Part 135
 
-**Update**: Alan's side of this inconsistency is now fixed. `alan/scripts/
-build_historical_traffic.py` and `build_baseline.py` were switched to
-Marvin's verified daily Part 91 `general_aviation`-only extract
-(`private_only_review/ga_only_daily_source.csv`), dropping `air_taxi`
-entirely, and now share the same combined
-private-eligible-fraction x FBO-capture-share figure as Marvin's
-`private_only_review/` work (`EFFECTIVE_SHARE` in `build_baseline.py`;
-`ALAN-fbo_market_share` in `assumptions.csv`) instead of a
-separately-chosen flat share applied to a combined GA+air-taxi total.
+**Current status (superseding the history below): the team's requirements
+changed back to Part 91 + Part 135 combined.** PR #42 ("Main pipeline:
+Part 91 + Part 135 (GA + air taxi), fix double weekday effect") updated
+`alan/scripts/build_baseline.py` to sum Part 91 `general_aviation` and
+Part 135 `air_taxi` daily histories again, confirmed as an intentional
+requirements change, not a regression. `ALAN-fbo_market_share`'s label
+now reads "...Part 91 GA + Part 135 air-taxi traffic" accordingly. The
+rest of this section is kept as a record of how the scope moved, for
+anyone reading older commits/PRs and wondering why the numbers changed
+shape more than once:
 
-One inconsistency remains, and this doc does not fix it (outside this
-doc's scope — a team/Marvin decision):
+1. Original scope (project start): Part 91 + Part 135 combined.
+2. Narrowed to Part 91-only (private only, no charter) partway through
+   the project — see the now-superseded "Fixed on Alan's side" state
+   this section previously described, where `build_historical_traffic.py`
+   / `build_baseline.py` used Marvin's GA-only extract and Marvin's
+   `private_only_review/` folder did the same independently.
+3. **Reverted back to Part 91 + Part 135** (current). The same
+   `EFFECTIVE_SHARE` (private-eligible x FBO-capture) now applies to the
+   combined Part 91 + Part 135 total instead of Part 91 alone. The
+   standalone Part 135 reference pipeline
+   (`alan/scripts/build_historical_traffic_air_taxi.py` →
+   `alan/data/processed/historical_traffic_air_taxi_interim.csv`) that
+   was built as comparison-only context during step 2 is now a direct
+   input to `build_baseline.py`, not just a reference series.
 
-| File | Scope used |
-|---|---|
-| `alan/baseline.csv`, `alan/scripts/build_baseline.py` | **Fixed**: Part 91 (general_aviation) only, combined private-eligible x FBO-capture share |
-| `marvin/person_2_forecasting/private_only_review/*` | Part 91 only, via `private_eligible_ga_fraction` applied on top of the raw `general_aviation` count |
-| `marvin/person_2_forecasting/demand_predictions.csv` (live dashboard-facing file) | Still uses the **older mixed Part 91 + Part 135 scope** ("25% air-taxi eligibility"-style assumption), not the private-only numbers from Marvin's own `private_only_review/` folder |
-
-Resolving that last row is a team decision outside this doc's scope (see
-the repo audit finding from earlier in the project, "issue number 1/2"
-context).
+**Confirmed aligned**: `marvin/person_2_forecasting/demand_predictions.csv`
+(the live dashboard-facing file) is on the same combined scope as
+`alan/baseline.csv`. Since PR #42, `convert_monthly_to_daily.py` computes
+`general_aviation + air_taxi` x `FBO_SHARE` (0.10), and
+`nazar/scripts/release_team.py`'s share/window check reports no mismatch
+between the two pipelines.
 
 ## 2. Aircraft-size mix (47% light / 33% midsize / 20% large)
 
@@ -215,6 +228,19 @@ independent evidence, per the conclusion above — this update removes the
 *inconsistency* between pipelines, it does not newly evidence either
 factor.
 
+**Update — the share now also sizes the ramp**: since PR #46,
+`elia/assumptions_p3.csv` computes `ramp_capacity_su = reference_ramp_su
+x fbo_market_share / reference_traffic_share` = 75 x 0.10 / 0.50 =
+**15 su** — Atlantic's reference ramp (75 su, from its 2008 13-acre
+benchmark) scaled down to this FBO's share, where `reference_traffic_share`
+(0.50) is Atlantic's own estimated share of LAX private traffic, taken
+from its 55.8% of the two incumbents' leased land. Because the ramp and
+the demand forecast both scale with the same `fbo_market_share`, the
+resulting utilization ratio doesn't depend on that share being right —
+see `elia/sensitivity_share_robustness.csv`. It does depend on
+`reference_ramp_su` and `reference_traffic_share`, both still unsupported
+assumptions per the same conclusion above.
+
 ## 4. Operations vs. aircraft visits
 
 **FAA/LAWA/OPSNET movement counts are operations, not aircraft visits.**
@@ -276,7 +302,7 @@ section — the audit requested in the spec is recorded here as a result
 | Item | Resolution |
 |---|---|
 | Traffic categories (121/135/91) | Documented, including Part 91's training/positioning contamination and Part 135's commuter-vs-charter split — new detail beyond what was previously in the repo |
-| Scope inconsistency (91-only vs mixed) | **Fixed on Alan's side** (build_historical_traffic.py / build_baseline.py now Part 91-only, via Marvin's verified daily GA extract); Marvin's live `demand_predictions.csv` remains mixed-scope — outside this doc's scope, see section 1.4 |
+| Scope history (91-only vs Part 91+135) | **Reverted to Part 91 + Part 135 combined** per a later team requirements change (PR #42) — `build_baseline.py` now sums Part 91 GA and Part 135 air-taxi daily histories; see section 1.4 for the full history. Confirmed Marvin's live `demand_predictions.csv` is on the same combined scope (same `FBO_SHARE` = 0.10, no mismatch reported by `release_team.py`). |
 | Aircraft-size mix (47/33/20) | No official evidence found (FAA GA Survey checked directly); confirmed as an unsupported assumption, not pursued further |
 | FBO market share | Real Atlantic/Signature land-share evidence exists (~56/44) but doesn't resolve a fictional entrant's share; still an unsupported assumption, but Alan's and Marvin's two previously-divergent figures are now unified into one shared number (`ALAN-fbo_market_share` = 0.10, range 0.05-0.15) — see section 3 |
 | Operations vs. visits | Explained with conversion math and caveats; full-repo audit found no existing conflation, so no fix was required |
