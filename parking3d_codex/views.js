@@ -3,7 +3,6 @@ import { HOURS, clockLabel, dateLabel, su } from './model.js';
 
 export const escapeHTML = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const $ = selector => document.querySelector(selector);
-const sourceLabel = { arrival: 'Flow-led illustrative arrival', opening: 'Opening aircraft · already on site', 'carry-over': 'Carry-over · already on site / multi-day stay' };
 
 export function createStandViews(data, layout, callbacks) {
   let frame, placements, selection = null, hover = null, area = 'ramp', timelineArea = 'ramp', timelineKey = '', generation = 0;
@@ -15,6 +14,7 @@ export function createStandViews(data, layout, callbacks) {
     return { plane: direct || (stand && frame?.placed.find(p => p.standId === stand.id)), stand };
   };
   function focusValue(element) { return element?.dataset.aircraft ? { aircraftId: element.dataset.aircraft } : element?.dataset.stand ? { standId: element.dataset.stand } : null; }
+
   function bindSurface(element) {
     element.addEventListener('click', event => {
       const target = event.target.closest('[data-aircraft],[data-stand]'), focus = focusValue(target);
@@ -31,6 +31,7 @@ export function createStandViews(data, layout, callbacks) {
     element.addEventListener('focusout', () => callbacks.onHover(null));
   }
   for (const selector of ['#stand-map', '#stand-timeline', '#stand-register']) bindSurface($(selector));
+
   $('#map-area').innerHTML = `<option value="all">All areas</option>${Object.entries(AREA_LABELS).filter(([key]) => key !== 'packed').map(([key, label]) => `<option value="${key}">${label}</option>`).join('')}`;
   $('#map-area').value = area;
   $('#timeline-area').innerHTML = $('#map-area').innerHTML; $('#timeline-area').value = timelineArea;
@@ -60,19 +61,25 @@ export function createStandViews(data, layout, callbacks) {
     $('#stand-map').innerHTML = `<title>Illustrative stand map at ${clockLabel(frame.hour)}</title>${groups}${stands}${aircraft}`;
     highlight(); updatePositions([...livePositions.values()]);
   }
+
   function renderFlow() {
     const count = name => frame.placed.filter(plane => plane.area === name).length;
     const stages = [
       ['Arrival', frame.arrivals, 'this illustrated hour'], ['Stand assignment', count('ramp'), 'main ramp positions'],
       ['Tow-in packing', count('packed'), frame.capacity.packed ? 'under recorded approval' : 'approval required'],
       ['Overflow apron', count('remote'), frame.capacity.remote ? 'under recorded lease' : 'lease approval required'],
-      ['Manager decision', count('waiting'), 'awaiting a person']
+      ['Decision area', count('waiting'), 'awaiting manager decision']
     ];
     $('#mechanism-flow').innerHTML = stages.map(([name, value, note], index) => `<li class="flow-step ${index === stages.length - 1 && value ? 'waiting' : ''}"><span>${name}</span><strong>${value}</strong><small>${note}</small></li>`).join('');
-    const carries = frame.placed.filter(p => p.source === 'carry-over').length;
-    const peak = Math.max(...placements.slice(frame.dayIndex * HOURS, (frame.dayIndex + 1) * HOURS).map(p => p.used));
-    $('#illustration-check').textContent = `${carries} carry-over aircraft in this hour. Busiest illustrated demand today: ${su(peak)}; model P50: ${su(data.parking[callbacks.situation()].days[callbacks.scenario()][data.days[frame.dayIndex].date].parking_demand_su_p50)}. The stand layout is illustrative, derived from estimated ramp space and the assumed size mix; it is not the FBO’s real stand plan. Flexible positions share each area’s space budget; their allowances do not add capacity. Painted envelopes resize to the occupying aircraft.`;
+    const dayFrames = placements.slice(frame.dayIndex * HOURS, (frame.dayIndex + 1) * HOURS);
+    const busiestFrame = dayFrames.reduce((acc, f) => f.used > acc.used ? f : acc);
+    const medianCount = Math.round(data.ramp_aircraft.by_situation[callbacks.situation()][callbacks.scenario()][data.days[frame.dayIndex].date].aircraft_at_peak_p50);
+    const peakComparison = busiestFrame.fleet.length !== medianCount
+      ? `on the ramp at peak: ${busiestFrame.fleet.length}, model median: ${medianCount}`
+      : `Model median at today’s peak: ${medianCount} aircraft`;
+    $('#illustration-check').textContent = `Demand on ramp now: ${su(frame.used)} (${frame.placed.length} aircraft). ${peakComparison}. Hour-of-day timing uses data.hourly_profile (a placeholder curve). Aircraft from earlier days are model carry-over.`;
   }
+
   function renderTimeline() {
     if (!frame) return;
     const key = `${generation}/${frame.dayIndex}/${timelineArea}`;
@@ -88,20 +95,35 @@ export function createStandViews(data, layout, callbacks) {
     $('#timeline-day').textContent = dateLabel(data.days[frame.dayIndex].date);
     highlight();
   }
+
   function renderRegister() {
     $('#stand-register').innerHTML = frame.states.map(stand => `<tr><th scope="row"><button data-stand="${stand.id}">${stand.id}</button></th><td>${AREA_LABELS[stand.area]}</td><td>Flexible · ${stand.name} · ${su(stand.su)}</td><td>${stand.plane ? `<button data-aircraft="${stand.plane.id}">${stand.plane.id}</button>` : '—'}</td><td>${STATE_LABELS[stand.status]}${stand.enabled ? '' : ' · approval required'}</td></tr>`).join('');
   }
+
+  // Brief item B: Aircraft parked from earlier days are the model's carry-over; label them "parked since <day>" in the inspector.
   function inspector() {
     const { plane, stand } = relevant(selection);
     if (!plane && !stand) {
       const historic = selection?.aircraftId && placements.flatMap(p => p.placed).find(p => p.id === selection.aircraftId);
-      $('#inspector-content').innerHTML = historic ? `<strong>${historic.id}</strong><p>This airframe is outside the current hour’s illustration. Scrub the clock to its timeline bar to inspect its stand.</p><p>${sourceLabel[historic.source]}</p>` : '<strong>Inspect the illustration</strong><p>Select an aircraft or stand in either view. Stand assignments and routes are illustrative proposals; no individual aircraft decision is executed.</p>';
+      $('#inspector-content').innerHTML = historic ? `<strong>${historic.id}</strong><p>This airframe is outside the current hour’s illustration. Scrub the clock to its timeline bar to inspect its stand.</p><p>${historic.parkedSince ? `Parked since ${historic.parkedSince}` : 'Model aircraft'}</p>` : '<strong>Inspect the illustration</strong><p>Select an aircraft or stand in either view. Stand assignments and routes are illustrative proposals; no individual aircraft decision is executed.</p>';
       $('#clear-selection').hidden = !selection; return;
     }
     const state = frame.states.find(s => s.id === stand?.id), occupant = plane || state?.plane;
     $('#clear-selection').hidden = false;
-    $('#inspector-content').innerHTML = `<strong>${occupant ? `${occupant.id} · ${stand.id}` : stand.id}</strong><dl><div><dt>Area / state</dt><dd>${AREA_LABELS[stand.area]} · ${STATE_LABELS[state?.status || 'free']}</dd></div><div><dt>Flexible position / current envelope</dt><dd>${stand.name} · ${su(stand.su)}</dd></div><div><dt>Shared area budget</dt><dd>${stand.area === 'waiting' ? 'Unconstrained decision area' : su(frame.capacity[stand.area])}</dd></div></div>${occupant ? `<div><dt>Aircraft class / footprint</dt><dd>${occupant.name} · ${su(occupant.su)}</dd></div><div><dt>Origin</dt><dd>${sourceLabel[occupant.source]}</dd></div><div><dt>Movement</dt><dd id="inspector-motion">${escapeHTML(livePositions.get(occupant.id)?.status || 'Parked in illustrated position')}</dd></div>` : ''}</dl>${occupant?.source === 'carry-over' ? '<p>Representative multi-day carry-over reconciles hourly illustration with daily P50. Its appearance or removal is a model alignment, not an additional forecast flight.</p>' : ''}<p>${stand.area === 'waiting' ? 'Awaiting a named manager’s parking decision.' : 'Proposed layout only. The manager remains responsible for individual parking decisions.'}</p>`;
+
+    const parkedOrigin = occupant ? (
+      occupant.bornDay !== undefined && occupant.bornDay >= 0 && occupant.bornDay < frame.dayIndex
+        ? `Parked since ${occupant.parkedSince || dateLabel(data.days[occupant.bornDay].date)}`
+        : occupant.source === 'opening'
+          ? 'Parked since before planning week (opening fleet)'
+          : occupant.source === 'arrival' && occupant.bornDay === frame.dayIndex
+            ? `Arrived today (${dateLabel(data.days[frame.dayIndex].date, true)})`
+            : occupant.parkedSince ? `Parked since ${occupant.parkedSince}` : 'Model carry-over'
+    ) : '—';
+
+    $('#inspector-content').innerHTML = `<strong>${occupant ? `${occupant.id} · ${stand.id}` : stand.id}</strong><dl><div><dt>Area / state</dt><dd>${AREA_LABELS[stand.area]} · ${STATE_LABELS[state?.status || 'free']}</dd></div><div><dt>Position / envelope</dt><dd>${stand.name} · ${su(stand.su)}</dd></div><div><dt>Shared area budget</dt><dd>${stand.area === 'waiting' ? 'Decision area' : su(frame.capacity[stand.area])}</dd></div>${occupant ? `<div><dt>Aircraft class / footprint</dt><dd>${occupant.name} · ${su(occupant.su)}</dd></div><div><dt>Status</dt><dd>${escapeHTML(parkedOrigin)}</dd></div><div><dt>Movement</dt><dd id="inspector-motion">${escapeHTML(livePositions.get(occupant.id)?.status || 'Parked in stand')}</dd></div>` : ''}</dl><p>${stand.area === 'waiting' ? 'Awaiting manager decision. The system never accepts, refuses or diverts an aircraft.' : 'Proposed layout only. A named manager approves preparations.'}</p>`;
   }
+
   function highlight() {
     const focus = hover || selection, { plane, stand } = relevant(focus);
     for (const selector of ['#stand-map [data-stand]', '#stand-map [data-aircraft]', '#stand-timeline [data-stand]', '#stand-timeline [data-aircraft]']) {
@@ -109,6 +131,7 @@ export function createStandViews(data, layout, callbacks) {
         element.dataset.stand && element.dataset.stand === stand?.id || element.dataset.aircraft && element.dataset.aircraft === (plane?.id || focus?.aircraftId))));
     }
   }
+
   function updatePositions(positions) {
     livePositions = new Map(positions.map(position => [position.id, position]));
     for (const element of $('#stand-map').querySelectorAll('[data-map-plane]')) {
@@ -118,8 +141,12 @@ export function createStandViews(data, layout, callbacks) {
     }
     const { plane, stand } = relevant(selection);
     const current = plane || frame?.states.find(s => s.id === stand?.id)?.plane;
-    const motion = $('#inspector-motion'); if (motion && current && livePositions.has(current.id) && motion.textContent !== livePositions.get(current.id).status) motion.textContent = livePositions.get(current.id).status;
+    const motion = $('#inspector-motion');
+    if (motion && current && livePositions.has(current.id) && motion.textContent !== livePositions.get(current.id).status) {
+      motion.textContent = livePositions.get(current.id).status;
+    }
   }
+
   return {
     setLedger(value) { placements = value; generation++; timelineKey = ''; },
     update(value) { frame = value; renderMap(); renderFlow(); renderTimeline(); renderRegister(); inspector(); },

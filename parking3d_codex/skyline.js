@@ -54,11 +54,15 @@ export function createSkyline(scene, data, layout, onDaySelect) {
       column.range.material.opacity = index === selected ? .61 : .35;
       column.marker.material.emissiveIntensity = index === selected ? .65 : .15;
       column.dayLabel.element.classList.toggle('highlight', index === selected);
+      const riskLevel = day.risk_level;
+      const riskMeaning = data.demand_levels.labels[riskLevel];
+      column.dayLabel.element.textContent = `${day.weekday.slice(0, 3)} ${Number(day.date.slice(-2))} · ${riskLevel}`;
+      column.dayLabel.element.title = `${riskLevel} demand: ${riskMeaning}`;
       column.probability.position.y = p90 * yScale + 5;
       const chance = Math.round(day.probability * 100);
-      column.button.textContent = `${chance}% over capacity`;
-      column.button.setAttribute('aria-label', `${day.weekday}, ${day.date}: P10 ${p10.toFixed(1)}, P50 ${day.parking_demand_su_p50.toFixed(1)}, P90 ${p90.toFixed(1)} su; ${chance}% over ${day.capacity.toFixed(1)} su. Jump to busiest hour.`);
-      column.button.title = `P10 ${p10.toFixed(1)} · P50 ${day.parking_demand_su_p50.toFixed(1)} · P90 ${p90.toFixed(1)} su. Select busiest hour.`;
+      column.button.textContent = `${riskLevel} · ${chance}% over capacity`;
+      column.button.setAttribute('aria-label', `${day.weekday}, ${day.date}: ${riskLevel} demand (${riskMeaning}); P10 ${p10.toFixed(1)}, P50 ${day.parking_demand_su_p50.toFixed(1)}, P90 ${p90.toFixed(1)} su; ${chance}% over ${day.capacity.toFixed(1)} su. Jump to busiest hour.`);
+      column.button.title = `${day.weekday}: ${riskLevel} demand (${riskMeaning}). P10 ${p10.toFixed(1)} · P50 ${day.parking_demand_su_p50.toFixed(1)} · P90 ${p90.toFixed(1)} su. Select busiest hour.`;
     });
     const day = days[selected]; if (!day) return;
     for (const [layer, capacity, text] of [
@@ -73,7 +77,10 @@ export function createSkyline(scene, data, layout, onDaySelect) {
     const close = preset === 'skyline' || camera.position.distanceTo(plinth.position) < u * 11;
     group.visible = forecast.length > 0;
     title.visible = close; subtitle.visible = close && !mobile;
-    columns.forEach((c, i) => { c.dayLabel.visible = close && (!mobile || i === selected); c.probability.visible = close && (!mobile || i === selected); });
+    columns.forEach((c, i) => {
+      c.dayLabel.visible = close && (!mobile || i === selected);
+      c.probability.visible = close && (!mobile || i === selected);
+    });
     rampPlane.text.visible = close; preparedPlane.text.visible = close;
   }
   return { bounds, group, pickables, setForecast, updateLabels, yScale, get height() { return Math.max(data.capacity.ramp_su, ...forecast.map(day => day.parking_demand_su_p90)) * yScale; } };

@@ -12,40 +12,96 @@
   <script type="module" src="./app.js"></script>
 </head>
 <body>
+  <aside id="whatif-banner" class="whatif-banner" hidden role="region" aria-label="What-if preview mode" aria-live="polite">
+    <div class="whatif-inner">
+      <div class="whatif-message">
+        <span class="whatif-tag">WHAT-IF PREVIEW</span>
+        <strong id="whatif-text"></strong>
+      </div>
+      <button type="button" id="whatif-back-btn" class="whatif-back-btn">Back to the model's call</button>
+    </div>
+  </aside>
+
   <div class="app-shell">
     <header class="masthead">
       <div class="brand"><span class="brand-mark" aria-hidden="true">✳</span><div><span class="eyebrow" id="fbo-name"></span><h1>RAMP CONTROL<span class="accent-dot">.</span></h1></div></div>
       <div class="mast-meta"><span>PLANNING WEEK</span><strong id="planning-window"></strong><span id="timezone-label"></span><button id="theme-toggle" type="button" aria-label="Switch to light theme">◐ <span>THEME</span></button></div>
     </header>
 
-    <div class="control-bar" aria-label="Forecast controls">
+    <section class="models-call-panel" id="models-call-panel" aria-labelledby="models-call-heading">
+      <div class="models-call-inner">
+        <div class="models-call-header">
+          <div class="call-badge-wrap"><span class="badge-call">DECIDED BY MODEL</span></div>
+          <h2 id="models-call-heading">The model's call</h2>
+          <p class="models-call-note" id="models-call-note"></p>
+        </div>
+        <div class="models-call-grid">
+          <div class="call-card call-demand">
+            <span class="call-subhead">DEMAND FORECAST</span>
+            <div class="call-demand-line" id="call-demand-line"></div>
+            <p id="forecast-advice-main" class="sr-only"></p><p id="forecast-advice-range"></p>
+            <div class="demand-levels-list" id="demand-levels-list"></div>
+          </div>
+          <div class="call-card call-situations">
+            <span class="call-subhead">SITUATION OUTLOOK</span>
+            <ul class="call-situations-items" id="call-situations-items"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="control-bar" aria-label="Date and capacity controls">
       <div class="control-inner">
-        <fieldset class="scenario-control"><legend>Forecast range</legend><div class="segmented" id="scenario-options"></div></fieldset>
-        <label class="select-control">Situation<select id="situation"></select></label>
         <label class="select-control date-control">Date<select id="date-select"></select></label>
         <div class="control-hint"><span class="status-dot"></span><span id="view-context"></span></div>
       </div>
     </div>
 
     <main id="main">
-        <section class="scene-panel" aria-labelledby="scene-title">
-          <div class="scene-stage" id="scene-stage">
-            <div id="scene"></div>
-            <div id="scene-fallback" class="scene-fallback" hidden>The 3D view is unavailable. Use the synchronized stand map, occupancy timeline and daily forecast below.</div>
-            <div class="scene-heading"><div><p class="section-kicker">PARKING WORLD / ILLUSTRATION</p><h2 id="scene-title">A week on the ramp</h2></div><div class="scene-actions"><button id="auto-orbit" type="button" aria-pressed="false">Auto orbit</button><button id="fullscreen" type="button" aria-pressed="false">Fullscreen</button></div></div>
-            <div class="camera-controls" role="group" aria-label="Camera presets"><button data-camera="overview" aria-pressed="false">Overview</button><button data-camera="ramp" aria-pressed="true">Main ramp</button><button data-camera="remote" aria-pressed="false">Overflow apron</button><button data-camera="waiting" aria-pressed="false">Decision area</button><button data-camera="skyline" aria-pressed="false">Week skyline</button><button data-camera="isometric" aria-pressed="false">Isometric</button><button data-camera="follow" aria-pressed="false" disabled>Follow aircraft</button></div>
-            <div class="scene-corner">ILLUSTRATIVE · DRAG TO ORBIT · PINCH TO ZOOM</div>
-            <div class="scene-hud">
-              <details id="hud-outlook" open><summary><span>SELECTED-DAY OUTLOOK</span><strong id="hud-short"></strong></summary><p id="hud-answer"></p><p id="hud-range"></p></details>
-              <div class="telemetry"><div><span class="telemetry-label">ILLUSTRATED HOUR</span><strong id="clock-face">—</strong><small id="movement">—</small></div><div class="gauge-block"><div class="gauge-caption"><span>USED / APPROVED SPACE</span><strong id="gauge-value">—</strong></div><div class="gauge"><span id="gauge-fill"></span></div><small id="gauge-detail">—</small></div><div class="waiting-readout"><span class="telemetry-label">AWAITING MANAGER</span><strong id="waiting-count">—</strong><small id="waiting-space"></small></div></div>
+      <section class="scene-panel" aria-labelledby="scene-title">
+        <div class="scene-stage" id="scene-stage">
+          <div id="scene"></div>
+          <div id="pause-stage-banner" class="pause-stage-banner" hidden aria-live="polite"><span class="pause-icon" aria-hidden="true">⏸</span><span>Security pause (expected): no private movements</span></div>
+          <div id="scene-fallback" class="scene-fallback" hidden>The 3D view is unavailable. Use the synchronized stand map, occupancy timeline and daily forecast below.</div>
+          <div class="scene-heading"><div><p class="section-kicker">PARKING WORLD / ILLUSTRATION</p><h2 id="scene-title">A week on the ramp</h2></div><div class="scene-actions"><button id="auto-orbit" type="button" aria-pressed="false">Auto orbit</button><button id="fullscreen" type="button" aria-pressed="false">Fullscreen</button></div></div>
+          <div class="camera-controls" role="group" aria-label="Camera presets"><button data-camera="overview" aria-pressed="false">Overview</button><button data-camera="ramp" aria-pressed="true">Main ramp</button><button data-camera="remote" aria-pressed="false">Overflow apron</button><button data-camera="waiting" aria-pressed="false">Decision area</button><button data-camera="skyline" aria-pressed="false">Week skyline</button><button data-camera="isometric" aria-pressed="false">Isometric</button><button data-camera="follow" aria-pressed="false" disabled>Follow aircraft</button></div>
+          <div class="scene-corner">ILLUSTRATIVE · DRAG TO ORBIT · PINCH TO ZOOM</div>
+          <div class="scene-hud" id="scene-hud">
+            <div class="hud-strip">
+              <div class="hud-counts"><span id="hud-view-context"></span>
+                <div class="hud-stat-main"><strong id="hud-ramp-count">Aircraft on the ramp now: —</strong></div>
+                <div class="hud-stat-peak"><span id="hud-peak-count">Model median at today's peak: —</span></div>
+              </div>
+              <button type="button" class="hud-toggle" id="hud-toggle" aria-expanded="true" aria-controls="hud-body">Collapse</button>
             </div>
-            <div class="timeline"><button class="play-button" id="play" type="button" aria-label="Play time lapse" aria-pressed="false">▶</button><label class="scrub-wrap"><span class="sr-only">Day and hour</span><input id="scrub" type="range" step="1"></label><label class="speed-control">Speed<select id="speed"><option value="slow">Slow</option><option value="normal" selected>Normal</option><option value="fast">Fast</option></select></label></div>
-            <p id="scene-control-status" class="sr-only" aria-live="polite"></p>
+            <div class="hud-body" id="hud-body">
+              <details id="hud-outlook" open><summary><span>SELECTED-DAY OUTLOOK</span><strong id="hud-short"></strong></summary><p id="hud-answer"></p><p id="hud-range"></p></details>
+              <div class="telemetry">
+                <div><span class="telemetry-label">ILLUSTRATED TIME</span><strong id="clock-face">—</strong><small id="movement">—</small></div>
+                <div class="gauge-block"><div class="gauge-caption"><span>USED / APPROVED SPACE</span><strong id="gauge-value">—</strong></div><div class="gauge"><span id="gauge-fill"></span></div><small id="gauge-detail">—</small></div>
+                <div class="waiting-readout"><span class="telemetry-label">AWAITING MANAGER</span><strong id="waiting-count">—</strong><small id="waiting-space"></small></div>
+              </div>
+            </div>
           </div>
-          <div class="area-capacities"><span>Main ramp <b id="ramp-label"></b></span><span>Overflow lease <b id="remote-label"></b></span><a href="#question-heading">Read daily forecast ↓</a></div>
-          <div class="timeline-ends"><span id="timeline-start"></span><span id="timeline-end"></span></div><p id="restriction-note" class="restriction-note" hidden></p>
-          <details class="scene-method"><summary>How this illustration relates to the model</summary><p class="scene-note">Seeded aircraft start from the supplied opening count. Illustrated hour demand = daily P50 − (day's peak cumulative net arrivals minus this hour's cumulative net arrivals) × mean aircraft space units from the supplied mix. Representative carry-in aircraft align the picture to that demand. Hourly placement is <strong>not a forecast</strong>; the probability beside it applies to the whole day. Waiting aircraft need a manager decision. The scene uses only recorded approvals on their applicable dates; the daily forecast can separately compare the full proposal. Arrival maneuvers reserve a stand; departing aircraft release their stand at the hour boundary. Carry-over adjustments stay at their illustrated positions and do not count as extra flights.</p></details>
-        </section>
+          <div class="timeline">
+            <button class="play-button" id="play" type="button" aria-label="Play time lapse" aria-pressed="false">▶</button>
+            <label class="scrub-wrap"><span class="sr-only">Day and hour</span><input id="scrub" type="range" step="0.016667"></label>
+            <label class="speed-control">Speed
+              <select id="speed">
+                <option value="realtime">Real time (1 min/s)</option>
+                <option value="slow">Slow (5 min/s)</option>
+                <option value="normal" selected>Normal (15 min/s)</option>
+                <option value="fast">Fast (30 min/s)</option>
+              </select>
+            </label>
+          </div>
+          <p id="scene-control-status" class="sr-only" aria-live="polite"></p>
+        </div>
+        <div class="area-capacities"><span>Main ramp <b id="ramp-label"></b></span><span>Overflow lease <b id="remote-label"></b></span><a href="#question-heading">Read daily forecast ↓</a></div>
+        <div class="timeline-ends"><span id="timeline-start"></span><span id="timeline-end"></span></div><p id="restriction-note" class="restriction-note" hidden></p>
+        <details class="scene-method"><summary>How this illustration relates to the model</summary><p class="scene-note">Aircraft identities persist from the supplied opening fleet and modeled daily movements. Rounded size medians anchor the busiest illustrated hour; independent medians can differ from rounded daily movement totals. Any peak count discrepancy is shown in the overlay. Hour-of-day timing uses the supplied placeholder profile, not a forecast. Arrivals reserve stands and departures release them at the hour boundary; minute-level taxi paths are illustrative. Recorded named approvals activate preparations only on their applicable dates. No individual aircraft is dispatched or refused.</p></details>
+      </section>
+
       <section class="intro" aria-labelledby="question-heading">
         <div><p class="section-kicker">THE DECISION</p><h2 id="question-heading">When does the ramp run out of space?</h2><p class="intro-copy" id="summary-copy">Loading parking model…</p></div>
         <div class="method-stamp"><span>MODEL OUTPUT</span><strong>P50</strong><span>with P10–P90 range</span></div>
@@ -63,8 +119,65 @@
           <div class="chart-wrap"><svg id="week-chart" viewBox="0 0 680 244" role="img" aria-label="Daily parking demand range, median, ordinary week, and capacity"></svg></div>
           <div class="chart-key"><span><i class="key-range"></i>P10–P90 range</span><span><i class="key-median"></i>P50 demand</span><span><i class="key-ordinary"></i>Ordinary week P50</span><span><i class="key-capacity"></i>Ramp capacity</span><span><i class="key-prepared"></i>Prepared capacity</span></div>
         </div>
+      </section>
 
+      <section class="impact-grid-section" id="impact-grid-section" aria-labelledby="impact-grid-heading">
+        <div class="section-top">
+          <div>
+            <p class="section-kicker">MODEL-GENERATED SITUATION × DEMAND MATRIX</p>
+            <h2 id="impact-grid-heading">Impact grid</h2>
+          </div>
+          <span class="tag model">DECIDED BY MODEL</span>
+        </div>
+        <p class="section-lead" id="impact-grid-lead"></p>
+        <div class="table-wrap">
+          <table id="impact-grid-table" class="impact-grid-table">
+            <caption>Model-generated impact grid across demand scenarios and operational situations. Select a cell to preview.</caption>
+            <thead></thead>
+            <tbody id="impact-grid-tbody"></tbody>
+          </table>
+        </div>
+      </section>
 
+      <section class="flow-plan-section" id="flow-plan-section" aria-labelledby="flow-plan-heading">
+        <div class="section-top">
+          <div>
+            <p class="section-kicker">OPERATIONAL FLOW MANAGEMENT</p>
+            <h2 id="flow-plan-heading">How to manage the flow of aircraft</h2>
+          </div>
+          <span class="tag model">DAY-BY-DAY FLOW PLAN</span>
+        </div>
+        <p class="section-lead">Daily movement targets, peak ramp loading, and recommended management actions requiring named approval for the active view.</p>
+        <div class="table-wrap">
+          <table class="flow-table">
+            <caption>Day-by-day aircraft flow, peak space utilization, and recommended management actions.</caption>
+            <thead>
+              <tr>
+                <th scope="col">Day & Date</th>
+                <th scope="col">Demand Level</th>
+                <th scope="col">Arrivals by Size</th>
+                <th scope="col">Departures by Size</th>
+                <th scope="col">Aircraft at Peak</th>
+                <th scope="col">Peak Space vs Ramp</th>
+                <th scope="col">What to do that day</th>
+              </tr>
+            </thead>
+            <tbody id="flow-plan-tbody"></tbody>
+          </table>
+        </div>
+        <div class="flow-levers-footer">
+          <div class="lever-card advised-against">
+            <span class="lever-badge critical-badge">MODEL ADVISES AGAINST</span>
+            <h4>Counterproductive Early-Arrival Incentive</h4>
+            <p id="lever-not-recommended"></p>
+          </div>
+          <div class="lever-card human-in-command">
+            <span class="lever-badge ok-badge">HUMAN IN COMMAND</span>
+            <h4>Authority & Operational Limits</h4>
+            <p id="lever-human-in-command"></p>
+            <small class="human-rule-sub">Every action stays an offer or a recommendation approved by a named person; nothing dispatches or refuses an aircraft.</small>
+          </div>
+        </div>
       </section>
 
       <section class="mechanism-section" aria-labelledby="mechanism-heading">
