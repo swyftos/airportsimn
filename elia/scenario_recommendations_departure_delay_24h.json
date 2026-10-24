@@ -15,8 +15,8 @@
     "Low": {
       "summary": {
         "peak_day": "2027-02-15",
-        "peak_parking_demand_su_p50": 45.0,
-        "peak_parking_demand_su_p90": 49.4,
+        "peak_parking_demand_su_p50": 15.6,
+        "peak_parking_demand_su_p90": 21.2,
         "normal_capacity_su": 75.0,
         "max_prepared_capacity_su": 75.0,
         "risk_days": [],
@@ -80,8 +80,8 @@
     "Medium": {
       "summary": {
         "peak_day": "2027-02-15",
-        "peak_parking_demand_su_p50": 56.4,
-        "peak_parking_demand_su_p90": 60.3,
+        "peak_parking_demand_su_p50": 18.4,
+        "peak_parking_demand_su_p90": 25.3,
         "normal_capacity_su": 75.0,
         "max_prepared_capacity_su": 75.0,
         "risk_days": [],
@@ -145,35 +145,20 @@
     "High": {
       "summary": {
         "peak_day": "2027-02-15",
-        "peak_parking_demand_su_p50": 69.0,
-        "peak_parking_demand_su_p90": 74.2,
+        "peak_parking_demand_su_p50": 22.2,
+        "peak_parking_demand_su_p90": 30.4,
         "normal_capacity_su": 75.0,
         "max_prepared_capacity_su": 75.0,
-        "risk_days": [
-          "2027-02-15"
-        ],
-        "overall_risk": "Medium"
+        "risk_days": [],
+        "overall_risk": "Low"
       },
-      "actions": [
-        {
-          "id": "extra_line_staff",
-          "category": "staffing",
-          "action": "Schedule 2 additional technician shifts over the week (see daily table)",
-          "dates": [
-            "2027-02-16"
-          ],
-          "rationale": "P50 movements plus 15% buffer exceed the normal crew of 3 per shift",
-          "cost_usd": 1200.0,
-          "requires_human_approval": true,
-          "approver": "FBO general manager"
-        }
-      ],
-      "preparation_cost_usd": 1200.0,
+      "actions": [],
+      "preparation_cost_usd": 0,
       "impact": {
         "runs": 10000,
         "no_preparation": {
           "unaccommodated_aircraft": {
-            "mean": 0.1,
+            "mean": 0.0,
             "p10": 0.0,
             "p50": 0.0,
             "p90": 0.0
@@ -185,16 +170,16 @@
             "p90": 0.0
           },
           "total_cost_usd": {
-            "mean": 220.0,
+            "mean": 0.0,
             "p10": 0.0,
             "p50": 0.0,
             "p90": 0.0
           },
-          "prob_any_unaccommodated": 0.052
+          "prob_any_unaccommodated": 0.0
         },
         "ai_preparation": {
           "unaccommodated_aircraft": {
-            "mean": 0.1,
+            "mean": 0.0,
             "p10": 0.0,
             "p50": 0.0,
             "p90": 0.0
@@ -206,18 +191,18 @@
             "p90": 0.0
           },
           "total_cost_usd": {
-            "mean": 1419.0,
-            "p10": 1200.0,
-            "p50": 1200.0,
-            "p90": 1200.0
+            "mean": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0
           },
-          "prob_any_unaccommodated": 0.052
+          "prob_any_unaccommodated": 0.0
         },
         "net_benefit_usd": {
-          "mean": -1199.0,
-          "p10": -1200.0,
-          "p50": -1200.0,
-          "p90": -1200.0
+          "mean": 0.0,
+          "p10": 0.0,
+          "p50": 0.0,
+          "p90": 0.0
         },
         "prob_preparation_pays_off": 0.0
       }

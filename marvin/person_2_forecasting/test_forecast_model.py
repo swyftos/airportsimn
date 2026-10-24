@@ -110,23 +110,38 @@ class ForecastTests(unittest.TestCase):
         m.write_csv(path, rows)
         planning, evidence = build(path)
         forecast, _, _ = m.forecast(m.load_history(path), planning)
+        for scenario, excess in (('Low', .031), ('Medium', .155), ('High', .31)):
+            event = [r for r in forecast if r['date'] <= '2027-02-15' and r['scenario']==scenario]
+            baseline = sum(r['baseline_'+t] for r in event for t in m.TARGETS)
+            predicted = sum(r['expected_'+t] for r in event for t in m.TARGETS)
+            self.assertAlmostEqual(predicted/baseline-1, excess, places=3)
         event = [r for r in forecast if r['date'] <= '2027-02-15' and r['scenario']=='Medium']
-        baseline = sum(r['baseline_'+t] for r in event for t in m.TARGETS)
-        predicted = sum(r['expected_'+t] for r in event for t in m.TARGETS)
-        self.assertAlmostEqual(predicted/baseline-1, .155, places=4)
         extra = {t: sum(r['expected_'+t]-r['baseline_'+t] for r in event) for t in m.TARGETS}
         self.assertAlmostEqual(extra['arrivals'], extra['departures'], places=2)  # outputs rounded to 3 decimals
         self.assertTrue(all(r['reserved_arrivals']==0 and r['reserved_departures']==0 for r in planning))
         self.assertTrue(all(r['arrivals_reservation_floor']==0 and r['departures_reservation_floor']==0 for r in forecast))
         self.assertFalse(evidence['observed_directional_split'])
         for r in forecast:
-            if r['scenario']=='Low' or r['date'] > '2027-02-15':
+            if r['date'] > '2027-02-15':
                 self.assertEqual(r['arrivals_multiplier'],1)
                 self.assertEqual(r['departures_multiplier'],1)
             if r['date'] == '2027-02-15':
                 self.assertEqual(r['arrivals_multiplier'],1)
             if r['date'] < '2027-02-14':
                 self.assertEqual(r['departures_multiplier'],1)
+    def test_presidents_day_effect_is_learned_from_history(self):
+        self.assertEqual(m.presidents_day(2027), date(2027,2,15))
+        self.assertEqual(m.presidents_day(2025), date(2025,2,17))
+        from convert_monthly_to_daily import convert
+        rows, _ = convert()
+        path = Path(self.tmp.name)/'ga_history.csv'
+        m.write_csv(path, rows)
+        fitted, _ = m.fit_and_evaluate(m.load_history(path), .9)
+        model = fitted['light_jet','arrivals'][0]
+        holiday = model.holiday['presidents_day']
+        self.assertGreater(holiday, 1)
+        self.assertAlmostEqual(model.predict(date(2027,2,15)), model.ordinary(date(2027,2,15))*holiday)
+        self.assertEqual(model.predict(date(2027,2,22)), model.ordinary(date(2027,2,22)))
 
 if __name__ == '__main__':
     unittest.main()

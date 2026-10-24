@@ -3,52 +3,65 @@
   "source_url": "https://aspm.faa.gov/opsnet/sys/Airport.asp",
   "retrieval_date": "2026-10-23",
   "repository_delivery": "PR 17 (not the data source)",
-  "metric": "airport-wide air-taxi operations: takeoffs plus landings",
+  "metric": "airport-wide operations (takeoffs plus landings): GA for Low, air taxi for Medium/High",
   "lax_five_day_control_adjusted_excess": 0.155,
+  "lax_ga_five_day_control_adjusted_excess": 0.031,
   "six_airport_five_day_control_adjusted_excess": 0.085,
   "regional_monday_raw_same_weekday_ratio": 1.33,
   "observed_directional_split": false,
   "observed_aircraft_size_split": false,
   "method": "Regional positive daily excess shape normalized to LAX five-day control-adjusted excess, weighted by forecast baseline movements.",
   "scenario_excess_scales": {
-    "low": 0.0,
-    "medium": 1.0,
-    "high": 2.0
+    "low": {
+      "metric": "general_aviation",
+      "factor": 1,
+      "excess": 0.031
+    },
+    "medium": {
+      "metric": "air_taxi",
+      "factor": 1,
+      "excess": 0.155
+    },
+    "high": {
+      "metric": "air_taxi",
+      "factor": 2,
+      "excess": 0.31
+    }
   },
   "direction_assumption": "FAA table has no directional split. Aircraft conservation: extra arrivals = extra departures = half the five-day excess operations; arrivals Thu-Sat plus half of game day, departures half of game day plus Monday.",
-  "scope_transfer": "Apply air-taxi proxy uplift to GA+air-taxi FBO allocation; unvalidated.",
+  "scope_transfer": "History is GA only (Part 91). Air-taxi event response applied to GA FBO demand in Medium/High as an analog; unvalidated.",
   "shoulders": "Tuesday and Wednesday set to ordinary baseline; conservative boundary assumption.",
   "reservations": "Zero synthetic placeholders, show rate zero; no observed bookings or claim of zero actual reservations.",
   "daily": [
     {
       "date": "2027-02-11",
-      "medium_operations_multiplier": 1.0848720669125678,
-      "medium_arrivals_multiplier": 1.1551235679078826,
+      "medium_operations_multiplier": 1.0800243515506935,
+      "medium_arrivals_multiplier": 1.153851146966142,
       "medium_departures_multiplier": 1.0
     },
     {
       "date": "2027-02-12",
-      "medium_operations_multiplier": 1.230809080777854,
-      "medium_arrivals_multiplier": 1.4218576195709163,
+      "medium_operations_multiplier": 1.2176257477066854,
+      "medium_arrivals_multiplier": 1.418397278393787,
       "medium_departures_multiplier": 1.0
     },
     {
       "date": "2027-02-13",
-      "medium_operations_multiplier": 1.0591998863674497,
-      "medium_arrivals_multiplier": 1.1082016489891817,
+      "medium_operations_multiplier": 1.0558185123888904,
+      "medium_arrivals_multiplier": 1.1073141110994753,
       "medium_departures_multiplier": 1.0
     },
     {
       "date": "2027-02-14",
-      "medium_operations_multiplier": 1.0985589974563386,
-      "medium_arrivals_multiplier": 1.090069818557625,
-      "medium_departures_multiplier": 1.108814922942862
+      "medium_operations_multiplier": 1.0929295131819399,
+      "medium_arrivals_multiplier": 1.089331009330264,
+      "medium_departures_multiplier": 1.096830101520666
     },
     {
       "date": "2027-02-15",
-      "medium_operations_multiplier": 1.3012826175914989,
+      "medium_operations_multiplier": 1.284073983152696,
       "medium_arrivals_multiplier": 1.0,
-      "medium_departures_multiplier": 1.665267416742262
+      "medium_departures_multiplier": 1.59199519477094
     },
     {
       "date": "2027-02-16",
