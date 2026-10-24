@@ -99,3 +99,19 @@ def test_security_variant_parking_matches_standard_without_next_day_slips():
     slipped, _ = po.run(demand, dict(A, security_next_day_share=1.0), "security_restriction")
     assert slipped["parking_demand_su_p50"].sum() > standard["parking_demand_su_p50"].sum()
     assert all(x["requires_human_approval"] for r in recs.values() for x in r["actions"])
+
+
+def test_heavy_rain_moves_missing_movements_to_next_day():
+    rain = po.load_heavy_rain()
+    assert -0.2 < rain["effect"] < 0
+    rng = np.random.default_rng(1)
+    arr, dep = rng.uniform(1, 9, (20, 7, 3)), rng.uniform(1, 9, (20, 7, 3))
+    a2, d2, pushed = po.heavy_rain_shift(arr, dep, 3, rain["effect"])
+    assert np.allclose(a2[:, 3], arr[:, 3] * (1 + rain["effect"]))
+    assert np.allclose(a2.sum(1), arr.sum(1)) and np.allclose(d2.sum(1), dep.sum(1))
+    assert np.allclose(pushed, 0)
+    table, recs = po.run(po.load_demand(), dict(A, heavy_rain_day=3), "heavy_rain")
+    standard, _ = po.run(po.load_demand(), A)
+    assert list(table.columns) == list(standard.columns)
+    assert all(x["requires_human_approval"] for r in recs.values() for x in r["actions"])
+

@@ -49,6 +49,13 @@ def convert(source=SOURCE, monthly=MONTHLY):
             allocation='observed_daily_faa_counts', data_class='estimated'))
     return rows, checks
 
+def holiday_history(source=SOURCE):
+    """Airport GA + air-taxi daily counts 2016-2019 and 2023-2025, used only for scale-free holiday ratios."""
+    with Path(source).open(newline='', encoding='utf-8-sig') as f:
+        days = [r for r in csv.DictReader(f) if int(r['date'][:4]) in (2016, 2017, 2018, 2019, *YEARS)]
+    return [dict(date=d['date'], arrivals=sum(float(d[p]) for p in PARTS) * ARRIVAL_SHARE,
+                 departures=sum(float(d[p]) for p in PARTS) * (1 - ARRIVAL_SHARE), source=d['source']) for d in days]
+
 def write(path, rows):
     with path.open('w', newline='', encoding='utf-8') as f:
         w=csv.DictWriter(f, fieldnames=list(rows[0]))
@@ -61,8 +68,9 @@ def main():
     rows,checks=convert()
     write(dest/'historical_traffic.csv',rows)
     write(dest/'monthly_reconciliation.csv',checks)
+    write(dest/'holiday_history.csv',holiday_history())
     from build_event_inputs import build
-    planning, evidence = build(dest/'historical_traffic.csv')
+    planning, evidence = build(dest/'historical_traffic.csv', dest/'holiday_history.csv')
     (dest/'event_evidence.json').write_text(json.dumps(evidence,indent=2),encoding='utf-8')
     write(dest/'planning_inputs.csv',planning)
     print(f'{len(rows)} estimated rows from daily FAA GA + air-taxi counts; {len(checks)} months reconciled.')

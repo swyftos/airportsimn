@@ -84,3 +84,12 @@ Limits: one event, during the post-COVID recovery; tower operations count takeof
 | 2016 to 2019 | 1.04 | 1.02 | 1.05 | 1.09 | 1.04 | 0.80 | 0.96 |
 
 Use for the team: these are observed airport-wide daily counts, so they can replace the illustrative weekday multipliers in `alan/assumptions.csv` (which put Tuesday and Wednesday at 1.12 and Sunday at 0.95) and the equal-share daily allocation in P2's provisional history. They also allow a daily backtest at airport scope, which is the only accuracy figure the team can present as measured. Daily GA plus air-taxi operations over 2023 to 2025 average 93 with a standard deviation of 22 (range 7 to 214), which is the day-to-day noise a forecast has to beat. FBO-level counts still need the agreed capture share, direction split and category mix, which remain assumptions.
+
+### Other Super Bowl host cities
+
+`python alan/elia_output/scripts/fetch_opsnet.py hosts`, then `python alan/elia_output/scripts/analyze_superbowl_hosts.py`.
+
+- `opsnet_daily_superbowl_hosts.csv`: daily air-taxi and GA operations at the towered business-jet airports of seven other host areas, 14 days before to 13 days after each game, and the same calendar window in three control years each (2,800 rows, all 28 days present for every airport and year). Minneapolis 2018 (MSP, STP, FCM), Atlanta 2019 (ATL, PDK, FTY), Miami 2020 (MIA, OPF, FLL, FXE, TMB), Phoenix 2023 (PHX, SDL, DVT, IWA, FFZ), Las Vegas 2024 (LAS, VGT, HND), New Orleans 2025 (MSY, NEW), Bay Area 2026 (SJC, OAK, PAO, RHV). Classification `verified_public`.
+- `superbowl_hosts_excess.csv`: five-day (Thursday to Monday) control-adjusted excess per game and metric, same method as Super Bowl LVI, with LVI added and the position against the forecast scenarios (Low +3.1 %, Medium +15.5 %, High +31 %).
+
+Air-taxi excess: Minneapolis +90 %, Atlanta +12 %, Miami +32 %, Los Angeles +15.5 % (LAX), Phoenix −22 %, Las Vegas +19 %, New Orleans +285 %, Bay Area +61 %. GA falls at most host airports, because the security restriction bans training flights. Phoenix's control years all contain the Phoenix Open golf tournament, held in Super Bowl week every year, so its baseline is itself an event week. Small markets jump far more in percentage terms because their ordinary traffic is small.
