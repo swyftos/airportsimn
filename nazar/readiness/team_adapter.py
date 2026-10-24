@@ -80,7 +80,7 @@ def parse_impact(value):
     check(abs(difference-result['net_benefit_usd']['mean'])<=.16,'P3 mean net benefit does not reconcile with mean costs.')
     return result
 
-def load_native(raw):
+def load_standard(raw):
     check(set(raw)==set(NATIVE_PATHS),'provide all seven native input files.')
     check(all(isinstance(v,str) and len(v.encode())<=2_000_000 for v in raw.values()),'files must be UTF-8 text below 2 MB.')
     try:report=json.loads(raw['p2_report']);plans=json.loads(raw['p3_recommendations'])
@@ -131,7 +131,7 @@ def load_native(raw):
                 check(all(abs(dk[(d,s.title(),c,k)]['normal_fbo_baseline']-dk[(d,'Medium',c,k)]['normal_fbo_baseline'])<.0001 for c in CATEGORIES),'ordinary baseline differs between scenarios.')
             demand.append({'date':d,'scenario':s,**{k:sum(dk[(d,s.title(),c,k)]['expected_movements'] for c in CATEGORIES) for k in DIRECTIONS},'arrivals_lower':None,'arrivals_upper':None})
         baseline.append({'date':d,**normal,'parking_units':None})
-    resource_cols=('scenario','date','parking_demand_su_p10','parking_demand_su_p50','parking_demand_su_p90','capacity_normal_su','capacity_prepared_su','prob_over_normal_capacity','prob_over_prepared_capacity','techs_morning','techs_day','techs_night','techs_normal_per_shift','fuel_gallons_p50','fuel_trucks','fuel_trucks_normal')
+    resource_cols=('scenario','date','arrivals_p50','departures_p50','parking_demand_su_p10','parking_demand_su_p50','parking_demand_su_p90','capacity_normal_su','capacity_prepared_su','prob_over_normal_capacity','prob_over_prepared_capacity','techs_morning','techs_day','techs_night','techs_normal_per_shift','fuel_gallons_p50','fuel_trucks','fuel_trucks_normal')
     rp=rows(raw,'p3_resources',resource_cols)
     rk=keyed(rp,('date','scenario'),{(d,s.title()) for d in DATES for s in SCENARIOS},'P3 resources')
     resources=[]
@@ -142,7 +142,7 @@ def load_native(raw):
         check(0<=r['prob_over_prepared_capacity']<=r['prob_over_normal_capacity']<=1,'invalid capacity exceedance probabilities.')
         staff=max(r['techs_morning'],r['techs_day'],r['techs_night'])
         check(staff>=r['techs_normal_per_shift'],'prepared staffing is below ordinary staffing.')
-        resources.append({'date':r['date'],'scenario':r['scenario'].lower(),'variant':'standard','parking_units':r['parking_demand_su_p50'],'parking_p10':r['parking_demand_su_p10'],'parking_p90':r['parking_demand_su_p90'],'capacity_units':r['capacity_normal_su'],'prepared_capacity_units':r['capacity_prepared_su'],'staff_required':staff,'staff_available':r['techs_normal_per_shift'],'prepared_staff':staff,'fuel_gallons':r['fuel_gallons_p50'],'fuel_available_gallons':None,'preparation_cost':None,'prob_over_normal':r['prob_over_normal_capacity'],'prob_over_prepared':r['prob_over_prepared_capacity'],'staff_shifts':{k:r['techs_'+k] for k in ('morning','day','night')}})
+        resources.append({'date':r['date'],'scenario':r['scenario'].lower(),'variant':'standard','parking_units':r['parking_demand_su_p50'],'parking_p10':r['parking_demand_su_p10'],'parking_p90':r['parking_demand_su_p90'],'capacity_units':r['capacity_normal_su'],'prepared_capacity_units':r['capacity_prepared_su'],'staff_required':staff,'staff_available':r['techs_normal_per_shift'],'prepared_staff':staff,'fuel_gallons':r['fuel_gallons_p50'],'fuel_available_gallons':None,'preparation_cost':None,'prob_over_normal':r['prob_over_normal_capacity'],'prob_over_prepared':r['prob_over_prepared_capacity'],'arrivals_p50':r['arrivals_p50'],'departures_p50':r['departures_p50'],'staff_shifts':{k:r['techs_'+k] for k in ('morning','day','night')}})
     recs=[];costs={};impacts={}
     for s in SCENARIOS:
         plan=plans['scenarios'][s.title()];sr=[r for r in resources if r['scenario']==s];peak=max(sr,key=lambda r:r['parking_units'])
@@ -192,3 +192,15 @@ def load_native(raw):
     result={'meta':meta,'baseline':baseline,'demand':demand,'resources':resources,'recommendations':recs,'assumptions':assumptions,'variants':['standard'],'category_ranges':category_rows,'forecast_drivers':drivers,'forecast_metrics':metrics,'weekly_costs':costs,'impacts':impacts,'method':method,'native':True,'limitations':['Ordinary parking baseline is unavailable; compare ordinary and event arrivals instead.','Only standard departures are supplied; no 24-hour delay variant is available.','P2/P3 outputs lack a shared run fingerprint. Run the pipeline verification command after refreshing both producers.','Simulation benefits and historical demonstration scores are not measured real-world performance.']}
     result['version']=hashlib.sha256(json.dumps({'adapter':'native-v2','inputs':raw},sort_keys=True).encode()).hexdigest()
     return result
+
+
+def load_native(raw):
+    from .parking_variants import extend_bundle, EXTENSION_PATHS
+    check(set(NATIVE_PATHS)<=set(raw) and set(raw)<=set(NATIVE_PATHS)|set(EXTENSION_PATHS), 'provide all seven native input files and only documented extensions.')
+    base={k:raw[k] for k in NATIVE_PATHS}
+    bundle=load_standard(base)
+    if set(raw)-set(NATIVE_PATHS):
+        check(set(raw)==set(NATIVE_PATHS)|set(EXTENSION_PATHS), 'parking extension requires all four files together.')
+        extend_bundle(bundle, raw)
+    bundle['version']=hashlib.sha256(json.dumps({'adapter':'native-v3','inputs':raw},sort_keys=True).encode()).hexdigest()
+    return bundle

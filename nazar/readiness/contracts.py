@@ -178,7 +178,7 @@ def summarize(bundle, scenario, variant):
             'peak_shortfall':max(before),'remaining_shortfall':max(after),
             'days_over_capacity':sum(x>0 for x in before),'remaining_days':sum(x>0 for x in after),
             'first_shortage':next((r['date'] for r,gap in zip(rows,before) if gap>0),None),
-            'preparation_cost':bundle['weekly_costs'][scenario] if bundle.get('native') else sum(r['preparation_cost'] for r in rows),
+            'preparation_cost':bundle.get('weekly_costs_by_variant', {}).get(variant, bundle['weekly_costs'])[scenario] if bundle.get('native') else sum(r['preparation_cost'] for r in rows),
             'capacity_at_peak':peak['capacity_units'],
             'peak_extra_capacity':max(r['prepared_capacity_units']-r['capacity_units'] for r in rows),
             'max_staff':max(r['staff_required'] for r in rows),
