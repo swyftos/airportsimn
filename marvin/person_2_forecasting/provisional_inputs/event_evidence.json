@@ -1,0 +1,54 @@
+{
+  "source": "FAA ATADS/OPSNET",
+  "source_url": "https://aspm.faa.gov/opsnet/sys/Airport.asp",
+  "retrieval_date": "2026-10-23",
+  "repository_delivery": "PR 17 (not the data source)",
+  "metric": "airport-wide air-taxi operations: takeoffs plus landings",
+  "lax_five_day_control_adjusted_excess": 0.155,
+  "six_airport_five_day_control_adjusted_excess": 0.085,
+  "regional_monday_raw_same_weekday_ratio": 1.33,
+  "observed_directional_split": false,
+  "observed_aircraft_size_split": false,
+  "method": "Regional positive daily excess shape normalized to LAX five-day control-adjusted excess, weighted by forecast baseline movements.",
+  "scenario_excess_scales": {
+    "low": 0.0,
+    "medium": 1.0,
+    "high": 2.0
+  },
+  "direction_assumption": "Same multiplier on arrivals and departures; FAA table has no directional split.",
+  "scope_transfer": "Apply air-taxi proxy uplift to GA+air-taxi FBO allocation; unvalidated.",
+  "shoulders": "Tuesday and Wednesday set to ordinary baseline; conservative boundary assumption.",
+  "reservations": "Zero synthetic placeholders, show rate zero; no observed bookings or claim of zero actual reservations.",
+  "daily": [
+    {
+      "date": "2027-02-11",
+      "medium_multiplier": 1.0848720669125678
+    },
+    {
+      "date": "2027-02-12",
+      "medium_multiplier": 1.230809080777854
+    },
+    {
+      "date": "2027-02-13",
+      "medium_multiplier": 1.0591998863674497
+    },
+    {
+      "date": "2027-02-14",
+      "medium_multiplier": 1.0985589974563386
+    },
+    {
+      "date": "2027-02-15",
+      "medium_multiplier": 1.3012826175914989
+    },
+    {
+      "date": "2027-02-16",
+      "medium_multiplier": 1.0
+    },
+    {
+      "date": "2027-02-17",
+      "medium_multiplier": 1.0
+    }
+  ],
+  "evaluation": "Allocation diagnostics only; not independent observed daily FBO accuracy.",
+  "status": "provisional_pending_Alan_review"
+}

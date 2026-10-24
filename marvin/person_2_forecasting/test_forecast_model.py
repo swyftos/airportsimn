@@ -79,6 +79,50 @@ class ForecastTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             m.load_history(p)
 
+
+    def test_pre_covid_rows_cannot_change_forecast_or_metrics(self):
+        old = [dict(r, date=r['date'].replace(year=2019), arrivals=1000000, departures=1000000)
+               for r in self.history if r['date'].year == 2023]
+        self.assertEqual(m.forecast(old + self.history, self.planning),
+                         (self.pred, self.intervals, self.metrics))
+        with self.assertRaises(ValueError):
+            m.forecast(old, self.planning)
+
+    def test_postcovid_conversion_and_splits(self):
+        from convert_monthly_to_daily import convert
+        rows, months = convert()
+        self.assertEqual(len(rows), 3288)
+        self.assertEqual(len(months), 36)
+        self.assertTrue(all('2023-01-01' <= r['date'] <= '2025-12-31' for r in rows))
+        self.assertEqual(sum(r['date'] == '2024-02-29' for r in rows), 3)
+        self.assertTrue(all(r['data_class'] == 'estimated' for r in rows))
+        for metric in self.metrics:
+            self.assertEqual((metric['train_rows'], metric['calibration_rows'], metric['test_rows']), (657,219,220))
+            self.assertTrue('2023-01-01' <= metric['train_end'] < metric['calibration_start'] < metric['test_start'] <= '2025-12-31')
+
+
+
+    def test_faa_event_anchor_and_no_demo_reservation_override(self):
+        from build_event_inputs import build
+        from convert_monthly_to_daily import convert
+        rows, _ = convert()
+        path = Path(self.tmp.name)/'estimated_history.csv'
+        m.write_csv(path, rows)
+        planning, evidence = build(path)
+        forecast, _, _ = m.forecast(m.load_history(path), planning)
+        event = [r for r in forecast if r['date'] <= '2027-02-15' and r['scenario']=='Medium']
+        for t in m.TARGETS:
+            baseline = sum(r['baseline_'+t] for r in event)
+            predicted = sum(r['expected_'+t] for r in event)
+            self.assertAlmostEqual(predicted/baseline-1, .155, places=4)
+        self.assertTrue(all(r['reserved_arrivals']==0 and r['reserved_departures']==0 for r in planning))
+        self.assertTrue(all(r['arrivals_reservation_floor']==0 and r['departures_reservation_floor']==0 for r in forecast))
+        self.assertFalse(evidence['observed_directional_split'])
+        for r in forecast:
+            self.assertEqual(r['arrivals_multiplier'],r['departures_multiplier'])
+            if r['scenario']=='Low' or r['date'] > '2027-02-15':
+                self.assertEqual(r['arrivals_multiplier'],1)
+
 if __name__ == '__main__':
     unittest.main()
 
