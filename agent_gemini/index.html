@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LAX FBO • Super Bowl LXI Week Planner</title>
+  <meta name="description" content="Operational aircraft arrival and departure planning for Super Bowl LXI week at LAX FBO.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Skip link for accessibility -->
+  <a href="#main-content" class="skip-link">Skip to main operational view</a>
+
+  <!-- Top Sticky Control Bar -->
+  <header class="app-header" role="banner">
+    <div class="header-inner">
+      <div class="brand-block">
+        <div class="brand-badge">LAX FBO OPS</div>
+        <div>
+          <h1 class="brand-title">Super Bowl LXI Week Planner</h1>
+          <p class="brand-sub">Aircraft Landings & Departures • 11–17 Feb 2027 • America/Los_Angeles</p>
+        </div>
+      </div>
+
+      <div class="controls-block">
+        <!-- Scenario Selector -->
+        <div class="control-group" role="group" aria-labelledby="scenario-label">
+          <span id="scenario-label" class="control-label">Traffic Scenario</span>
+          <div class="segmented-control" id="scenario-selector">
+            <button type="button" class="segment-btn" data-scenario="Low" title="Low scenario: +3.1% over Thu-Mon (LAX general aviation, 2022)">Low <span class="scenario-pct">+3.1%</span></button>
+            <button type="button" class="segment-btn active" data-scenario="Medium" title="Medium scenario: +15.5% (LAX air taxi, 2022)">Medium <span class="scenario-pct">+15.5%</span></button>
+            <button type="button" class="segment-btn" data-scenario="High" title="High scenario: +31% (Stress case, 2x Medium)">High <span class="scenario-pct">+31%</span></button>
+          </div>
+        </div>
+
+        <!-- Simulated Current Time ("Now") -->
+        <div class="control-group">
+          <label for="demo-time-select" class="control-label">Simulated Shift "Now"</label>
+          <div class="time-picker-wrapper">
+            <select id="demo-time-select" class="select-input" aria-label="Simulated shift date and time">
+              <option value="2027-02-11T10:00">Thu 11 Feb 10:00 (Inbound Ramp-up)</option>
+              <option value="2027-02-12T10:00" selected>Fri 12 Feb 10:00 (Peak Inbound Day)</option>
+              <option value="2027-02-13T14:00">Sat 13 Feb 14:00 (Staging & Mid-Event)</option>
+              <option value="2027-02-14T14:00">Sun 14 Feb 14:00 (Pre-TFR Arrival Cutoff)</option>
+              <option value="2027-02-14T20:30">Sun 14 Feb 20:30 (TFR Release Outbound)</option>
+              <option value="2027-02-15T08:00">Mon 15 Feb 08:00 (Peak Outbound Wave)</option>
+              <option value="2027-02-16T10:00">Tue 16 Feb 10:00 (Post-Event Normal)</option>
+              <option value="2027-02-17T10:00">Wed 17 Feb 10:00 (Baseline Operations)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button type="button" id="theme-toggle" class="btn btn-secondary icon-btn" aria-label="Toggle dark mode" title="Toggle dark/light theme">
+          <span class="theme-icon" aria-hidden="true">🌙</span>
+          <span class="theme-text">Dark</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="app-nav" aria-label="Main Navigation">
+      <ul class="nav-list" role="tablist">
+        <li role="presentation">
+          <button role="tab" id="tab-week" aria-selected="true" aria-controls="view-week" class="nav-btn active">
+            <span class="nav-icon">📅</span> 7-Day Week Planner (Landing View)
+          </button>
+        </li>
+        <li role="presentation">
+          <button role="tab" id="tab-day" aria-selected="false" aria-controls="view-day" class="nav-btn">
+            <span class="nav-icon">⏱️</span> Day Detail & Hourly Movements
+          </button>
+        </li>
+        <li role="presentation">
+          <button role="tab" id="tab-movements" aria-selected="false" aria-controls="view-movements" class="nav-btn">
+            <span class="nav-icon">📋</span> Flight Movement Log (<span id="nav-flight-count">0</span>)
+          </button>
+        </li>
+        <li role="presentation">
+          <button role="tab" id="tab-trust" aria-selected="false" aria-controls="view-trust" class="nav-btn">
+            <span class="nav-icon">🛡️</span> Model Accuracy & Evidence
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Operational Content Area -->
+  <main id="main-content" class="app-main">
+
+    <!-- Operational Banner / AI Non-Authority Notice -->
+    <section class="human-command-banner" aria-label="Operational Authority Notice">
+      <div class="banner-badge">HUMAN-IN-COMMAND</div>
+      <div class="banner-content">
+        <strong>Decision Boundary:</strong>
+        <span id="meta-never-allowed">The system never authorizes aircraft movements, never accepts, refuses or cancels an aircraft or booking, and does not replace airport safety procedures.</span>
+      </div>
+      <div class="banner-tag">Part 91 & 135 private aviation</div>
+    </section>
+
+    <!-- Top Key Metrics Bar (Instant Executive Assessment) -->
+    <section class="kpi-grid" aria-label="Week Executive Summary">
+      <div class="kpi-card peak-arrival-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Busiest Arrival Day</span>
+          <span class="badge badge-peak">PEAK INBOUND</span>
+        </div>
+        <div class="kpi-value" id="kpi-peak-arrival-day">Friday 12 Feb</div>
+        <div class="kpi-sub" id="kpi-peak-arrival-stats">7.3 arrivals (90% range 3.0–11.0) • +43.6% vs ord</div>
+        <div class="kpi-timing">Busiest inbound window: <strong>09:00 – 18:00</strong></div>
+      </div>
+
+      <div class="kpi-card peak-departure-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Busiest Departure Day</span>
+          <span class="badge badge-peak-dep">PEAK OUTBOUND</span>
+        </div>
+        <div class="kpi-value" id="kpi-peak-departure-day">Monday 15 Feb</div>
+        <div class="kpi-sub" id="kpi-peak-departure-stats">10.0 departures (90% range 6.0–14.0) • +55.1% vs ord</div>
+        <div class="kpi-timing">Busiest outbound window: <strong>07:00 – 11:00</strong> (Presidents' Day)</div>
+      </div>
+
+      <div class="kpi-card restriction-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Game Day Restriction (Sun 14 Feb)</span>
+          <span class="badge badge-restriction">TFR RESTRICTED</span>
+        </div>
+        <div class="kpi-value">14:30 – 20:30 PST</div>
+        <div class="kpi-sub">Part 91 GA prohibited surface to FL180</div>
+        <div class="kpi-timing">Post-game departure surge: <strong>20:30 – 24:00 (40.5% of day)</strong></div>
+      </div>
+
+      <div class="kpi-card ramp-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Ramp Space Peak (Secondary Indicator)</span>
+          <span class="badge badge-warning" id="kpi-ramp-badge">CAPACITY RISK</span>
+        </div>
+        <div class="kpi-value" id="kpi-ramp-stats">P90: 19.7 su vs 15.0 capacity</div>
+        <div class="kpi-sub" id="kpi-ramp-prob">81.7% probability ramp reaches capacity (Fri)</div>
+        <div class="kpi-timing">Secondary indicator only</div>
+      </div>
+    </section>
+
+    <!-- VIEW 1: 7-DAY WEEK PLANNER (LANDING VIEW) -->
+    <div id="view-week" class="tab-view active" role="tabpanel" aria-labelledby="tab-week">
+      
+      <!-- SECTION A: 7-Day x 24-Hour Calendar / Heatmap of Busy Hours -->
+      <section class="panel-section heatmap-section" aria-labelledby="heatmap-heading">
+        <div class="section-header">
+          <div>
+            <h2 id="heatmap-heading" class="section-title">Week Traffic Heatmap: Busy Hours (Days × Hours)</h2>
+            <p class="section-desc">
+              Thursday to Wednesday 24-hour distribution. <strong>Click any day or cell</strong> to inspect hourly movements and manage flight logs.
+            </p>
+          </div>
+          <div class="heatmap-controls">
+            <span class="control-label">Metric:</span>
+            <div class="segmented-control segmented-small" id="heatmap-metric-selector">
+              <button type="button" class="segment-btn active" data-metric="total">Combined</button>
+              <button type="button" class="segment-btn" data-metric="arrivals">Landings</button>
+              <button type="button" class="segment-btn" data-metric="departures">Departures</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Heatmap Container -->
+        <div class="heatmap-wrapper">
+          <div class="heatmap-table-container" id="heatmap-container" role="region" aria-label="7 days by 24 hours traffic heatmap" tabindex="0">
+            <!-- Heatmap is rendered dynamically by app.js -->
+          </div>
+
+          <!-- Heatmap Legend -->
+          <div class="heatmap-legend" aria-hidden="true">
+            <div class="legend-scale">
+              <span class="legend-label">Quiet (0.0/hr)</span>
+              <span class="legend-box scale-0"></span>
+              <span class="legend-box scale-1"></span>
+              <span class="legend-box scale-2"></span>
+              <span class="legend-box scale-3"></span>
+              <span class="legend-box scale-4"></span>
+              <span class="legend-label">Peak Busy (1.2+/hr)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-box tfr-pattern"></span>
+              <span class="legend-label">TFR Restriction (Sun 14:30–20:30)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-box user-flight-dot"></span>
+              <span class="legend-label">Has Recorded Flight</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cell Details Inspector (Shows on hover/touch) -->
+        <div id="heatmap-inspector" class="heatmap-inspector" aria-live="polite">
+          <div class="inspector-prompt">Hover or tap any hour cell above to see exact expected movements, booked flights, and slot guidance.</div>
+        </div>
+      </section>
+
+      <!-- SECTION B: 7 Days Operational Table & Per-Day Weather Settings -->
+      <section class="panel-section days-planning-section" aria-labelledby="days-planning-heading">
+        <div class="section-header">
+          <div>
+            <h2 id="days-planning-heading" class="section-title">7-Day Operations & Per-Day Weather Scenarios</h2>
+            <p class="section-desc">
+              Compare Super Bowl forecast (90% range) against the ordinary LAX baseline. Set daily weather to calculate measured traffic suppression and next-day spillover.
+            </p>
+          </div>
+          <div class="days-actions">
+            <button type="button" id="reset-weather-btn" class="btn btn-secondary btn-sm">Reset Weather to Clear</button>
+          </div>
+        </div>
+
+        <!-- 7 Days Grid Cards -->
+        <div class="days-grid" id="days-cards-container">
+          <!-- Rendered dynamically by app.js -->
+        </div>
+      </section>
+
+      <!-- SECTION C: Day-Specific Operational Proposals Panel -->
+      <section class="panel-section proposals-section" aria-labelledby="proposals-heading">
+        <div class="section-header">
+          <div>
+            <h2 id="proposals-heading" class="section-title">Day-Specific Operational Proposals</h2>
+            <p class="section-desc">
+              Data-derived proposals for arrival slot confirmations, PPR timing, and departure sequencing. 
+              <strong>The human agent approves, notes, or dismisses each proposal.</strong>
+            </p>
+          </div>
+          <div class="proposals-filter">
+            <span class="proposals-summary-badge" id="proposals-count-badge">0 Pending Review</span>
+          </div>
+        </div>
+
+        <div class="proposals-list" id="proposals-container">
+          <!-- Rendered dynamically by app.js -->
+        </div>
+      </section>
+
+    </div>
+
+    <!-- VIEW 2: DAY DETAIL & HOURLY TIMELINE -->
+    <div id="view-day" class="tab-view" role="tabpanel" aria-labelledby="tab-day" hidden>
+      
+      <!-- Day Switcher Bar -->
+      <div class="day-detail-header">
+        <div class="day-detail-title-group">
+          <button type="button" class="btn btn-secondary btn-sm" id="back-to-week-btn">← Back to 7-Day Week Planner</button>
+          <div class="day-current-meta">
+            <h2 class="day-current-title" id="day-detail-title">Friday 12 Feb 2027</h2>
+            <div class="day-current-badges" id="day-detail-badges"></div>
+          </div>
+        </div>
+
+        <!-- Day Selector Pill Bar -->
+        <div class="day-pill-selector" id="day-pill-selector" role="radiogroup" aria-label="Select day of Super Bowl week">
+          <!-- Rendered by app.js -->
+        </div>
+      </div>
+
+      <!-- Reality Check & Next 3 Hours Radar -->
+      <div class="day-radar-grid">
+        <!-- Reality Check Card: Booked vs Forecast -->
+        <div class="radar-card reality-check-card">
+          <h3 class="card-title">Booked vs. Forecast Comparison</h3>
+          <div class="reality-comparison" id="reality-comparison-container">
+            <!-- Dynamic comparison statement -->
+          </div>
+          <div class="formula-note">
+            <strong>Formula:</strong> <code>Unannounced = max(0, round(Expected Forecast - Booked Movements))</code>
+          </div>
+        </div>
+
+        <!-- Next 3 Hours Operational Window -->
+        <div class="radar-card next-hours-card">
+          <div class="card-header-flex">
+            <h3 class="card-title">Next 3 Hours Radar Window</h3>
+            <span class="badge badge-info" id="next-hours-window-tag">10:00 – 13:00</span>
+          </div>
+          <div class="next-hours-stats" id="next-hours-stats">
+            <!-- Dynamic stats for simulated shift -->
+          </div>
+          <p class="next-hours-note" id="next-hours-note"></p>
+        </div>
+      </div>
+
+      <!-- 24-Hour Timeline Chart -->
+      <section class="panel-section timeline-section" aria-labelledby="timeline-heading">
+        <div class="section-header">
+          <div>
+            <h3 id="timeline-heading" class="section-title">24-Hour Timeline: Landings vs. Departures</h3>
+            <p class="section-desc">
+              Hourly movements adjusted for scenario, weather, and game-day restriction.
+              <span class="badge badge-placeholder">PLACEHOLDER PROFILE</span>
+              <span class="disclaimer-inline">Hour shares are a placeholder curve (agent_data.json). Entered movements replace it for covered hours.</span>
+            </p>
+          </div>
+          <div class="timeline-legend">
+            <span class="legend-indicator arrivals-indicator"></span> <span>Landings (Arrivals)</span>
+            <span class="legend-indicator departures-indicator"></span> <span>Takeoffs (Departures)</span>
+            <span class="legend-indicator booked-indicator"></span> <span>Recorded Flights</span>
+          </div>
+        </div>
+
+        <div class="timeline-chart-container" id="timeline-chart-container">
+          <!-- SVG timeline rendered by app.js -->
+        </div>
+      </section>
+
+      <!-- Day Movements List & Quick Entry -->
+      <section class="panel-section movements-subpanel" aria-labelledby="day-movements-heading">
+        <div class="section-header">
+          <div>
+            <h3 id="day-movements-heading" class="section-title">Movements for Selected Day</h3>
+            <p class="section-desc">Recorded flights for this operational date. Updates reality check in real-time.</p>
+          </div>
+          <div>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-jump-to-add">Add Flight Movement</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="day-movements-table">
+            <thead>
+              <tr>
+                <th>Time (PST)</th>
+                <th>Type</th>
+                <th>Tail Number</th>
+                <th>Aircraft Size</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="day-movements-tbody">
+              <!-- Rendered by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- VIEW 3: FULL FLIGHT MOVEMENT BOARD (CRUD + CSV) -->
+    <div id="view-movements" class="tab-view" role="tabpanel" aria-labelledby="tab-movements" hidden>
+      
+      <!-- Privacy & Guardrail Notice -->
+      <div class="privacy-alert-card" role="note">
+        <div class="alert-icon">🔒</div>
+        <div>
+          <strong>Privacy Guarantee & Zero Passenger Data:</strong>
+          <span id="meta-privacy">No passenger names or personal data are ever entered or stored. Movements are recorded by optional tail number, aircraft size and time only (agent_data.json).</span>
+        </div>
+      </div>
+
+      <!-- Add Movement Form -->
+      <section class="panel-section movement-form-section" aria-labelledby="form-heading">
+        <h2 id="form-heading" class="section-title">Plug in Real Aircraft Movements</h2>
+        <p class="section-desc">Enter scheduled or confirmed arrivals and departures. Real movements replace placeholder curves for the hours they cover.</p>
+
+        <form id="movement-form" class="movement-form" autocomplete="off">
+          <input type="hidden" id="form-movement-id" value="">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="form-date" class="form-label">Flight Date *</label>
+              <select id="form-date" class="form-input" required>
+                <option value="2027-02-11">Thu 11 Feb 2027</option>
+                <option value="2027-02-12" selected>Fri 12 Feb 2027 (Peak Inbound)</option>
+                <option value="2027-02-13">Sat 13 Feb 2027</option>
+                <option value="2027-02-14">Sun 14 Feb 2027 (Game Day)</option>
+                <option value="2027-02-15">Mon 15 Feb 2027 (Peak Outbound)</option>
+                <option value="2027-02-16">Tue 16 Feb 2027</option>
+                <option value="2027-02-17">Wed 17 Feb 2027</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="form-time" class="form-label">Time (HH:MM PST) *</label>
+              <input type="time" id="form-time" class="form-input" required value="10:30">
+            </div>
+
+            <div class="form-group">
+              <label for="form-type" class="form-label">Movement Type *</label>
+              <select id="form-type" class="form-input" required>
+                <option value="arrival">Arrival (Landing)</option>
+                <option value="departure">Departure (Takeoff)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="form-tail" class="form-label">Tail Number (Optional)</label>
+              <input type="text" id="form-tail" class="form-input" placeholder="e.g. N102GA" pattern="[A-Za-z0-9\-]+" maxlength="10">
+              <span class="field-hint">No passenger/operator names</span>
+            </div>
+
+            <div class="form-group">
+              <label for="form-size" class="form-label">Aircraft Size *</label>
+              <select id="form-size" class="form-input" required>
+                <option value="light">Light Jet (Citation, Phenom)</option>
+                <option value="midsize" selected>Midsize (Challenger, Hawker)</option>
+                <option value="large">Large / Heavy (Gulfstream, Global)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="form-status" class="form-label">Status *</label>
+              <select id="form-status" class="form-input" required>
+                <option value="expected">Expected</option>
+                <option value="confirmed" selected>Confirmed</option>
+                <option value="landed">Landed</option>
+                <option value="departed">Departed</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="btn-save-movement" class="btn btn-primary">+ Add Flight Movement</button>
+            <button type="button" id="btn-cancel-edit" class="btn btn-secondary" hidden>Cancel Edit</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Movements Table & Tools -->
+      <section class="panel-section movements-table-section" aria-labelledby="board-heading">
+        <div class="section-header">
+          <div>
+            <h2 id="board-heading" class="section-title">Movement Log Database (Local Storage)</h2>
+            <p class="section-desc">Manage shift movements. Data persists locally in your browser.</p>
+          </div>
+
+          <div class="table-tools">
+            <button type="button" id="btn-load-sample" class="btn btn-secondary btn-sm" title="Load realistic sample flight data for testing">
+              Load Sample Movements
+            </button>
+            <button type="button" id="btn-export-csv" class="btn btn-secondary btn-sm" title="Download movements as CSV">
+              📥 Export CSV
+            </button>
+            <label class="btn btn-secondary btn-sm file-upload-label" title="Upload movements from CSV">
+              📤 Import CSV
+              <input type="file" id="csv-file-input" accept=".csv" hidden>
+            </label>
+            <button type="button" id="btn-clear-movements" class="btn btn-danger btn-sm" title="Delete all recorded movements">
+              Clear All
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="filter-bar">
+          <div class="filter-item">
+            <label for="filter-date-select" class="filter-label">Filter Day:</label>
+            <select id="filter-date-select" class="select-input select-sm">
+              <option value="all">All 7 Days</option>
+              <option value="2027-02-11">Thu 11 Feb</option>
+              <option value="2027-02-12">Fri 12 Feb</option>
+              <option value="2027-02-13">Sat 13 Feb</option>
+              <option value="2027-02-14">Sun 14 Feb</option>
+              <option value="2027-02-15">Mon 15 Feb</option>
+              <option value="2027-02-16">Tue 16 Feb</option>
+              <option value="2027-02-17">Wed 17 Feb</option>
+            </select>
+          </div>
+
+          <div class="filter-item">
+            <label for="filter-type-select" class="filter-label">Type:</label>
+            <select id="filter-type-select" class="select-input select-sm">
+              <option value="all">All Movements</option>
+              <option value="arrival">Arrivals Only</option>
+              <option value="departure">Departures Only</option>
+            </select>
+          </div>
+
+          <div class="filter-item">
+            <label for="filter-status-select" class="filter-label">Status:</label>
+            <select id="filter-status-select" class="select-input select-sm">
+              <option value="all">All Statuses</option>
+              <option value="expected">Expected</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="landed">Landed</option>
+              <option value="departed">Departed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="all-movements-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Time (PST)</th>
+                <th>Type</th>
+                <th>Tail</th>
+                <th>Size</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="all-movements-tbody">
+              <!-- Rendered by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- VIEW 4: MODEL ACCURACY, TRUST & SOURCES -->
+    <div id="view-trust" class="tab-view" role="tabpanel" aria-labelledby="tab-trust" hidden>
+      
+      <!-- Forecast Accuracy Rolling Backtest -->
+      <section class="panel-section" aria-labelledby="accuracy-heading">
+        <div class="section-header">
+          <div>
+            <h2 id="accuracy-heading" class="section-title">Model Forecast Accuracy (2025 Rolling Backtest)</h2>
+            <p class="section-desc" id="accuracy-note">
+              Every Monday of 2025: fit on earlier days only, forecast the next 7 days. WAPE = average daily error as a share of actual traffic.
+            </p>
+          </div>
+          <div>
+            <span class="badge badge-measured">MEASURED (FAA OPSNET)</span>
+          </div>
+        </div>
+
+        <div class="accuracy-comparison-grid">
+          <div class="accuracy-kpi">
+            <span class="accuracy-kpi-label">Model Average Error (WAPE)</span>
+            <span class="accuracy-kpi-val" id="acc-model-wape">14.9%</span>
+            <span class="accuracy-kpi-sub">Beats all naive baselines</span>
+          </div>
+          <div class="accuracy-kpi">
+            <span class="accuracy-kpi-label">90% Prediction Coverage</span>
+            <span class="accuracy-kpi-val" id="acc-coverage-val">87.9%</span>
+            <span class="accuracy-kpi-sub">Well-calibrated uncertainty band</span>
+          </div>
+        </div>
+
+        <!-- Accuracy Comparison Bars -->
+        <div class="backtest-bars-container" id="backtest-bars">
+          <!-- Rendered by app.js -->
+        </div>
+      </section>
+
+      <!-- Super Bowl Historical Backtest (8 Host Cities) -->
+      <section class="panel-section" aria-labelledby="sb-test-heading">
+        <div class="section-header">
+          <div>
+            <h2 id="sb-test-heading" class="section-title">Super Bowl Historical Test (8 Host Cities)</h2>
+            <p class="section-desc">Observed traffic excess at prior Super Bowl host metro airports.</p>
+          </div>
+          <div class="sb-test-filter">
+            <span class="control-label">Filter:</span>
+            <select id="sb-metric-filter" class="select-input select-sm">
+              <option value="all">All Metrics (24 tests)</option>
+              <option value="private">Private (Part 91 + 135)</option>
+              <option value="air_taxi">Air Taxi (Part 135)</option>
+              <option value="general_aviation">General Aviation (Part 91)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="sb-test-table">
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Game Sunday</th>
+                <th>Metro Airports</th>
+                <th>Traffic Category</th>
+                <th>Excess Traffic %</th>
+                <th>Model Range Position</th>
+              </tr>
+            </thead>
+            <tbody id="sb-test-tbody">
+              <!-- Rendered by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Key Assumptions Table with Badges -->
+      <section class="panel-section" aria-labelledby="assumptions-heading">
+        <div class="section-header">
+          <div>
+            <h2 id="assumptions-heading" class="section-title">Key Assumptions & Rigorous Classifications</h2>
+            <p class="section-desc">Every assumption is tagged by source and evidence quality.</p>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="assumptions-table">
+            <thead>
+              <tr>
+                <th>Assumption Name</th>
+                <th>Value / Rule</th>
+                <th>Evidence Classification</th>
+              </tr>
+            </thead>
+            <tbody id="assumptions-tbody">
+              <!-- Rendered by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Official Data Sources -->
+      <section class="panel-section" aria-labelledby="sources-heading">
+        <div class="section-header">
+          <div>
+            <h2 id="sources-heading" class="section-title">Official Sources & Authorities</h2>
+            <p class="section-desc">Direct government data sources used to calibrate this planner.</p>
+          </div>
+        </div>
+
+        <ul class="sources-list" id="sources-list">
+          <!-- Rendered by app.js -->
+        </ul>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- App Footer -->
+  <footer class="app-footer" role="contentinfo">
+    <div class="footer-inner">
+      <div class="footer-col">
+        <strong>LAX FBO Operational Planning Desk</strong>
+        <p>Planning Window: 11–17 Feb 2027 (Super Bowl LXI Sunday: 14 Feb • Presidents' Day: 15 Feb).</p>
+      </div>
+      <div class="footer-col">
+        <strong>Strict Guardrails:</strong>
+        <p>Landings and departures only. Never accepts or refuses aircraft.</p>
+      </div>
+      <div class="footer-col">
+        <strong>Privacy Standard:</strong>
+        <p>Zero passenger records. Optional tail number and aircraft class only.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Notification Toast for feedback -->
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- Application Logic -->
+  <script src="app.js" type="module"></script>
+</body>
+</html>
