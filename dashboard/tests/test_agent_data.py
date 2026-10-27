@@ -41,7 +41,7 @@ class AgentDataTests(unittest.TestCase):
             with contextlib.redirect_stdout(io.StringIO()):mod.main()
             fresh=json.loads(mod.OUT.read_text(encoding='utf-8'))
         self.assertEqual(without_timestamp(fresh),without_timestamp(self.data),'agent_data.json is out of date: run python site_kit/export_agent_data.py')
-    def test_daily_numbers_match_marvins_forecast(self):
+    def test_daily_numbers_match_the_forecast(self):
         for r in rows(P2/'daily_totals.csv'):
             s=self.days[r['date']]['scenarios'][r['scenario']]
             for k in ('arrivals','departures'):
@@ -53,7 +53,7 @@ class AgentDataTests(unittest.TestCase):
             self.assertEqual(s['parking_su_p90'],float(r['parking_demand_su_p90']))
             self.assertEqual(s['ramp_capacity_su'],float(r['capacity_normal_su']))
             self.assertEqual(s['prob_ramp_full'],float(r['prob_over_normal_capacity']))
-    def test_restriction_matches_alans_file(self):
+    def test_restriction_matches_the_data_file(self):
         sec=rows(REPO/'sources'/'data'/'processed'/'security_restriction_model_input.csv')[0]
         g=self.data['game_day_restriction']
         self.assertEqual((g['date'],g['start'],g['end']),(sec['date'],sec['start_time_local'],sec['end_time_local']))
