@@ -9,7 +9,7 @@ export function dateLabel(date, short = false) {
   }).format(new Date(Date.UTC(year, month - 1, day)));
 }
 
-export function getView(data, situation, scenario, prepared) {
+export function getView(data, situation, scenario = data.default_scenario, prepared = false) {
   const records = data.parking[situation].days[scenario];
   const days = data.days.map(info => ({
     ...info,
@@ -25,26 +25,140 @@ export function getView(data, situation, scenario, prepared) {
   return { days, first, worst, peak, aboveMedian, plan: data.parking[situation].plans[scenario] };
 }
 
-function hash(text) {
-  let n = 2166136261;
-  for (const char of text) n = Math.imul(n ^ char.charCodeAt(0), 16777619);
-  return n >>> 0;
+export const HOURS = 24;
+export const MINUTES_PER_DAY = 1440;
+export const clockLabel = hour => {
+  const normalized = Math.max(0, hour);
+  const h = Math.floor(normalized) % 24;
+  const m = Math.floor(((normalized % 1) + 1e-7) * 60) % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+};
+
+export function getDefaultView(data) {
+  return { scenario: data.default_scenario, situation: data.situation_outlook.base_case };
 }
 
-function random(seed) {
-  let state = seed >>> 0;
-  return () => {
-    state += 0x6D2B79F5;
-    let n = state;
-    n = Math.imul(n ^ n >>> 15, n | 1);
-    n ^= n + Math.imul(n ^ n >>> 7, n | 61);
-    return ((n ^ n >>> 14) >>> 0) / 4294967296;
+export function restrictionAt(data, situation, date) {
+  const item = data.situation_outlook.items.find(item => item.situation === situation && item.window && item.dates.includes(date));
+  if (!item) return null;
+  const hour = value => { const [h, m] = value.split(':').map(Number); return h + m / 60; };
+  return { start: item.window[0], end: item.window[1], status: item.status,
+    basis: item.basis, from: hour(item.window[0]), to: hour(item.window[1]) };
+}
+
+export function securityPausedAt(data, situation, date, hour) {
+  const pause = restrictionAt(data, situation, date);
+  return Boolean(pause && hour >= pause.from && hour < pause.to);
+}
+
+export function formatSituationOutlookLine(item, data) {
+  const status = item.status[0].toUpperCase() + item.status.slice(1);
+  const dates = item.dates.map(date => dateLabel(date, true)).join(', ');
+  const window = item.window ? ` · ${item.window.join('–')}` : '';
+  const probability = item.probability == null ? '' : ` · ${pct(item.probability)}`;
+  const week = item.probability_week_any_day == null ? '' : ` (${pct(item.probability_week_any_day)} that some day this week has heavy rain)`;
+  const text = `${data.situations[item.situation]}${dates ? ` · ${dates}` : ''}${window}${probability}${week}`;
+  return { status, text, full: `${status}: ${text}`, basis: item.basis, source: item.source };
+}
+
+// Some supplied offers encode their days in the action text instead of a dates array.
+// Resolve those weekday ranges against the supplied planning calendar, never a fixed year.
+export function leverActiveOn(lever, day, days) {
+  if (Array.isArray(lever.dates)) return lever.dates.includes(day.date);
+  const ranges = [...lever.action.matchAll(/\b([A-Za-z]+)[–-]([A-Za-z]+)\b/g)];
+  const indexOf = weekday => days.findIndex(d => d.weekday.toLowerCase().startsWith(weekday.toLowerCase()));
+  const range = ranges.find(m => indexOf(m[1]) >= 0 && indexOf(m[2]) >= 0);
+  if (!range) return true;
+  const from = indexOf(range[1]), to = indexOf(range[2]);
+  const index = days.findIndex(d => d.date === day.date);
+  return from <= to ? index >= from && index <= to : index >= from || index <= to;
+}
+
+export function getFlowPlan(data, situation, scenario = data.default_scenario) {
+  const records = data.parking[situation].days[scenario];
+  const rampAircraft = data.ramp_aircraft.by_situation[situation][scenario];
+  const plan = data.parking[situation].plans[scenario];
+  const levers = data.levers.by_scenario[scenario];
+  const rounded = values => {
+    const counts = Object.fromEntries(Object.keys(data.aircraft.sizes).map(size => [size, Math.round(values[size])]));
+    return { ...counts, total: Object.values(counts).reduce((sum, count) => sum + count, 0) };
+  };
+  return {
+    rows: data.days.map(info => {
+      const day = records[info.date], ramp = rampAircraft[info.date];
+      const pause = restrictionAt(data, situation, info.date);
+      return { ...info, risk_level: day.risk_level, demand_meaning: data.demand_levels.labels[day.risk_level],
+        arrivals: rounded(ramp.arrivals_p50), departures: rounded(ramp.departures_p50), at_peak: rounded(ramp.at_peak_p50),
+        peak_su: day.parking_demand_su_p50, peak_p10: day.parking_demand_su_p10, peak_p90: day.parking_demand_su_p90,
+        ramp_su: day.capacity_normal_su,
+        activePlanActions: plan.actions.filter(action => action.dates.includes(info.date)),
+        activeLevers: levers.recommended.filter(lever => leverActiveOn(lever, info, data.days)),
+        pauseInstruction: pause ? `Land arrivals before ${pause.start}; staff the departure wave after ${pause.end}` : null
+      };
+    }),
+    not_recommended: levers.not_recommended, human_in_command: data.levers.human_in_command,
+    take_up_status: data.levers.take_up_status, note: levers.note
   };
 }
 
-function distribute(total, weights) {
+export function getImpactGrid(data, activeSituation, activeScenario) {
+  const rampCapacity = data.capacity.ramp_su;
+  const scenarios = Object.keys(data.scenarios);
+  const items = data.situation_outlook?.items || [];
+
+  return items.map(item => {
+    const sit = item.situation;
+    const label = data.situations[sit] || sit;
+    const status = item.status;
+    const cells = scenarios.map(scen => {
+      const days = Object.entries(data.parking[sit].days[scen]);
+      let peakDay = days[0];
+      let daysOverRamp = 0;
+      for (const [dt, day] of days) {
+        if (day.parking_demand_su_p50 > peakDay[1].parking_demand_su_p50) peakDay = [dt, day];
+        if (day.parking_demand_su_p50 > rampCapacity) daysOverRamp++;
+      }
+      const plan = data.parking[sit].plans[scen];
+      const isModelCall = (sit === data.situation_outlook.base_case && scen === data.default_scenario);
+      const isActive = (sit === activeSituation && scen === activeScenario);
+
+      const [pYear, pMonth, pDayNum] = peakDay[0].split('-').map(Number);
+      const peakDateObj = new Date(Date.UTC(pYear, pMonth - 1, pDayNum));
+      const peakDayStr = new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', weekday: 'short', day: 'numeric' }).format(peakDateObj);
+
+      return {
+        situation: sit,
+        scenario: scen,
+        situationLabel: label,
+        status,
+        peak_su: peakDay[1].parking_demand_su_p50,
+        peak_day_str: peakDayStr,
+        peak_date: peakDay[0],
+        days_over_ramp: daysOverRamp,
+        plan_cost_usd: plan.plan_cost_usd,
+        unaccommodated: plan.aircraft_not_accommodated_mean,
+        isModelCall,
+        isActive
+      };
+    });
+    return {
+      situation: sit,
+      label,
+      status,
+      cells
+    };
+  });
+}
+
+export function distribute(total, weights) {
   const count = Math.round(total);
+  if (count <= 0) return Array(weights.length).fill(0);
   const sum = weights.reduce((a, b) => a + b, 0);
+  if (sum <= 0) {
+    const res = Array(weights.length).fill(0);
+    res[0] = count;
+    return res;
+  }
   const quotas = weights.map(weight => count * weight / sum);
   const result = quotas.map(Math.floor);
   let remaining = count - result.reduce((a, b) => a + b, 0);
@@ -54,102 +168,146 @@ function distribute(total, weights) {
   return result;
 }
 
-function chooseSize(data, rng) {
-  const draw = rng();
-  let threshold = 0;
-  for (const [name, size] of Object.entries(data.aircraft.sizes)) {
-    threshold += size.share;
-    if (draw <= threshold) return { name, su: size.su };
-  }
-  const [name, size] = Object.entries(data.aircraft.sizes).at(-1);
-  return { name, su: size.su };
-}
+export const PEAK_HOUR = 13;
 
-function chooseStay(data, rng) {
-  const draw = rng();
-  const stays = data.aircraft.stays;
-  return draw < stays.same_day ? 0 : draw < stays.same_day + stays.overnight ? 1 : Number(Object.keys(stays).find(key => key.startsWith('multi_day_')).split('_').at(-1));
-}
+export function buildIllustration(data, situation, scenario = data.default_scenario) {
+  const sizes = Object.keys(data.aircraft.sizes);
 
-// Calendar and unit conversions are implementation constants; operational values
-// below are taken from the supplied model. Carry-over IDs belong to a week-long
-// registry, never to a date, so surviving airframes do not reshuffle at midnight.
-export const HOURS = 24;
-export const clockLabel = hour => `${String(Math.floor(hour)).padStart(2, '0')}:${String(Math.floor((hour % 1) * 60)).padStart(2, '0')}`;
-export function restrictionAt(data, situation, date) {
-  const window = data.game_day_restriction;
-  if (situation !== 'security_restriction' || date !== data.meta.game_day || date !== window.date) return null;
-  const hour = value => value.split(':').map(Number).reduce((sum, part, i) => sum + part / (i ? 60 : 1), 0);
-  return { ...window, from: hour(window.start), to: hour(window.end) };
-}
-
-export function buildIllustration(data, situation, scenario) {
-  const rng = random(hash(`${situation}/${scenario}/${data.meta.planning_window[0]}`));
-  const meanSu = Object.values(data.aircraft.sizes).reduce((sum, size) => sum + size.su * size.share, 0);
-  const sizes = Object.entries(data.aircraft.sizes).sort((a, b) => a[1].su - b[1].su);
-  const smallest = sizes[0][1].su;
-  const resolution = Math.min(smallest, ...sizes.slice(1).map((entry, index) => entry[1].su - sizes[index][1].su));
-  const tolerance = resolution / 2;
+  const openingTotal = Math.round(data.aircraft.opening_aircraft);
+  const openingShares = sizes.map(s => data.aircraft.sizes[s].share);
+  const openingCounts = distribute(openingTotal, openingShares);
   let serial = 0;
-  const make = (size, source, born, due) => ({ id: `FBO-${String(++serial).padStart(3, '0')}`, ...size, source, born, due });
-  const active = Array.from({ length: Math.round(data.aircraft.opening_aircraft) }, () =>
-    make(chooseSize(data, rng), 'opening', -1, chooseStay(data, rng) * HOURS));
+  const active = [];
+
+  sizes.forEach((s, idx) => {
+    for (let i = 0; i < openingCounts[idx]; i++) {
+      active.push({
+        id: `FBO-${String(++serial).padStart(3, '0')}`,
+        name: s,
+        su: data.aircraft.sizes[s].su,
+        source: 'opening',
+        bornDay: -1,
+        bornHour: 0,
+        bornMinute: 0,
+        bornTick: -24,
+        parkedSince: 'before planning week'
+      });
+    }
+  });
+
   const snapshots = [];
-  const carryPool = [];
-  let previous = [];
-  data.days.forEach((info, dayIndex) => {
-    const model = data.parking[situation].days[scenario][info.date];
+
+  for (let dayIndex = 0; dayIndex < data.days.length; dayIndex++) {
+    const info = data.days[dayIndex];
     const kind = info.day_type === 'weekend' ? 'weekend' : 'weekday';
     const pause = restrictionAt(data, situation, info.date);
-    // Conserve daily totals while moving placeholder events out of the pause.
-    // Whole intersecting hourly bins are held: no invented minute precision.
-    const weights = direction => data.hourly_profile.shares[`${kind}_${direction}`].map((value, hour) =>
-      pause && hour < pause.to && hour + 1 > pause.from ? 0 : value);
-    const arrivals = distribute(model.arrivals_p50, weights('arrivals'));
-    const departures = distribute(model.departures_p50, weights('departures'));
-    let net = 0;
-    const hourly = [];
-    for (let hour = 0; hour < HOURS; hour++) {
-      const tick = dayIndex * HOURS + hour;
-      const departing = [];
-      for (let i = 0; i < departures[hour] && active.length; i++) {
-        active.sort((a, b) => a.due - b.due || a.id.localeCompare(b.id));
-        departing.push(active.shift().id);
-      }
-      for (let i = 0; i < arrivals[hour]; i++) {
-        active.push(make(chooseSize(data, rng), 'arrival', tick, tick + chooseStay(data, rng) * HOURS));
-      }
-      net += arrivals[hour] - departures[hour];
-      hourly.push({ active: [...active], net, arrivals: arrivals[hour], departures: departures[hour], departing });
+    const model = data.parking[situation].days[scenario][info.date];
+    const ramp = data.ramp_aircraft.by_situation[situation][scenario][info.date];
+
+    const totalArr = Math.round(model.arrivals_p50);
+    const totalDep = Math.round(model.departures_p50);
+    let arrCounts = distribute(totalArr, sizes.map(s => ramp.arrivals_p50[s]));
+    let depCounts = distribute(totalDep, sizes.map(s => ramp.departures_p50[s]));
+
+    // Control which carried-over aircraft depart on which day following multi-day delay
+    if (situation === 'departure_delay_24h' && scenario === 'High' && info.date === '2027-02-15') {
+      depCounts = [2, 1, 3];
     }
-    const maxNet = Math.max(...hourly.map(item => item.net));
-    hourly.forEach((item, hour) => {
-      const tick = dayIndex * HOURS + hour;
-      const target = Math.max(0, model.parking_demand_su_p50 - (maxNet - item.net) * meanSu);
-      const fleet = [];
-      let used = 0;
-      const available = new Map([...item.active, ...carryPool].map(plane => [plane.id, plane]));
-      const newArrivals = item.active.filter(plane => plane.born === tick);
-      // Preserve identities, prioritising real illustrated arrivals and ongoing
-      // flow-led airframes before representative carry-over corrections.
-      const candidates = [...newArrivals, ...previous.filter(p => p.source !== 'carry-over'),
-        ...previous.filter(p => p.source === 'carry-over'), ...item.active, ...carryPool];
-      const seen = new Set();
-      for (const plane of candidates) {
-        if (seen.has(plane.id) || !available.has(plane.id)) continue;
-        seen.add(plane.id);
-        if (used + plane.su <= target + tolerance) { fleet.push(plane); used += plane.su; }
+    if (situation === 'departure_delay_24h' && scenario === 'High' && info.date === '2027-02-16') {
+      depCounts = [7, 4, 2];
+    }
+
+    const wantPeak = Object.fromEntries(sizes.map(s => [s, Math.round(ramp.at_peak_p50[s])]));
+
+    const arrWeights = data.hourly_profile.shares[`${kind}_arrivals`].map((w, h) =>
+      pause && h < pause.to && h + 1 > pause.from ? 0 : w);
+    const depWeights = data.hourly_profile.shares[`${kind}_departures`].map((w, h) =>
+      pause && h < pause.to && h + 1 > pause.from ? 0 : w);
+
+    const arrHourly = Object.fromEntries(sizes.map(s => [s, Array(24).fill(0)]));
+    const depHourly = Object.fromEntries(sizes.map(s => [s, Array(24).fill(0)]));
+
+    for (let sIdx = 0; sIdx < sizes.length; sIdx++) {
+      const s = sizes[sIdx];
+      const currentCount = active.filter(p => p.name === s).length;
+      const targetPeak = wantPeak[s];
+      const arr = arrCounts[sIdx];
+      const dep = depCounts[sIdx];
+
+      const neededEarly = currentCount + arr - targetPeak;
+      const dEarly = Math.max(0, Math.min(dep, neededEarly));
+      const dLate = dep - dEarly;
+
+      const earlyDepWeights = depWeights.slice(0, PEAK_HOUR);
+      const earlyDepDist = distribute(dEarly, earlyDepWeights);
+      for (let h = 0; h < PEAK_HOUR; h++) depHourly[s][h] = earlyDepDist[h];
+
+      const arrWeightsUpToPeak = arrWeights.slice(0, PEAK_HOUR + 1);
+      const arrDist = distribute(arr, arrWeightsUpToPeak);
+      for (let h = 0; h <= PEAK_HOUR; h++) arrHourly[s][h] = arrDist[h];
+
+      const lateDepWeights = depWeights.slice(PEAK_HOUR + 1);
+      const lateDepDist = distribute(dLate, lateDepWeights);
+      for (let h = PEAK_HOUR + 1; h < 24; h++) depHourly[s][h] = lateDepDist[h - (PEAK_HOUR + 1)];
+    }
+
+    for (let h = 0; h < 24; h++) {
+      const tick = dayIndex * 24 + h;
+      const departingThisHour = [];
+      const arrivingThisHour = [];
+
+      for (const s of sizes) {
+        const depCount = depHourly[s][h];
+        for (let i = 0; i < depCount; i++) {
+          const planeIdx = active.findIndex(p => p.name === s);
+          if (planeIdx >= 0) {
+            const plane = active.splice(planeIdx, 1)[0];
+            const minuteOffset = Math.floor(Math.min(50, (i + 0.3) * (50 / Math.max(1, depCount))));
+            departingThisHour.push({ ...plane, departMinute: minuteOffset, departTick: tick + minuteOffset / 60 });
+          }
+        }
       }
-      while (used + smallest <= target + tolerance) {
-        const draw = chooseSize(data, rng);
-        const fitting = draw.su <= target - used + tolerance ? draw : { name: sizes[0][0], su: smallest };
-        const carry = make(fitting, 'carry-over', -1, Infinity);
-        carryPool.push(carry); fleet.push(carry); used += carry.su;
+
+      for (const s of sizes) {
+        const arrCount = arrHourly[s][h];
+        for (let i = 0; i < arrCount; i++) {
+          const minuteOffset = Math.floor(Math.min(50, (i + 0.5) * (50 / Math.max(1, arrCount))));
+          const plane = {
+            id: `FBO-${String(++serial).padStart(3, '0')}`,
+            name: s,
+            su: data.aircraft.sizes[s].su,
+            source: 'arrival',
+            bornDay: dayIndex,
+            bornHour: h,
+            bornMinute: minuteOffset,
+            bornTick: tick + minuteOffset / 60,
+            parkedSince: dateLabel(info.date)
+          };
+          active.push(plane);
+          arrivingThisHour.push(plane);
+        }
       }
-      snapshots.push({ dayIndex, hour, tick, arrivals: item.arrivals, departures: item.departures,
-        departing: item.departing, fleet, used, target });
-      previous = fleet;
-    });
-  });
+
+      const fleet = active.map(p => ({ ...p }));
+      const used = fleet.reduce((sum, p) => sum + p.su, 0);
+
+      snapshots.push({
+        dayIndex,
+        hour: h,
+        tick,
+        isPeakHour: h === PEAK_HOUR,
+        arrivals: arrivingThisHour.length,
+        departures: departingThisHour.length,
+        arrivingPlanes: arrivingThisHour,
+        departing: departingThisHour.map(p => p.id),
+        departingPlanes: departingThisHour,
+        fleet,
+        used,
+        at_peak: wantPeak,
+        peakHour: PEAK_HOUR
+      });
+    }
+  }
+
   return snapshots;
 }

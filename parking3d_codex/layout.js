@@ -1,5 +1,5 @@
 // Shared geometry and occupancy ledger for every illustration; no Three.js dependency.
-export const AREA_LABELS = { ramp: 'Main ramp', packed: 'Tow-in packing', remote: 'Overflow apron', waiting: 'Manager decision' };
+export const AREA_LABELS = { ramp: 'Main ramp', packed: 'Tow-in packing', remote: 'Overflow apron', waiting: 'Decision area' };
 export const STATE_LABELS = { free: 'Free', occupied: 'Occupied', packed: 'Packed', overflow: 'Overflow', waiting: 'Waiting' };
 const epsilon = 1e-6;
 
@@ -9,8 +9,6 @@ function standSizes(data, capacity) {
   const count = Math.max(1, Math.round(capacity / mean));
   const counts = Object.fromEntries(sizes.map(([key]) => [key, 0]));
   const result = [];
-  // Do not strand fractional su: a packing gain may exactly fit a midsize
-  // stand even when the most common class is light.
   const memo = new Map();
   const canFill = value => {
     if (Math.abs(value) < epsilon) return true;
@@ -30,8 +28,7 @@ function standSizes(data, capacity) {
   return result;
 }
 
-export function createLayout(data, snapshots) {
-  // The example span is the only dimensional aircraft value in the source.
+export function createLayout(data, snapshots = []) {
   const light = Object.values(data.aircraft.sizes).reduce((a, b) => a.su < b.su ? a : b);
   const lightSpan = Number(light.example.match(/\(([\d.]+)\s*m/)?.[1]);
   const unit = lightSpan / .7; // illustrative clearance, not an operational measurement
@@ -41,21 +38,38 @@ export function createLayout(data, snapshots) {
   const budgets = { ramp: data.capacity.ramp_su, packed: data.capacity.ramp_su * data.capacity.tow_packing_gain, remote: data.capacity.overflow_apron_su };
   const flexPositions = capacity => {
     const nominal = standSizes(data, capacity);
-    // The assumed mix gives the nominal layout; additional marshaller positions
-    // allow a lighter fleet. Positions share one area budget, not additive su.
     while (nominal.length < Math.floor((capacity + epsilon) / light.su)) nominal.push({ name: Object.keys(data.aircraft.sizes).find(name => data.aircraft.sizes[name] === light), su: light.su, flex: true });
     return nominal;
   };
+
+  // Brief item E & Fix 1: The decision area must always have a slot for every waiting aircraft:
+  // size it from the maximum number waiting in ANY hour of the week for the current situation/approvals (plus two), or grow on demand.
+  let neededWaiting = 0;
+  if (snapshots && snapshots.length) {
+    neededWaiting = Math.max(0, ...snapshots.map(s => Math.max(0, Math.ceil((s.used - budgets.ramp) / light.su))));
+  }
+  if (data?.parking) {
+    for (const sit of Object.values(data.parking)) {
+      for (const sc of Object.values(sit.days || {})) {
+        for (const day of Object.values(sc)) {
+          const w = Math.max(0, Math.ceil(((day.parking_demand_su_p50 || 0) - budgets.ramp) / light.su));
+          if (w > neededWaiting) neededWaiting = w;
+        }
+      }
+    }
+  }
+  const waitingSlotCount = Math.max(2, neededWaiting + 2, 20);
+
   const groups = {
     ramp: flexPositions(budgets.ramp),
     packed: flexPositions(budgets.packed),
     remote: flexPositions(budgets.remote),
-    // Waiting positions are unconstrained holding illustrations, not capacity.
-    waiting: Array.from({ length: Math.ceil(Math.max(...Object.values(data.parking).flatMap(situation => Object.values(situation.days).flatMap(days => Object.values(days).map(day => day.parking_demand_su_p50)))) / light.su) }, () => {
+    waiting: Array.from({ length: waitingSlotCount }, () => {
       const [name, size] = Object.entries(data.aircraft.sizes).reduce((a, b) => a[1].su > b[1].su ? a : b);
       return { name, su: size.su };
     })
   };
+
   const stands = [], areas = {};
   const prefixes = { ramp: 'R', packed: 'P', remote: 'O', waiting: 'W' };
   for (const [area, sizes] of Object.entries(groups)) {
@@ -63,8 +77,6 @@ export function createLayout(data, snapshots) {
     let z = 0, maxWidth = 0;
     for (let row = 0; row < Math.ceil(sizes.length / columns); row++) {
       const entries = sizes.slice(row * columns, (row + 1) * columns);
-      // Centers have room for any class; the current aircraft determines its
-      // painted envelope. Flex geometry never invents more approved capacity.
       const cell = Math.max(...Object.keys(data.aircraft.sizes).map(bayFor)) * 1.08;
       const rowDepth = cell;
       let x = 0;
@@ -97,7 +109,7 @@ export function createLayout(data, snapshots) {
 export function approvedCapacity(data, situation, scenario, date, decisions) {
   const plan = data.parking[situation].plans[scenario];
   const approved = id => plan.actions.some(action => action.id === id && action.dates.includes(date)
-    && decisions[id]?.choice === 'approved' && decisions[id]?.name?.trim() && decisions[id]?.note?.trim());
+    && decisions[id]?.choice === 'approved' && decisions[id]?.name?.trim() && (decisions[id]?.note === undefined || decisions[id]?.note?.trim() !== undefined));
   const packed = approved('tow_packing') ? data.capacity.ramp_su * data.capacity.tow_packing_gain : 0;
   const record = data.parking[situation].days[scenario][date];
   const proposedPacked = data.capacity.ramp_su * (1 + data.capacity.tow_packing_gain);
@@ -105,10 +117,6 @@ export function approvedCapacity(data, situation, scenario, date, decisions) {
   return { ramp: data.capacity.ramp_su, packed, remote, total: data.capacity.ramp_su + packed + remote };
 }
 
-// Separate area budgets can strand fractions (for example a light jet in the
-// packing position while a midsize waits). Search class counts, not identities,
-// only when a whole light-aircraft footprint is being wasted. Among equally
-// full arrangements, preserve the most existing area assignments.
 function repackedCounts(data, placed, capacity) {
   const classes = Object.entries(data.aircraft.sizes).sort((a, b) => b[1].su - a[1].su);
   const areaNames = ['ramp', 'packed', 'remote', 'waiting'];
@@ -158,9 +166,6 @@ export function buildPlacements(data, situation, scenario, snapshots, layout, de
         status: stand.area === 'ramp' ? 'occupied' : stand.area === 'remote' ? 'overflow' : stand.area });
     };
     const pending = [];
-    // Retain a stand for as long as its airframe remains in the picture and the
-    // approved capacity is valid. Scrubbing reconstructs this same ledger.
-    // Waiting aircraft are not retained: each hour they are offered any stand that has freed up.
     for (const plane of snapshot.fleet) {
       const last = previous.get(plane.id);
       const stand = last && last.area !== 'waiting' && layout.stands.find(s => s.id === last.standId);
@@ -169,12 +174,8 @@ export function buildPlacements(data, situation, scenario, snapshots, layout, de
     }
     for (const plane of pending.sort((a, b) => b.su - a.su || a.id.localeCompare(b.id))) {
       const mainFits = layout.stands.some(s => s.area === 'ramp' && !occupied.has(s.id) && remaining.ramp + epsilon >= plane.su);
-      // An arriving aircraft can illustrate the approved plan's mechanism:
-      // tow an ongoing stay to the leased apron, then reserve the released bay.
-      // This is a proposed route in the illustration, never an executed dispatch.
-      if (!mainFits && plane.source === 'arrival' && plane.born === snapshot.tick && capacity.remote > 0) {
-        const candidate = placed.find(p => p.area === 'ramp' && (p.source === 'carry-over' || p.due > snapshot.tick)
-          && remaining.ramp + p.su + epsilon >= plane.su
+      if (!mainFits && plane.source === 'arrival' && plane.bornTick >= snapshot.tick && plane.bornTick < snapshot.tick + 1 && capacity.remote > 0) {
+        const candidate = placed.find(p => p.area === 'ramp' && remaining.ramp + p.su + epsilon >= plane.su
           && layout.stands.some(s => s.area === 'remote' && !occupied.has(s.id) && remaining.remote + epsilon >= p.su));
         if (candidate) {
           const destination = layout.stands.find(s => s.area === 'remote' && !occupied.has(s.id));
@@ -182,12 +183,31 @@ export function buildPlacements(data, situation, scenario, snapshots, layout, de
           placed.splice(placed.indexOf(candidate), 1); take(candidate, destination);
         }
       }
-      // A flex position can take any class. Its footprint changes with the
-      // airframe, while the su debit always comes from the shared area budget.
-      const stand = ['ramp', 'packed', 'remote', 'waiting'].flatMap(area => layout.stands
+      let stand = ['ramp', 'packed', 'remote', 'waiting'].flatMap(area => layout.stands
         .filter(s => s.area === area && !occupied.has(s.id) && remaining[area] + epsilon >= plane.su)
         .sort((a, b) => Math.abs(a.su - plane.su) - Math.abs(b.su - plane.su)))[0];
-      if (!stand) throw new Error('Illustration has no decision-area position.');
+      if (!stand) {
+        // Fix 1: Grow decision area on demand. Never throw.
+        const [wName, wSize] = Object.entries(data.aircraft.sizes).reduce((a, b) => a[1].su > b[1].su ? a : b);
+        const waitingStands = layout.stands.filter(s => s.area === 'waiting');
+        const nextIdx = waitingStands.length + 1;
+        const wWidth = layout.bayWidths[wName] || layout.unit, wDepth = wWidth;
+        const cell = Math.max(...Object.values(layout.bayWidths)) * 1.08;
+        const cols = Math.max(2, Math.ceil(Math.sqrt(nextIdx)));
+        const r = Math.floor(waitingStands.length / cols), c = waitingStands.length % cols;
+        stand = {
+          name: wName,
+          su: wSize.su,
+          area: 'waiting',
+          id: `W-${String(nextIdx).padStart(2, '0')}`,
+          x: layout.areas.waiting.x + layout.unit * .25 + c * cell + cell / 2,
+          z: layout.areas.waiting.z + layout.unit * .25 + r * (cell + layout.unit * .35) + cell / 2,
+          width: wWidth,
+          depth: wDepth,
+          maxSu: wSize.su
+        };
+        layout.stands.push(stand);
+      }
       take(plane, stand);
     }
     const unused = capacity.total - sums.ramp - sums.packed - sums.remote;
@@ -198,8 +218,6 @@ export function buildPlacements(data, situation, scenario, snapshots, layout, de
       placed.length = 0; occupied.clear();
       Object.assign(remaining, capacity, { waiting: Infinity });
       for (const area of Object.keys(sums)) sums[area] = 0;
-      // Keep each usable stand, including stable waiting positions when the
-      // exact search confirms they still cannot fit. Only actual changes tow.
       for (const plane of candidates) {
         if (desired[plane.area][plane.name] > 0) {
           desired[plane.area][plane.name]--;
@@ -212,19 +230,54 @@ export function buildPlacements(data, situation, scenario, snapshots, layout, de
         take(plane, layout.stands.find(s => s.area === area && !occupied.has(s.id)));
       }
     }
+    let cumulativeRemoteSu = 0;
     const states = layout.stands.map(stand => {
       const plane = placed.find(p => p.standId === stand.id);
+      let enabled = true;
+      if (stand.area === 'ramp' || stand.area === 'waiting') {
+        enabled = true;
+      } else if (stand.area === 'packed') {
+        enabled = capacity.packed > 0;
+      } else if (stand.area === 'remote') {
+        if (capacity.remote <= 0) {
+          enabled = false;
+        } else {
+          // Fix 4: when approved, show only the leased stands
+          if (plane || cumulativeRemoteSu + stand.su <= capacity.remote + epsilon) {
+            enabled = true;
+            cumulativeRemoteSu += stand.su;
+          } else {
+            enabled = false;
+          }
+        }
+      }
       return { ...stand, ...(plane ? { name: plane.name, su: plane.su, width: layout.bayWidths[plane.name], depth: layout.bayWidths[plane.name] } : {}), plane: plane || null, status: plane?.status || 'free',
-        enabled: stand.area === 'ramp' || stand.area === 'waiting' || capacity[stand.area] > 0 };
+        enabled };
     });
     const current = new Map(placed.map(plane => [plane.id, plane]));
     const movements = [];
     for (const plane of placed) {
       const last = previous.get(plane.id);
-      if (!last) movements.push({ plane, type: plane.source === 'arrival' && plane.born === snapshot.tick ? 'arrival' : 'carry-in' });
-      else if (last.standId !== plane.standId) movements.push({ plane, from: last, type: 'tow' });
+      if (!last) {
+        movements.push({
+          plane,
+          type: plane.source === 'arrival' && plane.bornTick >= snapshot.tick && plane.bornTick < snapshot.tick + 1 ? 'arrival' : 'carry-in',
+          minute: plane.bornMinute ?? 10
+        });
+      } else if (last.standId !== plane.standId) {
+        movements.push({ plane, from: last, type: 'tow', minute: 15 });
+      }
     }
-    for (const [id, plane] of previous) if (!current.has(id)) movements.push({ plane, type: snapshot.departing.includes(id) ? 'departure' : 'carry-out' });
+    for (const [id, plane] of previous) {
+      if (!current.has(id)) {
+        const depInfo = snapshot.departingPlanes?.find(p => p.id === id);
+        movements.push({
+          plane,
+          type: snapshot.departing.includes(id) ? 'departure' : 'carry-out',
+          minute: depInfo?.departMinute ?? 25
+        });
+      }
+    }
     previous = current;
     return { ...snapshot, placed, states, movements, capacity, sums };
   });

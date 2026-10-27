@@ -1,4 +1,4 @@
-import { getView, buildIllustration, dateLabel, su, pct, money, HOURS, clockLabel, restrictionAt } from './model.js';
+import { getView, buildIllustration, dateLabel, su, pct, money, HOURS, clockLabel, restrictionAt, getDefaultView, securityPausedAt, getFlowPlan, getImpactGrid, formatSituationOutlookLine } from './model.js';
 import { createLayout, buildPlacements } from './layout.js';
 import { createStandViews, escapeHTML } from './views.js';
 
@@ -11,13 +11,62 @@ function selectedDay() { return view.days[Math.floor(state.tick / HOURS)]; }
 function activeSnapshot() { return snapshots[state.tick]; }
 
 function renderControls() {
-  $('#scenario-options').innerHTML = Object.keys(data.scenarios).map(name => `<button type="button" data-scenario="${escapeHTML(name)}" aria-pressed="${state.scenario === name}" title="${escapeHTML(data.scenarios[name])}">${escapeHTML(name)}${name === data.default_scenario ? ' · forecast' : ''}</button>`).join('');
-  $('#situation').innerHTML = Object.entries(data.situations).map(([key, label]) => `<option value="${escapeHTML(key)}">${escapeHTML(label)}</option>`).join('');
-  $('#situation').value = state.situation;
+  const defaultDesc = (data.scenarios[data.default_scenario] || '').replace(/:\s*the forecast$/i, '');
+  $('#forecast-advice-main').textContent = `Forecast used: ${data.default_scenario}, ${defaultDesc}`;
+  const lowDesc = data.scenarios.Low.split('(')[0].trim();
+  const highDesc = data.scenarios.High;
+  $('#forecast-advice-range').textContent = `Range the model considered: Low ${lowDesc} to High ${highDesc}`;
   $('#date-select').innerHTML = data.days.map((day, index) => `<option value="${index}">${escapeHTML(dateLabel(day.date, true))}${day.date === data.meta.game_day ? ' · Game day' : day.date === data.meta.presidents_day ? ' · Holiday' : ''}</option>`).join('');
   $('#date-select').value = String(Math.floor(state.tick / HOURS));
   $('#prepared').checked = state.prepared;
-  $('#view-context').textContent = `${state.scenario === data.default_scenario ? `${data.default_scenario} is the forecast` : `${state.scenario} is a plausible-range case`} · ${state.prepared ? 'prepared' : 'normal'} capacity`;
+  $('#view-context').textContent = `${state.scenario} · ${data.situations[state.situation]} · ${state.prepared ? 'prepared' : 'normal'} capacity`;
+}
+
+function isModelCall() {
+  return state.situation === data.situation_outlook.base_case && state.scenario === data.default_scenario;
+}
+
+function renderModelCall() {
+  $('#models-call-note').textContent = data.situation_outlook.base_case_note;
+  $('#call-demand-line').textContent = `${data.default_scenario}, ${data.scenarios[data.default_scenario].replace(/:\s*the forecast$/i, '')}`;
+  $('#demand-levels-list').textContent = Object.entries(data.demand_levels.labels).map(([level, meaning]) => `${level}: ${meaning}`).join(' · ');
+  $('#call-situations-items').innerHTML = data.situation_outlook.items.map(item => {
+    const line = formatSituationOutlookLine(item, data);
+    return `<li><strong>${escapeHTML(line.full)}</strong><p>${escapeHTML(line.basis)}</p></li>`;
+  }).join('');
+  const preview = !isModelCall();
+  $('#whatif-banner').hidden = !preview;
+  $('#whatif-text').textContent = preview ? `What-if: ${data.situations[state.situation]}, ${state.scenario} demand. Not the model's call` : '';
+  document.body.classList.toggle('preview-active', preview);
+}
+
+function renderImpactGrid() {
+  $('#impact-grid-table thead').innerHTML = `<tr><th scope="col">Situation / status</th>${Object.entries(data.scenarios).map(([scenario, description]) => `<th scope="col">${escapeHTML(scenario)}<small>${escapeHTML(description)}</small></th>`).join('')}</tr>`;
+  $('#impact-grid-lead').textContent = `The parking model evaluates ${data.situation_outlook.items.length * Object.keys(data.scenarios).length} combinations. Select a cell to preview its outcomes everywhere. The highlighted base case is the model's call.`;
+  $('#impact-grid-tbody').innerHTML = getImpactGrid(data, state.situation, state.scenario).map(row => `<tr><th scope="row">${escapeHTML(row.label)}<small>${escapeHTML(row.status)}</small></th>${row.cells.map(cell => `<td class="${cell.isModelCall ? 'model-cell' : ''}"><button type="button" class="impact-cell" data-preview-situation="${cell.situation}" data-preview-scenario="${cell.scenario}" data-model-call="${cell.isModelCall}" aria-pressed="${cell.isActive}" aria-label="${escapeHTML(`${cell.situationLabel}, ${cell.scenario} demand${cell.isModelCall ? ", The model's call" : ', what-if preview'}. Peak P50 ${su(cell.peak_su)} on ${cell.peak_day_str}; ${cell.days_over_ramp} days above ramp; plan ${money(cell.plan_cost_usd)}; mean aircraft without a place, no plan ${cell.unaccommodated.no_plan.toFixed(1)}, with plan ${cell.unaccommodated.with_plan.toFixed(1)}.`)}">
+    <span class="cell-status">${cell.isModelCall ? "The model's call" : 'What-if'}${cell.isActive ? ' · Current view' : ''}</span>
+    <strong>P50 ${su(cell.peak_su)}</strong><span>Peak ${escapeHTML(cell.peak_day_str)}</span>
+    <span>${cell.days_over_ramp} days above ramp</span><span>Plan ${money(cell.plan_cost_usd)}</span>
+    <span>Without a place: ${cell.unaccommodated.no_plan.toFixed(1)} → ${cell.unaccommodated.with_plan.toFixed(1)}</span>
+    <small>Mean aircraft · no plan → plan</small></button></td>`).join('')}</tr>`).join('');
+}
+
+function renderFlowPlan() {
+  const flow = getFlowPlan(data, state.situation, state.scenario);
+  const sizeCounts = counts => Object.keys(data.aircraft.sizes).map(size => `<span>${counts[size]} ${escapeHTML(size)}</span>`).join('');
+  $('#flow-plan-tbody').innerHTML = flow.rows.map(row => {
+    const actions = row.activePlanActions.map(action => `<li><strong>Recommend:</strong> ${escapeHTML(action.action)} · ${money(action.cost_usd)}<small>Approval required: ${escapeHTML(action.approver)}</small></li>`);
+    const levers = row.activeLevers.map(lever => `<li><strong>Offer:</strong> ${escapeHTML(lever.action)}<p>${escapeHTML(lever.rationale)}</p><small>Approval required: ${escapeHTML(lever.approver)} · Take-up ${escapeHTML(flow.take_up_status)}</small></li>`);
+    if (row.pauseInstruction) actions.unshift(`<li class="pause-instruction"><strong>Recommend:</strong> ${escapeHTML(row.pauseInstruction)}<small>Named operations manager approval required.</small></li>`);
+    return `<tr data-flow-date="${row.date}"><th scope="row">${escapeHTML(dateLabel(row.date, true))}${row.game_day ? '<small>Game day</small>' : row.presidents_day ? "<small>Presidents’ Day</small>" : ''}</th>
+      <td><strong class="risk-${row.risk_level.toLowerCase()}">${escapeHTML(row.risk_level)}</strong><small>${escapeHTML(row.demand_meaning)}</small></td>
+      <td class="size-counts" data-counts="arrivals">${sizeCounts(row.arrivals)}</td><td class="size-counts" data-counts="departures">${sizeCounts(row.departures)}</td>
+      <td class="size-counts" data-counts="at_peak"><strong>${row.at_peak.total} aircraft</strong>${sizeCounts(row.at_peak)}</td>
+      <td><strong>${su(row.peak_su)} / ${su(row.ramp_su)}</strong><small>P50 / ramp</small><small>P10–P90: ${su(row.peak_p10)}–${su(row.peak_p90)}</small></td>
+      <td class="flow-actions"><ul>${actions.concat(levers).join('') || '<li>No additional preparation recommended.</li>'}</ul></td></tr>`;
+  }).join('');
+  $('#lever-not-recommended').textContent = flow.not_recommended;
+  $('#lever-human-in-command').textContent = `${flow.human_in_command} ${flow.note}`;
 }
 
 function renderSummary() {
@@ -44,7 +93,7 @@ function renderDayStrip() {
     const active = index === Math.floor(state.tick / HOURS);
     const status = day.parking_demand_su_p50 > day.capacity ? 'over' : day.probability < .1 ? 'safe' : '';
     const event = day.date === data.meta.game_day ? 'GAME DAY' : day.date === data.meta.presidents_day ? "PRESIDENTS' DAY" : '&nbsp;';
-    return `<button type="button" class="day-button ${status}" data-day="${index}" aria-pressed="${active}" aria-label="${escapeHTML(dateLabel(day.date))}: ${pct(day.probability)} chance of exceeding ${su(day.capacity)}; P50 ${su(day.parking_demand_su_p50)}, P90 ${su(day.parking_demand_su_p90)}"><span class="day-name">${escapeHTML(day.weekday.slice(0, 3))}<b>${Number(day.date.slice(-2))}</b></span><span class="day-event">${event}</span><span class="day-prob">${pct(day.probability)}</span><span class="day-bar"><i style="width:${Math.max(3, day.probability / maxProbability * 100)}%"></i></span></button>`;
+    return `<button type="button" class="day-button ${status}" data-day="${index}" aria-pressed="${active}" aria-label="${escapeHTML(dateLabel(day.date))}: ${escapeHTML(day.risk_level)} demand (${escapeHTML(data.demand_levels.labels[day.risk_level])}); ${pct(day.probability)} chance of exceeding ${su(day.capacity)}; P50 ${su(day.parking_demand_su_p50)}, P90 ${su(day.parking_demand_su_p90)}"><span class="day-name">${escapeHTML(day.weekday.slice(0, 3))}<b>${Number(day.date.slice(-2))}</b></span><span class="day-event">${event}</span><span class="day-demand risk-${day.risk_level.toLowerCase()}" title="${escapeHTML(data.demand_levels.labels[day.risk_level])}">${escapeHTML(day.risk_level)}</span><span class="day-prob">${pct(day.probability)}</span><span class="day-bar"><i style="width:${Math.max(3, day.probability / maxProbability * 100)}%"></i></span></button>`;
   }).join('');
 }
 
@@ -96,27 +145,192 @@ function renderTable() {
 function renderPlan() {
   const plan = view.plan;
   $('#plan-impact').innerHTML = `<h3>Modeled effect</h3><div class="impact-top"><div><span>Without plan</span><strong>${plan.aircraft_not_accommodated_mean.no_plan.toFixed(1)}</strong><small>mean aircraft needing another parking decision</small></div><div><span>With plan</span><strong style="color:var(--ok)">${plan.aircraft_not_accommodated_mean.with_plan.toFixed(1)}</strong><small>mean aircraft needing another parking decision</small></div></div><div class="impact-stat"><span>Plan cost</span><strong>${money(plan.plan_cost_usd)}</strong></div><div class="impact-stat"><span>Chance plan pays off</span><strong>${pct(plan.prob_plan_pays_off)}</strong></div><div class="impact-stat"><span>Selected capacity on ${escapeHTML(dateLabel(selectedDay().date, true))}</span><strong>${su(selectedDay().capacity)}</strong></div><p class="impact-note">The dataset calls these “aircraft not accommodated.” Here they are a planning shortfall for a manager to resolve; the simulator never refuses an aircraft. The cost and probability come from the selected model plan.</p>`;
-  $('#actions').innerHTML = `<h3>Record a human decision</h3>${plan.actions.map(action => {
-    const key = decisionKey(action.id);
-    const record = readDecision(key);
-    return `<div class="action-card" data-action="${escapeHTML(action.id)}"><div class="action-head"><div><strong>${escapeHTML(action.action)}</strong><small>Approver role: ${escapeHTML(action.approver)} · ${escapeHTML(dateLabel(action.dates[0], true))}–${escapeHTML(dateLabel(action.dates.at(-1), true))}</small></div><span class="action-cost">${money(action.cost_usd)}</span></div><p class="action-rationale">${escapeHTML(action.rationale)}</p><div class="approval-fields"><input class="person" type="text" maxlength="80" placeholder="Manager name" aria-label="Manager name for ${escapeHTML(action.action)}" value="${escapeHTML(record.name || '')}"><input class="note" type="text" maxlength="240" placeholder="Decision note" aria-label="Decision note for ${escapeHTML(action.action)}" value="${escapeHTML(record.note || '')}"></div><div class="action-buttons"><button type="button" data-choice="approved" class="${record.choice === 'approved' ? 'selected' : ''}">Approve</button><button type="button" data-choice="rejected" class="${record.choice === 'rejected' ? 'selected' : ''}">Reject</button><span class="decision-status">${record.choice ? `${escapeHTML(record.choice)} by ${escapeHTML(record.name)}` : 'Awaiting decision'}</span></div><div class="validation" aria-live="polite"></div></div>`;
-  }).join('')}`;
+
+  const actions = plan.actions;
+  const currentDecisions = actions.map(action => ({ action, record: readDecision(decisionKey(action.id)) }));
+  const anyDecided = currentDecisions.some(d => d.record.choice);
+  const savedName = localStorage.getItem('ramp-control/manager-name') || '';
+
+  if (anyDecided) {
+    const deciderName = currentDecisions.find(d => d.record.name)?.record.name || savedName || 'Manager';
+    const deciderTime = currentDecisions.find(d => d.record.time)?.record.time || 'time not recorded';
+    const approvedList = currentDecisions.filter(d => d.record.choice === 'approved');
+    const dateRange = actions.length > 0 && actions[0].dates.length > 0
+      ? `${Number(actions[0].dates[0].slice(-2))}–${Number(actions[0].dates.at(-1).slice(-2))} ${new Date(actions[0].dates[0] + 'T12:00:00Z').toLocaleString('en-US', { month: 'short', timeZone: 'UTC' })}`
+      : '';
+
+    let confirmationText = '';
+    if (approvedList.length > 0) {
+      const summaryList = approvedList.map(d => {
+        if (d.action.id === 'tow_packing') return 'tow-in packing';
+        if (d.action.id === 'overflow_apron') return d.action.action;
+        return d.action.action.toLowerCase();
+      });
+      const summary = summaryList.length === 2 ? `${summaryList[0]} and ${summaryList[1]}` : summaryList.join(', ');
+      confirmationText = `Approved by ${escapeHTML(deciderName)} at ${escapeHTML(deciderTime)}: ${escapeHTML(summary)} active ${escapeHTML(dateRange)}`;
+    } else {
+      confirmationText = `Rejected by ${escapeHTML(deciderName)} at ${escapeHTML(deciderTime)}: plan rejected (normal ramp capacity only)`;
+    }
+
+    $('#actions').innerHTML = `
+      <div class="decision-card decided">
+        <div class="confirmation-banner" role="status" aria-live="polite">
+          <p class="confirmation-line">${confirmationText}</p>
+          <button type="button" class="btn-undo" id="btn-undo-plan">Undo</button>
+        </div>
+        <details class="expert-actions-details">
+          <summary class="expert-toggle">Change one action</summary>
+          <div class="expert-actions-list">
+            ${actions.map(action => renderExpertActionRow(action)).join('')}
+          </div>
+        </details>
+      </div>`;
+    return;
+  }
+
+  $('#actions').innerHTML = `
+    <div class="decision-card single-recommendation-card">
+      <div class="recommendation-header">
+        <p class="section-kicker">HUMAN IN COMMAND</p>
+        <h3>The model recommends</h3>
+      </div>
+      <div class="recommended-actions">
+        ${actions.map(action => `
+          <div class="recommended-action-item">
+            <div class="rec-action-head">
+              <strong>${escapeHTML(action.action)}</strong>
+              <span class="action-cost">${money(action.cost_usd)}</span>
+            </div>
+            <div class="rec-action-meta">
+              <span>Approver: ${escapeHTML(action.approver)}</span>
+              <span>${escapeHTML(dateLabel(action.dates[0], true))}–${escapeHTML(dateLabel(action.dates.at(-1), true))}</span>
+            </div>
+            <p class="rec-action-rationale">${escapeHTML(action.rationale)}</p>
+          </div>
+        `).join('')}
+      </div>
+      <div class="decision-form">
+        <div class="decision-inputs">
+          <label class="input-wrap">
+            <span class="sr-only">Manager name</span>
+            <input id="manager-name-input" class="manager-input" type="text" maxlength="80" placeholder="Manager name" value="${escapeHTML(savedName)}" required>
+          </label>
+          <label class="input-wrap">
+            <span class="sr-only">Decision note</span>
+            <input id="decision-note-input" class="note-input" type="text" maxlength="240" placeholder="Decision note (optional)">
+          </label>
+        </div>
+        <div class="plan-decision-buttons">
+          <button type="button" id="approve-plan-btn" class="plan-decision-btn btn-approve">Approve plan</button>
+          <button type="button" id="reject-plan-btn" class="plan-decision-btn btn-reject">Reject plan</button>
+        </div>
+        <div id="plan-validation" class="validation" aria-live="polite"></div>
+      </div>
+      <details class="expert-actions-details">
+        <summary class="expert-toggle">Change one action</summary>
+        <div class="expert-actions-list">
+          ${actions.map(action => renderExpertActionRow(action)).join('')}
+        </div>
+      </details>
+    </div>`;
+}
+
+function renderExpertActionRow(action) {
+  const key = decisionKey(action.id);
+  const record = readDecision(key);
+  return `
+    <div class="expert-action-row" data-action="${escapeHTML(action.id)}">
+      <div class="expert-row-info">
+        <strong>${escapeHTML(action.action)}</strong>
+        <small>${money(action.cost_usd)} · ${escapeHTML(action.approver)}</small>
+      </div>
+      <div class="expert-row-controls">
+        <button type="button" data-expert-choice="approved" class="${record.choice === 'approved' ? 'selected' : ''}">Approve</button>
+        <button type="button" data-expert-choice="rejected" class="${record.choice === 'rejected' ? 'selected' : ''}">Reject</button>
+      </div>
+    </div>`;
 }
 
 function decisionKey(id) { return `ramp-control/${state.situation}/${state.scenario}/${id}`; }
-function readDecision(key) { try { const record = JSON.parse(localStorage.getItem(key) || '{}'); return record && typeof record === 'object' ? { choice: ['approved', 'rejected'].includes(record.choice) ? record.choice : '', name: typeof record.name === 'string' ? record.name : '', note: typeof record.note === 'string' ? record.note : '' } : {}; } catch { return {}; } }
-function saveDecision(actionCard, choice) {
-  const name = actionCard.querySelector('.person').value.trim();
-  const note = actionCard.querySelector('.note').value.trim();
-  const message = actionCard.querySelector('.validation');
-  if (!name || !note) { message.textContent = 'Enter a manager name and a note to record this decision.'; return; }
-  const key = decisionKey(actionCard.dataset.action);
-  try { localStorage.setItem(key, JSON.stringify({ choice, name, note })); }
-  catch { message.textContent = 'This browser could not save the decision locally.'; return; }
-  message.textContent = 'Saved on this device.';
-  actionCard.querySelectorAll('[data-choice]').forEach(button => button.classList.toggle('selected', button.dataset.choice === choice));
-  actionCard.querySelector('.decision-status').textContent = `${choice} by ${name}`;
-  rebuildPlacements(); state.instant = true; renderClock();
+function readDecision(key) {
+  try {
+    const record = JSON.parse(localStorage.getItem(key) || '{}');
+    return record && typeof record === 'object' ? {
+      choice: ['approved', 'rejected'].includes(record.choice) ? record.choice : '',
+      name: typeof record.name === 'string' ? record.name : '',
+      note: typeof record.note === 'string' ? record.note : '',
+      time: typeof record.time === 'string' ? record.time : ''
+    } : {};
+  } catch { return {}; }
+}
+
+function executePlanDecision(choice) {
+  const nameInput = $('#manager-name-input');
+  const noteInput = $('#decision-note-input');
+  const valMsg = $('#plan-validation');
+  const name = nameInput ? nameInput.value.trim() : (localStorage.getItem('ramp-control/manager-name') || '');
+  const note = noteInput ? noteInput.value.trim() : '';
+
+  if (!name) {
+    if (valMsg) valMsg.textContent = 'Enter a manager name to record this decision.';
+    nameInput?.focus();
+    return;
+  }
+
+  try { localStorage.setItem('ramp-control/manager-name', name); } catch {}
+
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const actions = data.parking[state.situation].plans[state.scenario].actions;
+
+  for (const action of actions) {
+    const key = decisionKey(action.id);
+    try {
+      localStorage.setItem(key, JSON.stringify({ choice, name, note, time }));
+    } catch {}
+  }
+
+  rebuildPlacements();
+  state.instant = true;
+  renderPlan();
+  renderClock();
+}
+
+function undoPlanDecision() {
+  const actions = data.parking[state.situation].plans[state.scenario].actions;
+  for (const action of actions) {
+    const key = decisionKey(action.id);
+    try { localStorage.removeItem(key); } catch {}
+  }
+  rebuildPlacements();
+  state.instant = true;
+  renderPlan();
+  renderClock();
+}
+
+function executeExpertDecision(actionId, choice) {
+  const nameInput = $('#manager-name-input');
+  const savedName = localStorage.getItem('ramp-control/manager-name') || '';
+  const name = nameInput ? nameInput.value.trim() || savedName : savedName;
+  if (!name) {
+    const valMsg = $('#plan-validation');
+    if (valMsg) valMsg.textContent = 'Enter a manager name above before recording decisions.';
+    nameInput?.focus();
+    return;
+  }
+  try { localStorage.setItem('ramp-control/manager-name', name); } catch {}
+
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const key = decisionKey(actionId);
+  try {
+    localStorage.setItem(key, JSON.stringify({ choice, name, note: '', time }));
+  } catch {}
+
+  rebuildPlacements();
+  state.instant = true;
+  renderPlan();
+  renderClock();
 }
 
 function decisions() {
@@ -141,8 +355,9 @@ function hover(value) { standViews?.highlight(value); rampScene?.highlight(value
 
 function renderClock() {
   const day = selectedDay(), snapshot = activeSnapshot(), placement = placements[state.tick];
-  $('#scrub').value = String(state.tick);
-  $('#scrub').setAttribute('aria-valuetext', `${dateLabel(day.date)} ${clockLabel(snapshot.hour)}`);
+  const hour = state.tick % HOURS + state.phase;
+  $('#scrub').value = String(state.tick + state.phase);
+  $('#scrub').setAttribute('aria-valuetext', `${dateLabel(day.date)} ${clockLabel(hour)}`);
   $('#movement').textContent = `${snapshot.arrivals} illustrated arrivals · ${snapshot.departures} departures this hour`;
   const used = snapshot.used, waiting = placement.sums.waiting, totalCapacity = placement.capacity.total;
   $('#gauge-value').textContent = `${su(used)} / ${su(totalCapacity)}`;
@@ -153,31 +368,62 @@ function renderClock() {
   $('#waiting-count').textContent = `${waitingCount} aircraft`;
   $('#waiting-space').textContent = `${su(waiting)} · illustrative`;
   $('.waiting-readout').classList.toggle('has-waiting', waitingCount > 0);
+  $('#hud-view-context').textContent = `${isModelCall() ? "The model's call" : 'What-if preview'} · ${state.scenario} · ${data.situations[state.situation]}`;
   $('#hud-short').textContent = `${dateLabel(day.date, true)} · ${pct(day.probability)} daily chance over ${state.prepared ? 'prepared' : 'ramp'} space`;
   $('#hud-answer').textContent = `${dateLabel(day.date)}: median demand ${day.parking_demand_su_p50 > day.capacity ? 'exceeds' : 'fits within'} ${su(day.capacity)} of ${state.prepared ? 'proposed prepared' : 'normal ramp'} space, with a ${pct(day.probability)} daily chance of exceeding it.`;
   $('#hud-range').textContent = `Modeled demand: P50 ${su(day.parking_demand_su_p50)} · P10–P90 ${su(day.parking_demand_su_p10)}–${su(day.parking_demand_su_p90)}. Clock and positions are illustrative; approvals control the gauge.`;
   $('#ramp-label').textContent = `${su(data.capacity.ramp_su)}${placement.capacity.packed ? ` + ${su(placement.capacity.packed)} packed` : ''}`;
   $('#remote-label').textContent = placement.capacity.remote ? `${su(placement.capacity.remote)} approved today` : 'No approved space today';
+
+  const rampCount = placement.placed.filter(plane => plane.area === 'ramp' || plane.area === 'packed' || plane.area === 'remote').length;
+  const rampEl = $('#hud-ramp-count');
+  if (rampEl) rampEl.textContent = `Aircraft on the ramp now: ${rampCount}`;
+
+  const peakData = data.ramp_aircraft?.by_situation?.[state.situation]?.[state.scenario]?.[day.date]?.at_peak_p50;
+  if (peakData) {
+    const a = Math.round(peakData.light);
+    const b = Math.round(peakData.midsize);
+    const c = Math.round(peakData.large);
+    const peakTotal = a + b + c;
+    const peakEl = $('#hud-peak-count');
+    const daySnapshots = snapshots.slice(snapshot.dayIndex * HOURS, (snapshot.dayIndex + 1) * HOURS);
+    const busiest = daySnapshots.reduce((acc, f) => f.used > acc.used ? f : acc);
+    const busiestCount = busiest.fleet.length;
+    if (peakEl) {
+      if (busiestCount !== peakTotal) {
+        peakEl.textContent = `on the ramp at peak: ${busiestCount}, model median: ${peakTotal} (${a} light, ${b} midsize, ${c} large)`;
+      } else {
+        peakEl.textContent = `Model median at today's peak: ${peakTotal} (${a} light, ${b} midsize, ${c} large)`;
+      }
+    }
+  }
+
   const pause = restrictionAt(data, state.situation, day.date);
   $('#restriction-note').hidden = !pause;
-  $('#restriction-note').textContent = pause ? `Assumed security pause: ${pause.start}–${pause.end}. ${pause.status}. Placeholder movements in intersecting hourly bins are held outside this window; daily totals are preserved.` : '';
+  $('#restriction-note').textContent = pause ? `Security pause (${pause.status}): ${pause.start}–${pause.end}. ${pause.basis} Illustrated timing keeps movements outside this window; daily totals are preserved.` : '';
   rampScene?.update(placement); standViews?.update(placement);
   rampScene?.setForecast(view.days, snapshot.dayIndex); syncFollowControl(); syncProgress();
 }
 function syncProgress() {
-  const hour = state.tick % HOURS + (motionQuery.matches ? 0 : state.phase);
+  const hour = state.tick % HOURS + state.phase;
   $('#clock-face').textContent = `${dateLabel(selectedDay().date, true)} · ${clockLabel(hour)}`;
+  $('#scrub').value = String(state.tick + state.phase);
+  $('#scrub').setAttribute('aria-valuetext', `${dateLabel(selectedDay().date)} ${clockLabel(hour)}`);
+  $('#pause-stage-banner').hidden = !securityPausedAt(data, state.situation, selectedDay().date, hour);
   standViews?.setTime(hour);
   rampScene?.setProgress(state.instant || motionQuery.matches ? 1 : state.phase, hour);
 }
 function renderAll() {
   view = getView(data, state.situation, state.scenario, state.prepared);
-  renderControls(); renderSummary(); renderDayStrip(); renderSelectedDay(); renderChart(); renderTable(); renderPlan(); renderClock();
+  renderControls(); renderModelCall(); renderImpactGrid(); renderFlowPlan(); renderSummary(); renderDayStrip(); renderSelectedDay(); renderChart(); renderTable(); renderPlan(); renderClock();
 }
 function changeTick(tick, animated = false) {
   const previousDay = Math.floor(state.tick / HOURS);
-  state.tick = Math.max(0, Math.min(snapshots.length - 1, Math.floor(tick)));
-  state.phase = 0; state.instant = !animated;
+  const newTick = Math.max(0, Math.min(snapshots.length - 1, Math.floor(tick)));
+  const fractional = Math.max(0, Math.min(0.999999, tick - newTick));
+  state.tick = newTick;
+  state.phase = animated ? 0 : fractional;
+  state.instant = !animated && fractional === 0;
   $('#date-select').value = String(Math.floor(state.tick / HOURS));
   if (!animated || previousDay !== Math.floor(state.tick / HOURS)) {
     renderDayStrip(); renderSelectedDay(); renderChart(); renderTable();
@@ -197,7 +443,7 @@ function setPlaying(value) {
 }
 function advance(delta) {
   if (!state.playing || document.hidden) return;
-  const secondsPerHour = { slow: 10, normal: 5, fast: 1.5 }[$('#speed').value];
+  const secondsPerHour = { realtime: 60, slow: 12, normal: 4, fast: 2 }[$('#speed').value] || 4;
   const phase = state.phase + delta / secondsPerHour;
   if (phase >= 1) {
     if (state.tick === snapshots.length - 1) { state.phase = 1; syncProgress(); setPlaying(false); return; }
@@ -211,11 +457,21 @@ function resetSimulation() {
   rebuildPlacements(); select(null); hover(null); renderAll();
 }
 function bindEvents() {
-  $('#scenario-options').addEventListener('click', event => {
-    const button = event.target.closest('[data-scenario]'); if (!button) return;
-    state.scenario = button.dataset.scenario; resetSimulation();
+  $('#impact-grid-tbody').addEventListener('click', event => {
+    const button = event.target.closest('[data-preview-situation]');
+    if (!button) return;
+    state.situation = button.dataset.previewSituation;
+    state.scenario = button.dataset.previewScenario;
+    resetSimulation();
+    document.querySelector(`[data-preview-situation="${state.situation}"][data-preview-scenario="${state.scenario}"]`)?.focus({ preventScroll: true });
   });
-  $('#situation').addEventListener('change', event => { state.situation = event.target.value; resetSimulation(); });
+  $('#whatif-back-btn').addEventListener('click', () => {
+    Object.assign(state, getDefaultView(data)); resetSimulation();
+    document.querySelector('[data-model-call="true"]')?.focus({ preventScroll: true });
+  });
+  new ResizeObserver(() => {
+    document.documentElement.style.setProperty('--preview-height', `${$('#whatif-banner').getBoundingClientRect().height}px`);
+  }).observe($('#whatif-banner'));
   $('#date-select').addEventListener('change', event => { setPlaying(false); changeTick(Number(event.target.value) * HOURS + state.tick % HOURS); });
   $('#prepared').addEventListener('change', event => { state.prepared = event.target.checked; renderAll(); });
   $('#day-strip').addEventListener('click', event => { const button = event.target.closest('[data-day]'); if (button) { setPlaying(false); changeTick(Number(button.dataset.day) * HOURS + state.tick % HOURS); } });
@@ -224,7 +480,23 @@ function bindEvents() {
   $('#week-chart').addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); chartSelect(event); } });
   $('#scrub').addEventListener('input', event => { setPlaying(false); changeTick(Number(event.target.value)); });
   $('#play').addEventListener('click', () => setPlaying(!state.playing));
-  $('#actions').addEventListener('click', event => { const button = event.target.closest('[data-choice]'); if (button) saveDecision(button.closest('.action-card'), button.dataset.choice); });
+  $('#actions').addEventListener('click', event => {
+    if (event.target.closest('#approve-plan-btn')) { executePlanDecision('approved'); return; }
+    if (event.target.closest('#reject-plan-btn')) { executePlanDecision('rejected'); return; }
+    if (event.target.closest('#btn-undo-plan')) { undoPlanDecision(); return; }
+    const expertBtn = event.target.closest('[data-expert-choice]');
+    if (expertBtn) {
+      const row = expertBtn.closest('.expert-action-row');
+      if (row) executeExpertDecision(row.dataset.action, expertBtn.dataset.expertChoice);
+    }
+  });
+  $('#hud-toggle')?.addEventListener('click', () => {
+    const hud = $('#scene-hud');
+    if (!hud) return;
+    const collapsed = hud.classList.toggle('is-collapsed');
+    $('#hud-toggle').setAttribute('aria-expanded', String(!collapsed));
+    $('#hud-toggle').textContent = collapsed ? 'Expand' : 'Collapse';
+  });
   $('.camera-controls').addEventListener('click', event => {
     const button = event.target.closest('[data-camera]'); if (!button) return;
     rampScene?.preset(button.dataset.camera);
@@ -255,6 +527,9 @@ function syncFullscreen() {
   $('#fullscreen').textContent = active ? 'Exit fullscreen' : 'Fullscreen';
   $('#fullscreen').setAttribute('aria-pressed', String(active));
   document.body.classList.toggle('scene-expanded', active);
+  const banner = $('#whatif-banner');
+  if (active) $('#scene-stage').prepend(banner);
+  else document.body.prepend(banner);
 }
 async function toggleFullscreen() {
   const stage = $('#scene-stage');
@@ -293,7 +568,7 @@ async function main() {
     const response = await fetch('./parking_data.json');
     if (!response.ok) throw new Error('The supplied parking data could not be loaded.');
     data = await response.json();
-    state.scenario = data.default_scenario; state.situation = Object.keys(data.situations)[0];
+    Object.assign(state, getDefaultView(data));
     const savedTheme = (() => { try { return localStorage.getItem('ramp-control/theme'); } catch { return null; } })();
     const theme = savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     document.documentElement.dataset.theme = theme;
