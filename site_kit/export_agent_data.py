@@ -1,11 +1,11 @@
 """Export agent_data.json for the FBO agent apps: when are the busiest periods (landings and departures)?
 
 Everything comes from the team's committed outputs, nothing from outside the repository:
-- daily forecast per scenario with 90% ranges and the ordinary week (marvin/person_2_forecasting)
-- Part 91 / Part 135 split per day (marvin/person_2_part91_part135_forecast/results/part_daily_totals.csv)
+- daily forecast per scenario with 90% ranges and the ordinary week (forecast/main_forecast)
+- Part 91 / Part 135 split per day (forecast/category_forecast/results/part_daily_totals.csv)
 - measured weather effects and February frequencies (NOAA x FAA, weather_effect_measured.csv)
-- game-day security restriction (alan/data/processed/security_restriction_model_input.csv) and the release
-  window used by the parking model (elia/assumptions_p3.csv security_release_hours)
+- game-day security restriction (sources/data/processed/security_restriction_model_input.csv) and the release
+  window used by the parking model (parking/assumptions_p3.csv security_release_hours)
 - hour-of-day shares (hourly_profile_weights.csv): a PLACEHOLDER profile, not observed; the agent's own
   entered movements take priority over it
 - accuracy (backtest), Super Bowl evidence (eight host cities), parking as a secondary indicator.
@@ -18,9 +18,9 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-P2 = ROOT / "marvin" / "person_2_forecasting"
-PKG = ROOT / "marvin" / "person_2_part91_part135_forecast" / "results"
-P3 = ROOT / "elia"
+P2 = ROOT / "forecast" / "main_forecast"
+PKG = ROOT / "forecast" / "category_forecast" / "results"
+P3 = ROOT / "parking"
 OUT = Path(__file__).resolve().parent / "agent_data.json"
 SCENARIOS = ("Low", "Medium", "High")
 WEATHER = ("rain", "heavy_rain", "heavy_fog")
@@ -84,7 +84,7 @@ def main():
         parts[r["date"], r["scenario"]][r["operation_part"]] = float(r["expected_arrivals"]) + float(r["expected_departures"])
     parking = {(r["date"], r["scenario"]): r for r in rows(P3 / "resource_requirements.csv")}
     a = {r["parameter"]: r["value"] for r in rows(P3 / "assumptions_p3.csv")}
-    sec = rows(ROOT / "alan" / "data" / "processed" / "security_restriction_model_input.csv")[0]
+    sec = rows(ROOT / "sources" / "data" / "processed" / "security_restriction_model_input.csv")[0]
     clock = lambda s: int(s[:2]) + int(s[3:5]) / 60
     start, end, release = clock(sec["start_time_local"]), clock(sec["end_time_local"]), float(a["security_release_hours"])
 
@@ -151,7 +151,7 @@ def main():
                      "coverage_90": r3(next(r["coverage_90"] for r in backtest if r["model"] == "model")),
                      "note": "Every Monday of 2025: fit on earlier days only, forecast the next 7 days. WAPE = average daily error as a share of actual traffic."},
         "super_bowl_test": [{k: r[k] for k in ("event", "game_sunday", "airports", "metric", "excess", "position")}
-                            for r in rows(ROOT / "alan" / "elia_output" / "data" / "processed" / "superbowl_hosts_excess.csv")],
+                            for r in rows(ROOT / "sources" / "airport_traffic" / "data" / "processed" / "superbowl_hosts_excess.csv")],
         "key_assumptions": [
             {"name": "FBO share of LAX private traffic", "value": "10%", "class": "assumed"},
             {"name": "Arrivals vs departures on ordinary days", "value": "50 / 50", "class": "assumed"},

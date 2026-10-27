@@ -1,0 +1,21 @@
+{
+  "release_run_id": "b16963cd4580b3d7c94722b8c56f07437081d2b7afa5374c076763af0d01844b",
+  "files": {
+    "forecast/main_forecast/FAA_EVENT_UPDATE.md": "1a5433e51c782d666d1cea445314568b8d3c52e75d6efa2ea0db12b60aaa73e9",
+    "parking/test_parking_optimizer.py": "95cd59ff8f2fa126abb202ecb7461b52318ba214eee4fd905ee5010cab479167",
+    "forecast/main_forecast/build_event_inputs.py": "85842a3addce8f05d212c9090c0b1950583f1850bf02840949ea1cf31d517845",
+    "forecast/main_forecast/provisional_inputs/event_evidence.json": "917c0e48dd700894f40e17902757e2da20b5f27022a622bb7ff016fe3db554c0",
+    "forecast/main_forecast/test_forecast_model.py": "daee081b3142987af45cd0818e69f6f07b9f90b706008eeb45db310b2cb2f778",
+    "forecast/main_forecast/forecast_output_contract.json": "ed0c26acccc1bc855e0c3ab67c6d79e170b3ee0c1cb783712e8bd478d35d5f76",
+    "forecast/main_forecast/provisional_inputs/monthly_reconciliation.csv": "fc0a3b6cd0ffc6051637047ef97bc2606eccab48ec1fa84c911889d5bddf88b0",
+    "sources/airport_traffic/data/processed/opsnet_lax_monthly.csv": "afb2e603b10fd70154f27025834a90a9a8816451e53b34308b9fa00efa4f567f",
+    "parking/resource_requirements_security_restriction.csv": "3d7f3cc645c68a190fccc47b4e103cb922e2a333bfe657faefc7bc132bdff9af",
+    "parking/scenario_recommendations_security_restriction.json": "c6ad6db235e3dec5499699c9f62b17dc0b18e5db13fcf3cc04228c7f24516381",
+    "sources/data/processed/security_restriction_model_input.csv": "35b0386d8b3d2da8acbffaad9a812c095abcdde02c3c55cc5097c939e43deae7",
+    "sources/airport_traffic/data/processed/superbowl_lvi_surge.csv": "10b7a3e4047d07fea6ef34367a18213d922caadf132c073925d603f523e837b0",
+    "sources/airport_traffic/data/processed/superbowl_lvi_daily_profile.csv": "b36f79698a6bc0597b0861bac85acf8866b7536bab76a9f4306f03ab6130b195",
+    "sources/airport_traffic/data/processed/opsnet_daily_superbowl.csv": "4d351c00a2075780228042b04c25b22088b452b7917417c3bc9efd5fa47c1a4f",
+    "sources/airport_traffic/scripts/analyze_superbowl_lvi.py": "2ea5c0d094574dda005e803ee3d3e19cff00b2f7004aa9e479834cead5d3d525",
+    "sources/airport_traffic/data_sources_lawa_bts.md": "c0540ed567b67ffffb2c83af22eabdcd6e8ea2e09037e73bf076d051af975c17"
+  }
+}

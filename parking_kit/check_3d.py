@@ -1,5 +1,5 @@
 """Deep 3D check for the parking prototypes (Playwright + Pillow; hooks three.module.js in the test browser, no app change).
-usage: python parking_kit/check_3d.py parking3d_codex 8181 /tmp/shots   (needs: pip install playwright pillow; playwright install chromium)"""
+usage: python parking_kit/check_3d.py ramp_control 8181 /tmp/shots   (needs: pip install playwright pillow; playwright install chromium)"""
 import subprocess, sys, time, json, statistics
 from playwright.sync_api import sync_playwright
 folder, port, shots = sys.argv[1], sys.argv[2], sys.argv[3]

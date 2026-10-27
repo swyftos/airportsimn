@@ -2045,7 +2045,7 @@
   },
   "security_restriction": {
    "label": "Game-day security restriction 14:30-20:30",
-   "method": "10000 Monte Carlo demand paths per scenario drawn from P2 point forecasts and assumed planning ranges mapped to 5th/95th percentiles, with a shared event shock. P2 expected counts are treated as medians. Parking prepared for the planning quantile. Impact compares normal plan vs prepared plan on the same paths. Variant: no private movements on 2027-02-14 between 14.50 and 20.50 h (Alan's TFR input, https://www.faasafety.gov/files/notices/2022/Jan/SB_LVI_Flight_Advisory.pdf). Movements in that window are released over 4 h after it; 0% of blocked departures leave the next day. Same demand paths.",
+   "method": "10000 Monte Carlo demand paths per scenario drawn from P2 point forecasts and assumed planning ranges mapped to 5th/95th percentiles, with a shared event shock. P2 expected counts are treated as medians. Parking prepared for the planning quantile. Impact compares normal plan vs prepared plan on the same paths. Variant: no private movements on 2027-02-14 between 14.50 and 20.50 h (the data team's TFR input, https://www.faasafety.gov/files/notices/2022/Jan/SB_LVI_Flight_Advisory.pdf). Movements in that window are released over 4 h after it; 0% of blocked departures leave the next day. Same demand paths.",
    "days": [
     {
      "scenario": "Low",
@@ -3524,7 +3524,7 @@
     },
     "actions": [],
     "early_arrival_finding": "At 30% take-up, a cheap Thu-Fri slot moves the game-day P50 from 13.5 to 13.3 su and unaccommodated aircraft from 1.0 to 2.1: aircraft arrive earlier but leave at the same time, so they stay longer. It does not free parking.",
-    "pricing_note": "Past Super Bowls filled parking without raising prices (alan/docs/lax_private_capacity_and_cost_research.md); reservations (PPR) stay the primary tool, incentives are offers, and the system never refuses an aircraft."
+    "pricing_note": "Past Super Bowls filled parking without raising prices (sources/docs/lax_private_capacity_and_cost_research.md); reservations (PPR) stay the primary tool, incentives are offers, and the system never refuses an aircraft."
    },
    "Medium": {
     "no_action": {
@@ -3543,7 +3543,7 @@
      }
     ],
     "early_arrival_finding": "At 30% take-up, a cheap Thu-Fri slot moves the game-day P50 from 17.4 to 17.3 su and unaccommodated aircraft from 2.3 to 4.3: aircraft arrive earlier but leave at the same time, so they stay longer. It does not free parking.",
-    "pricing_note": "Past Super Bowls filled parking without raising prices (alan/docs/lax_private_capacity_and_cost_research.md); reservations (PPR) stay the primary tool, incentives are offers, and the system never refuses an aircraft."
+    "pricing_note": "Past Super Bowls filled parking without raising prices (sources/docs/lax_private_capacity_and_cost_research.md); reservations (PPR) stay the primary tool, incentives are offers, and the system never refuses an aircraft."
    },
    "High": {
     "no_action": {
@@ -3562,7 +3562,7 @@
      }
     ],
     "early_arrival_finding": "At 30% take-up, a cheap Thu-Fri slot moves the game-day P50 from 23.0 to 23.0 su and unaccommodated aircraft from 6.0 to 7.9: aircraft arrive earlier but leave at the same time, so they stay longer. It does not free parking.",
-    "pricing_note": "Past Super Bowls filled parking without raising prices (alan/docs/lax_private_capacity_and_cost_research.md); reservations (PPR) stay the primary tool, incentives are offers, and the system never refuses an aircraft."
+    "pricing_note": "Past Super Bowls filled parking without raising prices (sources/docs/lax_private_capacity_and_cost_research.md); reservations (PPR) stay the primary tool, incentives are offers, and the system never refuses an aircraft."
    }
   },
   "meta": {

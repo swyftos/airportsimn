@@ -11,10 +11,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-P2 = ROOT / "marvin" / "person_2_forecasting"
-P3 = ROOT / "elia"
-DATA = ROOT / "alan" / "elia_output" / "data" / "processed"
-PKG = ROOT / "marvin" / "person_2_part91_part135_forecast" / "results"
+P2 = ROOT / "forecast" / "main_forecast"
+P3 = ROOT / "parking"
+DATA = ROOT / "sources" / "airport_traffic" / "data" / "processed"
+PKG = ROOT / "forecast" / "category_forecast" / "results"
 OUT = Path(__file__).resolve().parent / "fbo_data.json"
 VARIANTS = {"standard": "Normal operations", "departure_delay_24h": "Departures delayed 24 h after the game",
             "security_restriction": "Game-day security restriction 14:30-20:30", "heavy_rain": "Heavy rain on game day"}
@@ -78,7 +78,7 @@ def parking_variant(name):
 
 def main():
     a = {r["parameter"]: num(r["value"]) for r in rows(P3 / "assumptions_p3.csv")}
-    alan = {r["id"]: r for r in rows(ROOT / "alan" / "assumptions.csv")}
+    sources = {r["id"]: r for r in rows(ROOT / "sources" / "assumptions.csv")}
     ordinary = [{k: num(r[k]) for k in ("date", "arrivals_baseline", "departures_baseline", "parking_demand_su_p10",
                                          "parking_demand_su_p50", "parking_demand_su_p90", "capacity_normal_su",
                                          "utilization_normal_p50", "prob_over_normal_capacity", "risk_level")}
@@ -105,7 +105,7 @@ def main():
                              "assumed": "team assumption, not measured"},
         },
         "key_assumptions": [
-            {"name": "FBO share of LAX private traffic", "value": float(alan["fbo_market_share"]["value"]), "class": "assumed",
+            {"name": "FBO share of LAX private traffic", "value": float(sources["fbo_market_share"]["value"]), "class": "assumed",
              "note": "50% private-eligible x 20% capture. Ramp is sized to the same share, so ramp use does not depend on it."},
             {"name": "Ramp capacity", "value": a["ramp_capacity_su"], "unit": "su", "class": "estimated",
              "note": f"Atlantic's {a['reference_ramp_su']} su ramp (2008 area) x share / Atlantic's {a['reference_traffic_share']} traffic share"},
