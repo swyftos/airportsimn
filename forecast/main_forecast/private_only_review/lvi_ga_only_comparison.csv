@@ -1,0 +1,2 @@
+metric,locid,ratio_2019,ratio_2022,ratio_2023,ratio_2024,control_mean,excess_2022,classification,source_url
+general_aviation,LAX,1.225,1.303,1.142,1.425,1.264,0.031,derived_FAA_GA_category_not_private_fleet,sources/airport_traffic/data/processed/superbowl_lvi_surge.csv

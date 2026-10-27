@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 Alan Wang, Marvin Hendra, Elia Calamaro and Nazar Meniailo
+Copyright (c) 2026 The Ramp Control contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@ SOFTWARE.
 
 ---
 
-Third-party material. The documents under alan/data/raw/ (FAA, Los Angeles
+Third-party material. The documents under sources/data/raw/ (FAA, Los Angeles
 World Airports, City of Los Angeles and FBO operator documents, and short
 excerpts of web pages and news articles) are public source material included
 so the analysis can be checked. They are not covered by this license and remain

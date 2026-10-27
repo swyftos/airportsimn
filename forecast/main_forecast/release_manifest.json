@@ -1,0 +1,31 @@
+{
+  "generated_at": "2026-10-24T15:16:48.741321+00:00",
+  "status": "provisional_pending_data_review",
+  "historical_data_class": "estimated",
+  "reservation_class": "synthetic",
+  "event_multipliers": "FAA_ATADS_OPSNET_anchored_FBO_transfer_assumption",
+  "files": {
+    "forecast/main_forecast/demand_predictions.csv": "cacd53f08521963455901f0ca2a293feb17e6abdc5018b5915c67d622cee4b8b",
+    "forecast/main_forecast/uncertainty_results.csv": "8b965f61360521f96af3629efeb2050723d9ce185ab30c1f05430eab4ed8ca4b",
+    "forecast/main_forecast/evaluation_metrics.csv": "76747ef6b5336041f61d13582eef9dab9f252dbe57b4e2277a397d0e1858fc71",
+    "forecast/main_forecast/daily_totals.csv": "f04275d7d62c073b0613b86a36e04263bd8cf69c9af7820b562c992246452acc",
+    "forecast/main_forecast/run_metadata.json": "29b9e8be5164ecfdb989aaa2f74cf31806d458273fe7ec8a66cd583b13931711",
+    "forecast/main_forecast/forecast_model.py": "9387a6cc08db9b6cf4c7f2cdd78ef10986b71f41f4ceefadd12622a19b86b29f",
+    "forecast/main_forecast/convert_monthly_to_daily.py": "f2070695175e7d71d1d391e541968226a97e887d5845ee6d84c91a186f38f084",
+    "forecast/main_forecast/PROVISIONAL_ASSUMPTIONS.md": "46d13d6d54318b0ef96336d81285eb1f1308b8e36df9160f5064962ecd799828",
+    "forecast/main_forecast/run_provisional.py": "a2cbab16cb89607c1ae1a6b2d3f7a8011c11bbd753d62bcc7844529a53efd0cc",
+    "forecast/main_forecast/provisional_inputs/historical_traffic.csv": "df3704623aad68de350face88370ca2ed1e6ed52116a3c61f63d2f39e09ddb07",
+    "forecast/main_forecast/provisional_inputs/holiday_history.csv": "88b4398ce1315c42da956efc008b29d5739c4c03fdbfe5d60f5b6497fd0195b5",
+    "forecast/main_forecast/provisional_inputs/planning_inputs.csv": "3d4e80e05d8e4fc675940a7569496fb5bb44e04882a390d37d95d948a446e41a",
+    "parking/resource_requirements.csv": "3d7f3cc645c68a190fccc47b4e103cb922e2a333bfe657faefc7bc132bdff9af",
+    "parking/scenario_recommendations.json": "34c4dca68d564b21b9949ea52fadba65dd7993e793c07f1c99d89f3dabd469f3",
+    "parking/assumptions_p3.csv": "d66db7a9dc2eee000af6990d87d28a2b65f6cbbea628a3efa3818aef2dc062be",
+    "parking/parking_optimizer.py": "424bbb0a47199cfabe5c5975e70b9e2f41f7979d12c86e6e682da7774672b18e",
+    "sources/airport_traffic/data/processed/opsnet_lax_daily.csv": "a798a0d005d733f5066fe2e2c5eae06eb580cb5b085827f85da20acc06bb537f",
+    "parking/ordinary_week_parking.csv": "be4bbf5039aac2b7ff337a779a2c3fe2282742248a4089e82218b24897c0bc0c",
+    "parking/parking_carryover.csv": "93be873cec77f404392f4f699a1c420a70fd83bb37c87ae670a9278e2c2dc8e4",
+    "parking/resource_requirements_departure_delay_24h.csv": "b79d7b61bd444e65da4c807f6203b0c3810b6314f38f3184e9173e8456f024f8",
+    "parking/scenario_recommendations_departure_delay_24h.json": "c2efe07b9a2f7735b6e569758e65df531f9509e180a931dc1862e741eb191fea"
+  },
+  "run_id": "b16963cd4580b3d7c94722b8c56f07437081d2b7afa5374c076763af0d01844b"
+}

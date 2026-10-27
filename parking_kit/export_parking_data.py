@@ -2,11 +2,11 @@
 
 Everything comes from the team's committed outputs:
 - daily ramp demand per scenario and situation (P10 / P50 / P90 space units), capacity, chance of exceeding it,
-  risk, and the AI preparation plan with its measured effect (elia/ parking model, 10,000 simulated weeks)
+  risk, and the AI preparation plan with its measured effect (parking/ parking model, 10,000 simulated weeks)
 - the ordinary week (same dates, no Super Bowl)
-- daily arrivals and departures (marvin/person_2_forecasting)
-- hour-of-day shares (PLACEHOLDER, not observed) and the game-day restriction (alan/data/processed)
-- parking assumptions (space units, aircraft sizes, ramp area, stays) from elia/assumptions_p3.csv and alan/assumptions.csv
+- daily arrivals and departures (forecast/main_forecast)
+- hour-of-day shares (PLACEHOLDER, not observed) and the game-day restriction (sources/data/processed)
+- parking assumptions (space units, aircraft sizes, ramp area, stays) from parking/assumptions_p3.csv and sources/assumptions.csv
 The 3D views generate individual aircraft from these totals; those aircraft are an illustration, the daily answer
 comes from the model. Run from the repository root: python parking_kit/export_parking_data.py
 """
@@ -17,9 +17,9 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-P3 = ROOT / "elia"
-P2 = ROOT / "marvin" / "person_2_forecasting"
-PKG = ROOT / "marvin" / "person_2_part91_part135_forecast" / "results"
+P3 = ROOT / "parking"
+P2 = ROOT / "forecast" / "main_forecast"
+PKG = ROOT / "forecast" / "category_forecast" / "results"
 OUT = Path(__file__).resolve().parent / "parking_data.json"
 RAMP_AIRCRAFT = Path(__file__).resolve().parent / "ramp_aircraft.csv"  # from parking_kit/ramp_aircraft.py
 VARIANTS = {"standard": ("resource_requirements.csv", "scenario_recommendations.json", "Normal operations"),
@@ -85,10 +85,10 @@ def situation_outlook(sec, dates):
             {"situation": "heavy_rain", "status": "possible", "dates": [game], "probability": p_heavy,
              "probability_week_any_day": round(1 - (1 - p_heavy) ** len(dates), 3),
              "basis": (f"{p_heavy:.0%} of February days at LAX had heavy rain ({weather['source']}). The model tests it on game day."),
-             "source": "marvin/person_2_part91_part135_forecast/results/weather_effect_measured.csv"},
+             "source": "forecast/category_forecast/results/weather_effect_measured.csv"},
             {"situation": "departure_delay_24h", "status": "stress test", "dates": [game], "probability": None,
              "basis": "No measured likelihood. Tests what happens if departures slip a full day after the game.",
-             "source": "elia/assumptions_p3.csv (delay_24h_first_day, delay_24h_share)"},
+             "source": "parking/assumptions_p3.csv (delay_24h_first_day, delay_24h_share)"},
             {"situation": "standard", "status": "reference", "dates": [], "probability": None,
              "basis": "Same demand without any situation, for comparison.", "source": ""},
         ],
@@ -96,7 +96,7 @@ def situation_outlook(sec, dates):
 
 
 def levers():
-    """Slot advisor results (elia/slot_advisor.py): offers that change when aircraft come and go, per scenario."""
+    """Slot advisor results (parking/slot_advisor.py): offers that change when aircraft come and go, per scenario."""
     recs = json.loads((P3 / "slot_recommendations.json").read_text())
     out = {"decided_by": "model", "human_in_command": recs["meta"]["human_in_command"],
            "take_up_status": recs["meta"]["take_up_status"], "by_scenario": {}}
@@ -111,8 +111,8 @@ def levers():
 def main():
     a = {r["parameter"]: num(r["value"]) for r in rows(P3 / "assumptions_p3.csv")}
     p3 = a
-    alan = {r["id"]: r for r in rows(ROOT / "alan" / "assumptions.csv")}
-    sec = rows(ROOT / "alan" / "data" / "processed" / "security_restriction_model_input.csv")[0]
+    sources = {r["id"]: r for r in rows(ROOT / "sources" / "assumptions.csv")}
+    sec = rows(ROOT / "sources" / "data" / "processed" / "security_restriction_model_input.csv")[0]
     hourly = defaultdict(lambda: [0.0] * 24)
     for r in rows(PKG / "hourly_profile_weights.csv"):
         hourly[f"{r['day_type']}_{r['target']}"][int(r["local_hour"])] = round(float(r["fitted_hour_share"]), 5)
@@ -157,7 +157,7 @@ def main():
         "situation_outlook": situation_outlook(sec, dates),
         "levers": levers(),
         "demand_levels": {
-            "decided_by": "model", "basis": "ramp utilization at the daily P50 peak (risk_level in elia/resource_requirements.csv)",
+            "decided_by": "model", "basis": "ramp utilization at the daily P50 peak (risk_level in parking/resource_requirements.csv)",
             "medium_from": num(p3["risk_medium_threshold"]), "high_from": num(p3["risk_high_threshold"]),
             "labels": {"Low": "below 85% of the ramp", "Medium": "85 to 100% of the ramp", "High": "above the ramp"}},
         "ramp_aircraft": {
@@ -172,7 +172,7 @@ def main():
             "overflow_apron_su": a["overflow_capacity_su"], "overflow_cost_per_su_day_usd": a["overflow_cost_per_su_day_usd"],
             "derivation": (f"Atlantic's ramp: {a['ramp_area_m2']:.0f} m2 x {a['usable_parking_share']} usable / "
                            f"{a['m2_per_su']} m2 per su = {a['reference_ramp_su']:.0f} su, scaled to this FBO's "
-                           f"{float(alan['fbo_market_share']['value']):.0%} share vs Atlantic's {a['reference_traffic_share']:.0%}: "
+                           f"{float(sources['fbo_market_share']['value']):.0%} share vs Atlantic's {a['reference_traffic_share']:.0%}: "
                            f"{a['ramp_capacity_su']:.0f} su. Estimated, not a measured stand count."),
             "class": "estimated"},
         "aircraft": {
@@ -181,7 +181,7 @@ def main():
                       "midsize": {"su": a["su_midsize"], "share": a["mix_midsize"], "example": "Challenger 350 (21.0 m x 20.9 m)"},
                       "large": {"su": a["su_large"], "share": a["mix_large"], "example": "Gulfstream G650 (30.4 m x 30.4 m)"}},
             "mix_class": "assumed", "opening_aircraft": a["initial_transient_aircraft"],
-            "stays": {"same_day": 0.40, "overnight": 0.45, "multi_day_3": 0.15, "average_days": float(alan["avg_dwell_days"]["value"]),
+            "stays": {"same_day": 0.40, "overnight": 0.45, "multi_day_3": 0.15, "average_days": float(sources["avg_dwell_days"]["value"]),
                       "class": "assumed (illustrative stay mix from the team ledger)"},
         },
         "hourly_profile": {"shares": dict(hourly), "class": "placeholder",

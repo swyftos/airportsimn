@@ -1,6 +1,0 @@
-game,host_region,year,FAA_GA_category_excess,private_fleet_ratio,classification,source,note
-LVI,Los Angeles,2022,0.031,unknown,GA_category_proxy_not_private_fleet,https://github.com/swyftos/airportsimn/blob/main/alan/elia_output/data/processed/superbowl_lvi_surge.csv,Control-adjusted LAX GA category change; not applied to private-only scenario.
-LVII,Phoenix,2023,not_in_review,unknown,not_available,,"Selected private-fleet arrivals, departures, dwell and ratios unavailable."
-LVIII,Las Vegas,2024,not_in_review,unknown,not_available,,"Selected private-fleet arrivals, departures, dwell and ratios unavailable."
-LIX,New Orleans,2025,not_in_review,unknown,not_available,,"Selected private-fleet arrivals, departures, dwell and ratios unavailable."
-LX,Santa Clara,2026,not_in_review,unknown,not_available,,"Selected private-fleet arrivals, departures, dwell and ratios unavailable."

@@ -1,0 +1,65 @@
+{
+  "meta": {
+    "method": "Tests two levers on the same Monte Carlo demand paths as parking_optimizer.run (same seed, same order):",
+    "take_up_tested": [
+      0.0,
+      0.1,
+      0.2,
+      0.3
+    ],
+    "take_up_status": "unknown; shown as a range, not a forecast",
+    "ramp_capacity_su": 15.0,
+    "mc_runs": 10000,
+    "human_in_command": "Offers only. Every action needs approval by the named role. The system never accepts, rejects or cancels an individual aircraft."
+  },
+  "scenarios": {
+    "Low": {
+      "no_action": {
+        "peak_su_p50": 14.96,
+        "peak_su_p90": 19.23,
+        "unaccommodated_mean": 1.0
+      },
+      "actions": [],
+      "early_arrival_finding": "At 30% take-up, a cheap Thu-Fri slot moves the game-day P50 from 13.5 to 13.3 su and unaccommodated aircraft from 1.0 to 2.1: aircraft arrive earlier but leave at the same time, so they stay longer. It does not free parking.",
+      "pricing_note": "Past Super Bowls filled parking without raising prices (sources/docs/lax_private_capacity_and_cost_research.md); reservations (PPR) stay the primary tool, incentives are offers, and the system never refuses an aircraft."
+    },
+    "Medium": {
+      "no_action": {
+        "peak_su_p50": 17.9,
+        "peak_su_p90": 21.59,
+        "unaccommodated_mean": 2.29
+      },
+      "actions": [
+        {
+          "id": "drop_and_go_offer",
+          "category": "pricing",
+          "action": "Offer a $500 drop-and-go credit to Super Bowl arrivals Thu-Sun: drop passengers, reposition to a partner field, return for pickup",
+          "rationale": "Without action 2.3 aircraft a run do not fit the 15 su ramp. If 10% of event arrivals accept: 2.0, net $380; if 30% accept: 1.6, net $1,002. Complements the ramp plan (tow-in packing, overflow lease); take-up is unknown",
+          "requires_human_approval": true,
+          "approver": "FBO general manager"
+        }
+      ],
+      "early_arrival_finding": "At 30% take-up, a cheap Thu-Fri slot moves the game-day P50 from 17.4 to 17.3 su and unaccommodated aircraft from 2.3 to 4.3: aircraft arrive earlier but leave at the same time, so they stay longer. It does not free parking.",
+      "pricing_note": "Past Super Bowls filled parking without raising prices (sources/docs/lax_private_capacity_and_cost_research.md); reservations (PPR) stay the primary tool, incentives are offers, and the system never refuses an aircraft."
+    },
+    "High": {
+      "no_action": {
+        "peak_su_p50": 23.27,
+        "peak_su_p90": 28.62,
+        "unaccommodated_mean": 6.03
+      },
+      "actions": [
+        {
+          "id": "drop_and_go_offer",
+          "category": "pricing",
+          "action": "Offer a $500 drop-and-go credit to Super Bowl arrivals Thu-Sun: drop passengers, reposition to a partner field, return for pickup",
+          "rationale": "Without action 6.0 aircraft a run do not fit the 15 su ramp. If 10% of event arrivals accept: 5.4, net $1,116; if 30% accept: 4.2, net $3,112. Complements the ramp plan (tow-in packing, overflow lease); take-up is unknown",
+          "requires_human_approval": true,
+          "approver": "FBO general manager"
+        }
+      ],
+      "early_arrival_finding": "At 30% take-up, a cheap Thu-Fri slot moves the game-day P50 from 23.0 to 23.0 su and unaccommodated aircraft from 6.0 to 7.9: aircraft arrive earlier but leave at the same time, so they stay longer. It does not free parking.",
+      "pricing_note": "Past Super Bowls filled parking without raising prices (sources/docs/lax_private_capacity_and_cost_research.md); reservations (PPR) stay the primary tool, incentives are offers, and the system never refuses an aircraft."
+    }
+  }
+}

@@ -9,7 +9,7 @@ Super Bowl LXI is played in Los Angeles on Sunday 14 February 2027. Private jets
 
 The forecast is built from real public data (FAA airport traffic counts, NOAA weather, the 2022 Super Bowl in LA). The tools only recommend. A person decides every action.
 
-Made at SpartHill Hacks 2026 by a team of four.
+Made during a 2026 hackathon.
 
 ![Week planner: the seven days of Super Bowl week, landings and departures per day and hour](docs/images/week-planner.jpg)
 
@@ -33,10 +33,10 @@ You need Python 3.10 or newer. Nothing to install. Clone the repository, then ru
 
 | App | What it shows | Run from the repository root |
 |---|---|---|
+| **Ramp Control** (main app) | The parking ramp in 3D through the week. The model decides the demand level and which situations apply (the game-day security pause is expected; heavy rain and a 24-hour delay are shown as risks). It shows where every aircraft is, how to manage the flow of aircraft day by day, an impact grid of what-ifs, and the plan a manager approves | `cd ramp_control && python3 -m http.server 8005` → http://127.0.0.1:8005 |
 | **Week planner** | For the FBO desk agent: the busiest days and hours of the week, the next 3 hours, the game-day pause, weather. Log your own booked flights and compare them with the forecast | `cd agent_gemini && python3 -m http.server 8004` → http://127.0.0.1:8004 |
-| **3D ramp: Ramp Control** | The parking ramp in 3D through the week: when it fills up, where the extra aircraft go, what the plan changes | `cd parking3d_codex && python3 -m http.server 8005` → http://127.0.0.1:8005 |
-| **3D ramp: Parking Operations** | The same question as a 2D summary with a forecast chart, plus a 3D airfield with a day/night clock | `cd parking3d_gemini && python3 -m http.server 8006` → http://127.0.0.1:8006 |
-| **RampReady dashboard** | For the FBO manager: parking gap per day, scenarios, preparation proposals, and a review step where a named person approves or rejects each one | `python3 nazar/app.py` → http://127.0.0.1:4180, sign in as the manager demo account |
+| **Parking Operations** (earlier prototype) | The same question as a 2D summary with a forecast chart, plus a 3D airfield with a day/night clock | `cd parking3d_gemini && python3 -m http.server 8006` → http://127.0.0.1:8006 |
+| **RampReady dashboard** | For the FBO manager: parking gap per day, scenarios, preparation proposals, and a review step where a named person approves or rejects each one | `python3 dashboard/app.py` → http://127.0.0.1:4180, sign in as the manager demo account |
 
 On Windows, use `py -3` instead of `python3`. The 3D apps load Three.js from a CDN, so they need an internet connection. All dates are in 2027, so the apps simulate the time of day.
 
@@ -55,10 +55,10 @@ flowchart LR
   C --> E["3D ramp apps<br/>RampReady dashboard"]
 ```
 
-1. **Data** (`alan/`). Daily FAA tower counts at LAX for private flights: general aviation (Part 91) and air taxi (Part 135), 2016–2025 without the 2020–2022 pandemic years. What happened around the 2022 Super Bowl at LAX and five other LA airports, and at eight earlier host cities. The FBO's ramp area from public lease records.
-2. **Forecast** (`marvin/`). An ordinary February week is learned from the month and weekday pattern, then scaled for the Super Bowl. The scenarios use what LAX itself measured in 2022: **Low +3.1%** (general aviation), **Medium +15.5%** (air taxi), **High +31%** (twice Medium, a stress test). Presidents' Day and the effect of rain and fog are learned from past data. Every number comes with a 90% range.
-3. **Parking** (`elia/`). The forecast drives 10,000 simulated weeks of aircraft arriving, staying and leaving, sized light, midsize or large. That gives the chance the ramp is full each day, and how much a preparation plan helps. Variants: departures delayed 24 hours, the game-day pause, heavy rain.
-4. **Apps** (`agent_gemini/`, `parking3d_*/`, `nazar/`). They read only the team's exported data files (`site_kit/`, `parking_kit/`) and invent no numbers.
+1. **Data** (`sources/`). Daily FAA tower counts at LAX for private flights: general aviation (Part 91) and air taxi (Part 135), 2016–2025 without the 2020–2022 pandemic years. What happened around the 2022 Super Bowl at LAX and five other LA airports, and at eight earlier host cities. The FBO's ramp area from public lease records.
+2. **Forecast** (`forecast/`). An ordinary February week is learned from the month and weekday pattern, then scaled for the Super Bowl. The scenarios use what LAX itself measured in 2022: **Low +3.1%** (general aviation), **Medium +15.5%** (air taxi), **High +31%** (twice Medium, a stress test). Presidents' Day and the effect of rain and fog are learned from past data. Every number comes with a 90% range.
+3. **Parking** (`parking/`). The forecast drives 10,000 simulated weeks of aircraft arriving, staying and leaving, sized light, midsize or large. That gives the chance the ramp is full each day, and how much a preparation plan helps. Variants: departures delayed 24 hours, the game-day pause, heavy rain.
+4. **Apps** (`ramp_control/`, `agent_gemini/`, `parking3d_gemini/`, `dashboard/`). They read only the team's exported data files (`site_kit/`, `parking_kit/`) and invent no numbers.
 
 ## Can you trust it?
 
@@ -79,17 +79,19 @@ There is no passenger, crew or owner data anywhere. A logged flight is a time, a
 
 ## What's in the repository
 
-| Folder | Contents | Owner |
+New here? Read in this order: this page, then `data_sources.md` (every source), `assumptions.csv` (every assumption), and the README in each folder below.
+
+| Folder | What it is | Start with |
 |---|---|---|
-| `alan/` | Public data, cleaning scripts, baseline, Super Bowl and capacity research | Alan Wang |
-| `marvin/person_2_forecasting/` | The forecast used by the apps, backtest, 2026 holdout, sensitivity reviews | Marvin Hendra |
-| `marvin/person_2_part91_part135_forecast/` | Part 91 / Part 135 forecast with measured weather effects | Marvin Hendra |
-| `elia/` | Parking simulation, scenario variants, preparation plans, slot advisor | Elia Calamaro |
-| `site_kit/`, `parking_kit/` | Export the models' outputs into the data files the apps read | Elia Calamaro |
-| `agent_gemini/` | Week planner app | Elia Calamaro, Nazar Meniailo |
-| `parking3d_codex/`, `parking3d_gemini/` | 3D parking apps | Elia Calamaro |
-| `nazar/` | RampReady dashboard, integration checks, app and data tests | Nazar Meniailo |
-| `data_sources.md`, `assumptions.csv` | Every source and every assumption, in one place | Team |
+| `sources/` | Step 1, the data: public FAA, NOAA and airport records, the scripts that clean them, the Super Bowl 2022 analysis and the ramp-size research | `sources/docs/`, `sources/assumptions.csv` |
+| `forecast/main_forecast/` | Step 2, the forecast the apps use: daily landings and departures with ranges, the accuracy tests on 2025 and 2026 | `README.md`, `PROVISIONAL_ASSUMPTIONS.md` |
+| `forecast/category_forecast/` | A second forecast split by flight type (Part 91 private, Part 135 charter) with the measured effect of rain and fog | `README.md` |
+| `parking/` | Step 3, the parking model: 10,000 simulated weeks, the chance the ramp is full each day, the preparation plan and the arrival offers | `PARKING_ASSUMPTIONS.md`, `parking_optimizer.py` |
+| `parking_kit/`, `site_kit/` | Step 4: turn the model outputs into the single data file each app reads (`parking_data.json`, `agent_data.json`) | `export_parking_data.py` |
+| `ramp_control/` | The main app (3D) | open it as shown above |
+| `agent_gemini/`, `parking3d_gemini/` | Other apps: the week planner and an earlier 3D prototype | open them as shown above |
+| `dashboard/` | The manager dashboard, integration checks and the app and data tests | `README.md` |
+| `docs/` | Screenshots | |
 
 Several apps were built with AI coding assistants (Claude, Codex, Gemini), as their folder names say, from briefs and data the team wrote.
 
@@ -97,13 +99,6 @@ Several apps were built with AI coding assistants (Claude, Codex, Gemini), as th
 
 This is a hackathon project, not an operational system. The FBO is fictional, its traffic share and ramp size are estimates, and the hourly pattern is a placeholder until real FBO data is available. The forecasts describe completed airport operations, not bookings. Do not use them to make real aviation decisions.
 
-## Team
-
-- **Alan Wang**: data and baseline
-- **Marvin Hendra**: demand forecast
-- **Elia Calamaro**: parking model and scenarios
-- **Nazar Meniailo**: apps, integration and testing
-
 ## License
 
-[MIT](LICENSE) for the team's code, documentation and derived data. The third-party documents in `alan/data/raw/` keep their owners' terms.
+[MIT](LICENSE) for the team's code, documentation and derived data. The third-party documents in `sources/data/raw/` keep their owners' terms.

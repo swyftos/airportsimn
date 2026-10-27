@@ -1,10 +1,10 @@
 """How many aircraft of each size the parking model puts on the ramp at each day's peak.
 
-The 3D site needs plane counts, while elia/resource_requirements*.csv only report space units. This script re-runs
-the parking model's own 10,000 demand paths (same seed, same functions, same order as elia/parking_optimizer.run)
+The 3D site needs plane counts, while parking/resource_requirements*.csv only report space units. This script re-runs
+the parking model's own 10,000 demand paths (same seed, same functions, same order as parking/parking_optimizer.run)
 and records, per situation, scenario and day, the median number of light / midsize / large aircraft parked at the
 daily peak and the median arrivals and departures per size. It checks that it reproduces the published
-parking_demand_su_p50 exactly before writing anything. Elia's files are not modified.
+parking_demand_su_p50 exactly before writing anything. The parking team's files are not modified.
 
 Run from the repository root (needs numpy and pandas): python parking_kit/ramp_aircraft.py
 Writes parking_kit/ramp_aircraft.csv.
@@ -16,7 +16,7 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "elia"))
+sys.path.insert(0, str(ROOT / "parking"))
 import parking_optimizer as po  # noqa: E402
 
 OUT = Path(__file__).resolve().parent / "ramp_aircraft.csv"
@@ -75,7 +75,7 @@ def main():
     rows = []
     for variant, published in VARIANTS.items():
         got = variant_rows(demand, a, variant)
-        with open(ROOT / "elia" / published, newline="") as f:
+        with open(ROOT / "parking" / published, newline="") as f:
             ref = {(r["scenario"], r["date"]): float(r["parking_demand_su_p50"]) for r in csv.DictReader(f)}
         bad = [(r["scenario"], r["date"], r["parking_demand_su_p50"], ref[(r["scenario"], r["date"])])
                for r in got if abs(r["parking_demand_su_p50"] - ref[(r["scenario"], r["date"])]) > 1e-9]
